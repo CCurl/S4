@@ -1,5 +1,5 @@
 # STABLE
-A simple and fast stack machine.
+A simple and fairly fast stack machine.
 
 Props go to Sandor Schneider for this.
 
