@@ -30,3 +30,9 @@
 *.exe
 *.out
 *.app
+
+/.vs/stable/v16
+Debug/
+Release/
+stable.vcxproj.user
+*.ipch

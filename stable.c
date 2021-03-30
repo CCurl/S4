@@ -17,6 +17,7 @@ typedef unsigned char BYTE;
 
 long regs[26];
 int funcs[26];
+int extFuncs[100];
 long vars[NUM_VARS];
 long dstack[STK_SZ + 1]; int dsp;
 int rstack[STK_SZ + 1]; int rsp;
@@ -36,14 +37,6 @@ void parse(BYTE* src) {
     }
 }
 
-int defineFunc(int pc) {
-    int fn = code[pc++] - 'A';
-    if ((0 <= fn) || (fn <= 25)) { funcs[fn] = pc; }
-    else { printf("-invalid function number: %d-", fn); exit(1); }
-    while ((pc < here) && (code[pc++] != '}'));
-    return pc;
-}
-
 int number(int pc) {
     long num = 0;
     while (('0' <= code[pc]) && (code[pc] <= '9')) {
@@ -54,17 +47,47 @@ int number(int pc) {
     return pc;
 }
 
+int defineFunc(int pc) {
+    int fn = code[pc++];
+    if (fn == 'X') {
+        pc = number(pc);
+        long num = pop();
+        if ((0 <= num) && (num < 100)) { extFuncs[num] = pc; } 
+        else { 
+            printf("-invalid function number: %d-", fn); exit(1); 
+        }
+    } else {
+        fn -= 'A';
+        if ((0 <= fn) || (fn < 26)) { funcs[fn] = pc; }
+        else { 
+            printf("-invalid function number: %d-", fn); exit(1); 
+        }
+    }
+    while ((pc < here) && (code[pc++] != '}'));
+    return pc;
+}
+
 void dumpStack() {
     printf("(");
     for (int i = 1; i <= dsp; i++) { printf(" %d", dstack[i]); }
     printf(" )");
 }
 
+int ext(int pc) {
+    pc = number(pc);
+    long num = pop();
+    if ((0 <= num) && (num < 100) && (extFuncs[num])) {
+        rpush(pc);
+        pc = extFuncs[num];
+    }
+    return pc;
+}
+
 int run(int pc) {
     long t1 = 0, t2 = 0;
     BYTE ir;
     while (rsp >= 0) {
-        if ((pc < 0) || (here <= pc)) { return 0; }
+        if ((pc < 0) || (CODE_SZ <= pc)) { return 0; }
         ir = code[pc++];
         // printf("\npc:%04d, ir:%03d [%c] ", pc - 1, ir, ir); dumpStack();
         switch (ir) {
@@ -92,7 +115,7 @@ int run(int pc) {
         case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': case 'G':
         case 'H': case 'I': case 'J': case 'K': case 'L': case 'M': case 'N':
         case 'O': case 'P': case 'Q': case 'R': case 'S': case 'T': case 'U':
-        case 'V': case 'W': case 'X': case 'Y': case 'Z':
+        case 'V': case 'W': case 'Y': case 'Z':
             t1 = ir - 'A';
             if (funcs[t1]) { rpush(pc); pc = funcs[t1]; }
             break;
@@ -115,6 +138,7 @@ int run(int pc) {
         case '[': rpush(pc); if (T == 0) { while ((pc < here) && (code[pc] != ']')) { pc++; } } break;
         case ']': if (pop()) { pc = rstack[rsp]; } else { rpop(); } break;
         case '(': if (pop() == 0) { while ((pc < here) && (code[pc] != ')')) { pc++; } } break;
+        case 'X': pc = ext(pc); break;
         default: break;
         }
     }
@@ -140,9 +164,9 @@ int main(int argc, char **argv) {
     here = 0;
     curReg = 0;
     for (int i = 0; i < CODE_SZ; i++) { code[i] = 0; }
-    parse((BYTE*)"{R\"\r\n\"}R");
-    parse((BYTE *)"{S32,}{DS.}{A123a:456b:}A{Ba;b;}BDD{CB>D}C{CB<D}C{CB+D}CS65,66,334#=D");
-    /* bench */    // parse((BYTE*)"{K1000*}{B[1-#]\\}R10KK\"S\"B\"E\"");
+    /* CR */ parse((BYTE*)"{R\"\r\n\"}R");
+    // parse((BYTE *)"{S32,}{DS.}{A123a:456b:}A{Ba;b;}BDD{CB>D}C{CB<D}C{CB+D}CS65,66,334#=D");
+    /* bench */    parse((BYTE*)"{K1000*}{X4[1-#]\\}R10KK\"S\"X4\"E\"}");
     /* if/else */  // parse((BYTE*)"0#(\"yes\"\\1_)~(\"no\")");
     /* fib */      // parse((BYTE*)"20a:0 1[#.9,$@+a-;]\\\\");
     /* count up */ // parse((BYTE*)"10[#10$-.32,1-#]\\");
