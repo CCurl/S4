@@ -102,7 +102,7 @@ int run(int pc) {
         ir = code[pc++];
         // printf("\npc:%04d, ir:%03d [%c] ", pc - 1, ir, ir); dumpStack();
         switch (ir) {
-        case 0: return;
+        case 0: return pc;
         case '{': pc = defineFunc(pc); break;
         case '}': pc = rpop(); break;
         case '#': push(T); break;
@@ -145,6 +145,7 @@ int run(int pc) {
         case ']': if (pop()) { pc = rstack[rsp]; }
                 else { rpop(); } break;
         case '(': if (pop() == 0) { while ((pc < CODE_SZ) && (code[pc] != ')')) { pc++; } } break;
+        case 'B': printf(" "); break;
         default: break;
         }
     }
@@ -166,7 +167,7 @@ void dumpCode() {
 }
 
 int repl() {
-    printf(" ok "); dumpStack(); printf("\n");
+    printf(" S4 "); dumpStack(); printf("\n");
     ihere = CODE_SZ - 100;
     char* buf = &code[ihere];
     fgets(buf, 96, stdin);
@@ -202,7 +203,7 @@ int main(int argc, char** argv) {
     ihere = CODE_SZ - 100;
     char* buf = &code[ihere];
 
-    for (int i = 0; i < CODE_SZ; i++) { code[i] = '}'; }
+    for (int i = 0; i < CODE_SZ; i++) { code[i] = 0; }
     strcpy_s(input_fn, sizeof(input_fn), "");
 
     for (int i = 1; i < argc; i++)

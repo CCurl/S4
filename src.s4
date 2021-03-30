@@ -1,6 +1,3 @@
-{fR13,10,}{fS32,}{fTfS.}
-{fZ7fT8fT9fT}
-{fK1000*}{fB[1-#]\} 
-fZ
-fR50fKfK#fTfS"S"fB"E"
-fR"All done!"fR
+{R13,10,}{K1000*}{B#fT"S"[1-#]\"E"}
+"S4 v0.0.1 - Chris Curl"
+fR"Hello."
