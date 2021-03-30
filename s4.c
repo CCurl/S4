@@ -29,6 +29,7 @@ ushort func[NUM_FUNCS];
 long var[NUM_VARS];
 byte code[CODE_SZ];
 ushort here = 0;
+ushort ihere = 0;
 ushort curReg = 0;
 
 void push(long v) { if (dsp < STK_SZ) { dstack[++dsp] = v; } }
@@ -36,12 +37,6 @@ long pop() { return (dsp > 0) ? dstack[dsp--] : 0; }
 
 void rpush(ushort v) { if (rsp < STK_SZ) { rstack[++rsp] = v; } }
 ushort rpop() { return (rsp > 0) ? rstack[rsp--] : -1; }
-
-void parse(const char *src) {
-    while ((*src) && (here < CODE_SZ)) {
-        code[here++] = *(src++);
-    }
-}
 
 int digit(byte c) { return (('0' <= c) && (c <= '9')) ? (c - '0') : -1; }
 int alphaL(byte c) { return (('a' <= c) && (c <= 'z')) ? (c - 'a') : -1; }
@@ -65,14 +60,23 @@ int number(int pc) {
     return pc;
 }
 
+// Moves the function into persistent code space.
 int defineFunc(int pc) {
-    int ck = code[pc++];
-    int fn = alpha(code[pc++]);
-    int v = ((ck == 'f') && (0 <= fn) && (fn < NUM_FUNCS)) ? 1 : 0;
-    if (v) { func[fn] = pc; }
+    byte fId = code[pc++];
+    int fn = alpha(fId);
+    int v = ((0 <= fn) && (fn < NUM_FUNCS)) ? 1 : 0;
+    if (v) {
+        code[here++] = '{';
+        code[here++] = fId;
+        func[fn] = here;
+    }
     else { printf("-invalid function number (A:%c)-", 'a'-1+(NUM_FUNCS-26)); }
-    while ((pc < here) && (code[pc++] != '}'));
-    return pc;
+    while ((pc < CODE_SZ) && code[pc]) {
+        if (v) { code[here++] = code[pc]; }
+        if (code[pc] == '}') { break; }
+        pc++;
+    }
+    return pc+1;
 }
 
 int doFunc(int pc) {
@@ -98,6 +102,7 @@ int run(int pc) {
         ir = code[pc++];
         // printf("\npc:%04d, ir:%03d [%c] ", pc - 1, ir, ir); dumpStack();
         switch (ir) {
+        case 0: return;
         case '{': pc = defineFunc(pc); break;
         case '}': pc = rpop(); break;
         case '#': push(T); break;
@@ -131,15 +136,15 @@ int run(int pc) {
         case '~': if (dsp > 0) { T = ~T; } break;
         case '.': printf("%ld", pop());  break;
         case ',': printf("%c", (char)pop());  break;
-        case '"': while ((code[pc] != '"') && (pc < here)) { printf("%c", code[pc]); pc++; } pc++; break;
+        case '"': while ((code[pc] != '"') && (pc < CODE_SZ)) { printf("%c", code[pc]); pc++; } pc++; break;
         case '=': if (dsp > 1) { t1 = pop(); T = (T == t1) ? -1 : 0; } break;
         case '<': if (dsp > 1) { t1 = pop(); T = (T < t1) ? -1 : 0; } break;
         case '>': if (dsp > 1) { t1 = pop(); T = (T > t1) ? -1 : 0; } break;
         case '^':  push(_getch()); break;
-        case '[': rpush(pc); if (T == 0) { while ((pc < here) && (code[pc] != ']')) { pc++; } } break;
+        case '[': rpush(pc); if (T == 0) { while ((pc < CODE_SZ) && (code[pc] != ']')) { pc++; } } break;
         case ']': if (pop()) { pc = rstack[rsp]; }
                 else { rpop(); } break;
-        case '(': if (pop() == 0) { while ((pc < here) && (code[pc] != ')')) { pc++; } } break;
+        case '(': if (pop() == 0) { while ((pc < CODE_SZ) && (code[pc] != ')')) { pc++; } } break;
         default: break;
         }
     }
@@ -158,6 +163,18 @@ void dumpCode() {
         printf(" %02x", code[i]);
     }
     if (ti) { txt[ti] = 0;  printf(" ; %s", txt); }
+}
+
+int repl() {
+    printf(" ok "); dumpStack(); printf("\n");
+    ihere = CODE_SZ - 100;
+    char* buf = &code[ihere];
+    fgets(buf, 96, stdin);
+    if (strcmp(buf, "bye\n") == 0) {
+        return 0;
+    }
+    run(ihere);
+    return 1;
 }
 
 void process_arg(char* arg)
@@ -182,6 +199,9 @@ void process_arg(char* arg)
 
 int main(int argc, char** argv) {
     dsp = rsp = here = curReg = 0;
+    ihere = CODE_SZ - 100;
+    char* buf = &code[ihere];
+
     for (int i = 0; i < CODE_SZ; i++) { code[i] = '}'; }
     strcpy_s(input_fn, sizeof(input_fn), "");
 
@@ -196,12 +216,14 @@ int main(int argc, char** argv) {
         FILE* fp = NULL;
         fopen_s(&fp, input_fn, "rt");
         if (fp) {
-            here = (ushort)fread(code, 1, CODE_SZ, fp);
+            while (fgets(buf, 96, fp) == buf) {
+                run(ihere);
+            }
             fclose(fp);
         }
     }
 
-    run(0);
+    while (repl());
+
     dumpCode();
-    printf("\nstack: "); dumpStack();
-}   
+}
