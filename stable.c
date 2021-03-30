@@ -1,4 +1,6 @@
-// See https://w3group.de/stable.html
+// https://w3group.de/stable.html
+// Props go to Sandor Schneider for this.
+// This is my personal reverse-engineered implementation.
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -20,7 +22,6 @@ long dstack[STK_SZ + 1]; int dsp;
 int rstack[STK_SZ + 1]; int rsp;
 BYTE code[CODE_SZ];
 int here = 0;
-int buildingNum = 0;
 int curReg = 0;
 
 void push(long v) { if (dsp < STK_SZ) { dstack[++dsp] = v; } }
@@ -137,7 +138,6 @@ int main(int argc, char **argv) {
     rsp = 0;
     dsp = 0;
     here = 0;
-    buildingNum = 0;
     curReg = 0;
     for (int i = 0; i < CODE_SZ; i++) { code[i] = 0; }
     parse((BYTE*)"{R\"\r\n\"}R");
