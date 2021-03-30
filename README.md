@@ -1,7 +1,7 @@
 # STABLE
 A simple and fairly fast stack machine.
 
-Props go to Sandor Schneider for this.
+A big thanks go to Sandor Schneider for the inspiration for this.
 
 STABLE stands for: STAck Bytecode Language & Engine
 
