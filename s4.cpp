@@ -4,16 +4,16 @@
 // This is my personal reverse-engineered implementation.
 
 #ifndef _WIN32
-    #define __DEV_BOARD__
+#define __DEV_BOARD__
 #endif
 
 #ifdef __DEV_BOARD__
-    #include <Arduino.h>
-    #define mySerial SerialUSB
+#include <Arduino.h>
+#define mySerial SerialUSB
 #else
-    #include <windows.h>
-    #include <conio.h>
-    long millis() { return GetTickCount(); }
+#include <windows.h>
+#include <conio.h>
+long millis() { return GetTickCount(); }
 #endif
 
 #include <stdio.h>
@@ -57,7 +57,7 @@ void rpush(ushort v) { if (rsp < STK_SZ) { rstack[++rsp] = v; } }
 ushort rpop() { return (rsp > 0) ? rstack[rsp--] : -1; }
 
 #ifdef __DEV_BOARD__
-int _getch() { return (mySerial.available()) ? mySerial.read(): 0; }
+int _getch() { return (mySerial.available()) ? mySerial.read() : 0; }
 void printString(const char* str) { mySerial.print(str); }
 #else
 void printString(const char* str) { printf("%s", str); }
@@ -106,19 +106,19 @@ int number(int pc) {
 int defineFunc(int pc) {
     byte fId = code[pc++];
     int fn = alpha(fId);
-    int v = ((0 <= fn) && (fn < NUM_FUNCS)) ? 1 : 0;
+    int v = ((0 <= fn) && (fn < NUM_FUNCS) && (here < pc)) ? 1 : 0;
     if (v) {
         code[here++] = '{';
         code[here++] = fId;
         func[fn] = here;
     }
-    else { printStringF("-invalid function number (A:%c)-", 'a'-1+(NUM_FUNCS-26)); }
+    else { printStringF("-invalid function number (A:%c)-", 'a' - 1 + (NUM_FUNCS - 26)); }
     while ((pc < CODE_SZ) && code[pc]) {
         if (v) { code[here++] = code[pc]; }
         if (code[pc] == '}') { break; }
         pc++;
     }
-    return pc+1;
+    return pc + 1;
 }
 
 int doFunc(int pc) {
@@ -150,12 +150,13 @@ void dumpCode() {
 }
 
 void dumpFuncs() {
-  printString("\r\nFUNCTIONS");
-  for (int i = 0; i < NUM_FUNCS; i++) {
-    byte fId = ((i < 26) ? 'A' : 'a') + (i%26);
-    if ((0<i) && (i%5)) { printStringF("    "); } else { printString("\r\n"); }
-    printStringF("f%c: %-4d", fId, (int)func[i]);
-  }
+    printString("\r\nFUNCTIONS");
+    for (int i = 0; i < NUM_FUNCS; i++) {
+        byte fId = ((i < 26) ? 'A' : 'a') + (i % 26);
+        if ((0 < i) && (i % 5)) { printStringF("    "); }
+        else { printString("\r\n"); }
+        printStringF("f%c: %-4d", fId, (int)func[i]);
+    }
 }
 
 void dumpRegs() {
@@ -176,7 +177,7 @@ void dumpStack() {
 
 void dumpVars() {
     printString("\r\nVARIABLES");
-    for (int i = 0; i < NUM_VARS; i++) { 
+    for (int i = 0; i < NUM_VARS; i++) {
         if ((0 < i) && (i % 5)) { printStringF("    "); }
         else { printString("\r\n"); }
         printStringF("[%03d]: %-10d", i, var[i]);
@@ -216,13 +217,15 @@ int run(int pc) {
         case 'a': case 'b': case 'c': case 'd': case 'e': /* case 'f': */ case 'g':
         case 'h': case 'i': case 'j': case 'k': case 'l': case 'm': case 'n':
         case 'o': case 'p': case 'q': case 'r': case 's': case 't': case 'u':
-        case 'v': case 'w': case 'x': case 'y': case 'z':
+        case 'v': case 'w': case 'x': case 'y': case 'z': 
             curReg = ir - 'a';
             if (code[pc] == '+') { ++pc; reg[curReg]++; }
             if (code[pc] == '-') { ++pc; reg[curReg]--; }
             break;
-        case '+': if (code[pc] == '+') { pc++; T++; } else { if (dsp > 1) { t1 = pop(); T += t1; } } break;
-        case '-': if (code[pc] == '-') { pc++; T--; } else { if (dsp > 1) { t1 = pop(); T -= t1; } } break;
+        case '+': if (code[pc] == '+') { pc++; T++; }
+                else { if (dsp > 1) { t1 = pop(); T += t1; } } break;
+        case '-': if (code[pc] == '-') { pc++; T--; }
+                else { if (dsp > 1) { t1 = pop(); T -= t1; } } break;
         case '*': if (dsp > 1) { t1 = pop(); T *= t1; } break;
         case '/': if (dsp > 1) { t1 = pop(); T /= t1; } break;
         case '%': if (dsp > 1) { t1 = pop(); T %= t1; } break;
@@ -241,8 +244,10 @@ int run(int pc) {
         case ']': if (pop()) { pc = rstack[rsp]; }
                 else { rpop(); } break;
         case '(': if (pop() == 0) { while ((pc < CODE_SZ) && (code[pc] != ')')) { pc++; } } break;
+        case 'A': break;
         case 'B': printString(" "); break;
-        case 'F': dumpFuncs(); break;
+        case 'C': case 'D': case 'E': case 'F': case 'G': case 'H': 
+            break;
         case 'I': t1 = code[pc++];
             if (t1 == 'A') { dumpAll(); }
             if (t1 == 'C') { dumpCode(); }
@@ -251,10 +256,22 @@ int run(int pc) {
             if (t1 == 'S') { dumpStack(); }
             if (t1 == 'V') { dumpVars(); }
             break;
+        case 'J':  break;
+        case 'K': T *= 1000; break;
+        case 'L': break;
         case 'M': push(millis()); break;
-        case 'R': dumpRegs(); break;
-        case 'S': t1 = code[pc++]; if (t1 == 'S') { printString("Halleluya!"); } break;
-        case 'X': t1 = code[pc++]; if (t1 == 'X') { vmInit(); } break;
+        case 'N': case 'O': case 'P': case 'Q': 
+            break;
+        case 'R': printString("\r\n"); break;
+        case 'S': t1 = code[pc++]; 
+            if (t1 == 'S') { printString("Halleluya!"); } 
+            break;
+        case 'T': case 'U': case 'V': case 'W': 
+            break;
+        case 'X': t1 = code[pc++]; 
+            if (t1 == 'X') { vmInit(); } 
+            break;
+        case 'Y': case 'Z': break;
         default: break;
         }
     }
@@ -296,7 +313,8 @@ void loop() {
             ihere = IHERE_INIT;
             run(ihere);
             ok();
-        } else {
+        }
+        else {
             if (ihere < CODE_SZ) {
                 code[ihere++] = c;
                 char b[2]; b[0] = c; b[1] = 0;
@@ -323,17 +341,19 @@ void process_arg(char* arg)
     if ((*arg == 'i') && (*(arg + 1) == ':')) {
         arg = arg + 2;
         strcpy_s(input_fn, sizeof(input_fn), arg);
-    } else if (*arg == '?') {
+    }
+    else if (*arg == '?') {
         printString("usage s4 [args] [source-file]\n");
         printString("  -i:file\n");
         printString("  -? - Prints this message\n");
         exit(0);
-    } else { printf("unknown arg '-%s'\n", arg); }
+    }
+    else { printf("unknown arg '-%s'\n", arg); }
 }
 
 int main(int argc, char** argv) {
     vmInit();
-    char* buf = (char *)&code[ihere];
+    char* buf = (char*)&code[ihere];
     strcpy_s(input_fn, sizeof(input_fn), "");
 
     for (int i = 1; i < argc; i++)
