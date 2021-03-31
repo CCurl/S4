@@ -54,13 +54,9 @@ ushort rpop() { return (rsp > 0) ? rstack[rsp--] : -1; }
 
 #ifdef __DEV_BOARD__
 int _getch() { return (mySerial.available()) ? mySerial.read(): 0; }
-void printString(const char* str) {
-    mySerial.print(str);
-}
+void printString(const char* str) { mySerial.print(str); }
 #else
-void printString(const char* str) {
-    printf("%s", str);
-}
+void printString(const char* str) { printf("%s", str); }
 #endif
 
 void vmInit() {
@@ -130,6 +126,24 @@ int doFunc(int pc) {
     return pc;
 }
 
+void dumpRegs() {
+  printString("\r\nREGISTERS");
+  for (int i = 0; i < NUM_REGS; i++) {
+    byte fId = 'a' + i;
+    if ((0<i) && (i%5)) { printStringF("    "); } else { printString("\r\n"); }
+    printStringF("%c: %-10ld", fId, reg[i]);
+  }
+}
+
+void dumpFuncs() {
+  printString("\r\nFUNCTIONS");
+  for (int i = 0; i < NUM_FUNCS; i++) {
+    byte fId = ((i < 26) ? 'A' : 'a') + (i%26);
+    if ((0<i) && (i%5)) { printStringF("    "); } else { printString("\r\n"); }
+    printStringF("f%c: %-4d", fId, (int)func[i]);
+  }
+}
+
 void dumpStack() {
     printStringF("(");
     for (int i = 1; i <= dsp; i++) { printStringF(" %d", dstack[i]); }
@@ -167,8 +181,8 @@ int run(int pc) {
             if (code[pc] == '+') { ++pc; reg[curReg]++; }
             if (code[pc] == '-') { ++pc; reg[curReg]--; }
             break;
-        case '+': if (dsp > 1) { t1 = pop(); T += t1; } break;
-        case '-': if (dsp > 1) { t1 = pop(); T -= t1; } break;
+        case '+': if (code[pc] == '+') { pc++; T++; } else { if (dsp > 1) { t1 = pop(); T += t1; } } break;
+        case '-': if (code[pc] == '-') { pc++; T--; } else { if (dsp > 1) { t1 = pop(); T -= t1; } } break;
         case '*': if (dsp > 1) { t1 = pop(); T *= t1; } break;
         case '/': if (dsp > 1) { t1 = pop(); T /= t1; } break;
         case '%': if (dsp > 1) { t1 = pop(); T %= t1; } break;
@@ -188,8 +202,10 @@ int run(int pc) {
                 else { rpop(); } break;
         case '(': if (pop() == 0) { while ((pc < CODE_SZ) && (code[pc] != ')')) { pc++; } } break;
         case 'B': printString(" "); break;
-        case 'R': t1 = code[pc++]; if (t1 == 'X') { vmInit(); } break;
+        case 'F': dumpFuncs(); break;
+        case 'R': dumpRegs(); break;
         case 'S': t1 = code[pc++]; if (t1 == 'S') { printString("Halleluya!"); } break;
+        case 'X': t1 = code[pc++]; if (t1 == 'X') { vmInit(); } break;
         default: break;
         }
     }
