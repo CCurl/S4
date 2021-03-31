@@ -3,19 +3,23 @@
 // A big thanks to to Sandor Schneider for this.
 // This is my personal reverse-engineered implementation.
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdarg.h>
-
-// #define __DEV_BOARD__
+#ifndef _WIN32
+    #define __DEV_BOARD__
+#endif
 
 #ifdef __DEV_BOARD__
     #include <Arduino.h>
     #define mySerial SerialUSB
 #else
+    #include <windows.h>
     #include <conio.h>
+    long millis() { return GetTickCount(); }
 #endif
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdarg.h>
 
 #define CODE_SZ  1024
 #define STK_SZ     63
@@ -126,13 +130,23 @@ int doFunc(int pc) {
     return pc;
 }
 
-void dumpRegs() {
-  printString("\r\nREGISTERS");
-  for (int i = 0; i < NUM_REGS; i++) {
-    byte fId = 'a' + i;
-    if ((0<i) && (i%5)) { printStringF("    "); } else { printString("\r\n"); }
-    printStringF("%c: %-10ld", fId, reg[i]);
-  }
+void dumpCode() {
+    printStringF("\r\nCODE\r\nhere: %04d", here);
+    char* txt = (char*)&code[here + 10]; int ti = 0;
+    for (int i = 0; i < here; i++) {
+        if ((i % 20) == 0) {
+            if (ti) { txt[ti] = 0;  printStringF(" ; %s", txt); ti = 0; }
+            printStringF("\n%04d: ", i);
+        }
+        txt[ti++] = (code[i] < 32) ? '.' : code[i];
+        printStringF(" %02x", code[i]);
+    }
+    int x = here;
+    while (x % 20) {
+        printString("   ");
+        x++;
+    }
+    if (ti) { txt[ti] = 0;  printStringF(" ; %s", txt); }
 }
 
 void dumpFuncs() {
@@ -144,18 +158,44 @@ void dumpFuncs() {
   }
 }
 
+void dumpRegs() {
+    printString("\r\nREGISTERS");
+    for (int i = 0; i < NUM_REGS; i++) {
+        byte fId = 'a' + i;
+        if ((0 < i) && (i % 5)) { printStringF("    "); }
+        else { printString("\r\n"); }
+        printStringF("%c: %-10ld", fId, reg[i]);
+    }
+}
+
 void dumpStack() {
-    printStringF("(");
+    printString("\r\nSTACK: (");
     for (int i = 1; i <= dsp; i++) { printStringF(" %d", dstack[i]); }
-    printStringF(" )");
+    printString(" )");
+}
+
+void dumpVars() {
+    printString("\r\nVARIABLES");
+    for (int i = 0; i < NUM_VARS; i++) { 
+        if ((0 < i) && (i % 5)) { printStringF("    "); }
+        else { printString("\r\n"); }
+        printStringF("[%03d]: %-10d", i, var[i]);
+    }
+}
+
+void dumpAll() {
+    dumpStack();
+    dumpRegs();
+    dumpFuncs();
+    dumpVars();
+    dumpCode();
 }
 
 int run(int pc) {
     long t1 = 0, t2 = 0;
-    byte ir;
     while (rsp >= 0) {
         if ((pc < 0) || (CODE_SZ <= pc)) { return 0; }
-        ir = code[pc++];
+        byte ir = code[pc++];
         // printStringF("\npc:%04d, ir:%03d [%c] ", pc - 1, ir, ir); dumpStack();
         switch (ir) {
         case 0: return pc;
@@ -203,6 +243,15 @@ int run(int pc) {
         case '(': if (pop() == 0) { while ((pc < CODE_SZ) && (code[pc] != ')')) { pc++; } } break;
         case 'B': printString(" "); break;
         case 'F': dumpFuncs(); break;
+        case 'I': t1 = code[pc++];
+            if (t1 == 'A') { dumpAll(); }
+            if (t1 == 'C') { dumpCode(); }
+            if (t1 == 'F') { dumpFuncs(); }
+            if (t1 == 'R') { dumpRegs(); }
+            if (t1 == 'S') { dumpStack(); }
+            if (t1 == 'V') { dumpVars(); }
+            break;
+        case 'M': push(millis()); break;
         case 'R': dumpRegs(); break;
         case 'S': t1 = code[pc++]; if (t1 == 'S') { printString("Halleluya!"); } break;
         case 'X': t1 = code[pc++]; if (t1 == 'X') { vmInit(); } break;
@@ -212,18 +261,10 @@ int run(int pc) {
     return 0;
 }
 
-void dumpCode() {
-    printStringF("\nhere: %04d", here);
-    char* txt = (char*)&code[here + 10]; int ti = 0;
-    for (int i = 0; i < here; i++) {
-        if ((i % 20) == 0) {
-            if (ti) { txt[ti] = 0;  printStringF(" ; %s", txt); ti = 0; }
-            printStringF("\n%04d: ", i);
-        }
-        txt[ti++] = (code[i] < 32) ? '.' : code[i];
-        printStringF(" %02x", code[i]);
-    }
-    if (ti) { txt[ti] = 0;  printStringF(" ; %s", txt); }
+void ok() {
+    printString(" ok. (");
+    for (int i = 1; i <= dsp; i++) { printStringF(" %d", dstack[i]); }
+    printString(" )\r\n");
 }
 
 #ifdef __DEV_BOARD__
@@ -236,7 +277,7 @@ void setup() {
     while (mySerial.available()) {}
     vmInit();
     pinMode(iLed, OUTPUT);
-    printString(" s4 ( )\r\n");
+    ok();
 }
 
 void loop() {
@@ -254,9 +295,8 @@ void loop() {
             printString(" ");
             ihere = IHERE_INIT;
             run(ihere);
-            printString(" s4 "); dumpStack(); printString("\r\n");
-        }
-        else {
+            ok();
+        } else {
             if (ihere < CODE_SZ) {
                 code[ihere++] = c;
                 char b[2]; b[0] = c; b[1] = 0;
@@ -268,36 +308,27 @@ void loop() {
 }
 
 #else
-int repl() {
-    printString(" S4 "); dumpStack(); printString("\n");
+int loop() {
     ihere = IHERE_INIT;
     char* buf = (char*)&code[ihere];
+    ok();
     fgets(buf, IHERE_SZ, stdin);
-    if (strcmp(buf, "bye\n") == 0) {
-        return 0;
-    }
+    if (strcmp(buf, "bye\n") == 0) { return 0; }
     run(ihere);
     return 1;
 }
 
 void process_arg(char* arg)
 {
-    if ((*arg == 'i') && (*(arg + 1) == ':'))
-    {
+    if ((*arg == 'i') && (*(arg + 1) == ':')) {
         arg = arg + 2;
         strcpy_s(input_fn, sizeof(input_fn), arg);
-    }
-    else if (*arg == '?')
-    {
+    } else if (*arg == '?') {
         printString("usage s4 [args] [source-file]\n");
         printString("  -i:file\n");
         printString("  -? - Prints this message\n");
         exit(0);
-    }
-    else
-    {
-        printf("unknown arg '-%s'\n", arg);
-    }
+    } else { printf("unknown arg '-%s'\n", arg); }
 }
 
 int main(int argc, char** argv) {
@@ -316,15 +347,11 @@ int main(int argc, char** argv) {
         FILE* fp = NULL;
         fopen_s(&fp, input_fn, "rt");
         if (fp) {
-            while (fgets(buf, IHERE_SZ, fp) == buf) {
-                run(ihere);
-            }
+            while (fgets(buf, IHERE_SZ, fp) == buf) { run(ihere); }
             fclose(fp);
         }
     }
 
-    while (repl());
-
-    dumpCode();
+    while (loop());
 }
 #endif
