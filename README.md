@@ -5,4 +5,4 @@ See https://w3group.de/stable.html for details on STABLE.
 
 A big thanks to Sandor Schneider for the inspiration for this.
 
-See ref.txt for a reference to S4.
+The reference for S4 is here: https://github.com/CCurl/S4/blob/main/ref.txt
