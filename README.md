@@ -21,7 +21,7 @@ bit manipulation
 ~  (  n -- n')  not, all bits inversed (0=>1 1=>0)
 
 stack
-#  ( a--a a)      duplicate TOS (dup)
+\#  ( a--a a)      duplicate TOS (dup)
 \  ( a b--a)      drop TOS (drop)
 $  ( a b--b a)    swap top 2 stack items (swap)
 @  ( a b--a b a)  push next (over)
