@@ -8,12 +8,12 @@ A big thanks to Sandor Schneider for the inspiration for this.
 ## VM operations:
 
 arithmetic
->+  ( a b--a+b)  addition
->-  ( a b--a-b)  subtraction
->*  ( a b--a*b)  multiplication
->/  ( a b--a/b)  division
->%  ( a b--a%b)  modulo (division remainder)
->_  (   n-- -n)  negate
+>\+  ( a b--a+b)  addition
+>\-  ( a b--a-b)  subtraction
+>\*  ( a b--a*b)  multiplication
+>\/  ( a b--a/b)  division
+>\%  ( a b--a%b)  modulo (division remainder)
+>\_  (   n-- -n)  negate
 
 bit manipulation
 & ( a b--a&b)   32 bits and
