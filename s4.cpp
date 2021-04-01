@@ -374,6 +374,8 @@ void process_arg(char* arg)
 
 int main(int argc, char** argv) {
     hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
+    DWORD m; GetConsoleMode(hStdOut, &m);
+    SetConsoleMode(hStdOut, (m | ENABLE_VIRTUAL_TERMINAL_PROCESSING));
     vmInit();
     char* buf = (char*)&code[ihere];
     strcpy_s(input_fn, sizeof(input_fn), "");
