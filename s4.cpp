@@ -173,10 +173,10 @@ void dumpFuncs() {
     printString("\r\nFUNCTIONS");
     for (int i = 0; i < NUM_FUNCS; i++) {
         if (func[i] == 0) { continue; }
-        byte fId = i; //  ((i < 26) ? 'A' : 'a') + (i % 26);
+        int fId = i; //  ((i < 26) ? 'A' : 'a') + (i % 26);
         if ((0 < n) && (n % 5)) { printStringF("    "); }
         else { printString("\r\n"); }
-        printStringF("f%c: %-4d", fId, (int)func[i]);
+        printStringF("f%d: %-4d", fId, (int)func[i]);
         ++n;
     }
 }
