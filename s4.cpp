@@ -1,19 +1,24 @@
-// https://w3group.de/stable.html
-//
-// A big thanks to to Sandor Schneider for this.
-// This is my personal reverse-engineered implementation.
+// S4 - a stack VM, inspired by Sandor Schneider's STABLE
+// see https://w3group.de/stable.html
 
 #ifndef _WIN32
-#define __DEV_BOARD__
+    #define __DEV_BOARD__
 #endif
 
 #ifdef __DEV_BOARD__
-#include <Arduino.h>
-#define mySerial SerialUSB
+    #include <Arduino.h>
+    #define mySerial SerialUSB
+    #define CODE_SZ  8192
+    #define STK_SZ     63
+    #define NUM_VARS   32
 #else
-#include <windows.h>
-#include <conio.h>
-long millis() { return GetTickCount(); }
+    #include <windows.h>
+    #include <conio.h>
+    long millis() { return GetTickCount(); }
+    HANDLE hStdOut = 0;
+    #define CODE_SZ  8192
+    #define STK_SZ     63
+    #define NUM_VARS   32
 #endif
 
 #include <stdio.h>
@@ -21,9 +26,6 @@ long millis() { return GetTickCount(); }
 #include <string.h>
 #include <stdarg.h>
 
-#define CODE_SZ  1024
-#define STK_SZ     63
-#define NUM_VARS   32
 #define NUM_FUNCS  52
 #define NUM_REGS   26
 
@@ -60,7 +62,11 @@ ushort rpop() { return (rsp > 0) ? rstack[rsp--] : -1; }
 int _getch() { return (mySerial.available()) ? mySerial.read() : 0; }
 void printString(const char* str) { mySerial.print(str); }
 #else
-void printString(const char* str) { printf("%s", str); }
+void printString(const char* str) {
+    int l = strlen(str);
+    DWORD n = 0;
+    if (l) { WriteConsoleA(hStdOut, str, l, &n, 0); }
+}
 #endif
 
 void vmInit() {
@@ -246,7 +252,11 @@ int run(int pc) {
         case '(': if (pop() == 0) { while ((pc < CODE_SZ) && (code[pc] != ')')) { pc++; } } break;
         case 'A': break;
         case 'B': printString(" "); break;
-        case 'C': case 'D': case 'E': case 'F': case 'G': case 'H': 
+        case 'C': t1 = code[pc++];
+            if (t1 == '@') { if ((0 <= T) && (T < CODE_SZ)) { T = code[T]; } }
+            if (t1 == '!') { t1 = pop(); t2 = pop(); if ((0 <= t1) && (t1 < CODE_SZ)) { code[t1] = (byte)t2; } }
+            break;
+        case 'D': case 'E': case 'F': case 'G': case 'H':
             break;
         case 'I': t1 = code[pc++];
             if (t1 == 'A') { dumpAll(); }
@@ -284,6 +294,13 @@ void ok() {
     printString(" )\r\n");
 }
 
+void loadCode(const char *src) {
+    char* tgt = (char *)&code[IHERE_INIT];
+    while (*src) { *(tgt++) = *(src++); }
+    *tgt = 0;
+    run(IHERE_INIT);
+}
+
 #ifdef __DEV_BOARD__
 #define iLed 13
 ulong nextBlink = 0;
@@ -294,6 +311,10 @@ void setup() {
     while (mySerial.available()) {}
     vmInit();
     pinMode(iLed, OUTPUT);
+    // ********************************************
+    // * HERE is where you load your default code *
+    // ********************************************
+    // loadCode("R{T\"test 12345\"}fT");
     ok();
 }
 
@@ -322,7 +343,7 @@ void loop() {
             }
         }
     }
-    // autoRun();
+    if (regs[25]) { run(regs[25]); }    // autorun?
 }
 
 #else
@@ -352,6 +373,7 @@ void process_arg(char* arg)
 }
 
 int main(int argc, char** argv) {
+    hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
     vmInit();
     char* buf = (char*)&code[ihere];
     strcpy_s(input_fn, sizeof(input_fn), "");

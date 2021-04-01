@@ -147,7 +147,11 @@
     <ClCompile Include="S4.ino" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="README.md" />
     <None Include="src.s4" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ref.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
