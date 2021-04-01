@@ -33,9 +33,9 @@ x+  ( --)       select and increment register by 1
 x-  ( --)       select and decrement register by 1
 
 functions
-{XY  ( --)  define function XY (XY: [AA..zz])
-}    ( --)  end of definition
-fXY  ( --)  call function <XY>
+{X  ( --)  define function X (X: [A..Z]|[a..z])
+}   ( --)  end of definition
+fX  ( --)  call function <X>
 
 input/output
 .    ( a--)    print TOS as decimal number
@@ -47,26 +47,24 @@ input/output
                   to enter a negative number use _ (negate) after the number
 
 conditions
-<  ( a b--f)  true (-1) if (a < b), false (0) otherwise
->  ( a b--f)  true (-1) if (a > b), false (0) otherwise
-=  ( a b--f)  true (-1) if (a = b), false (0) otherwise
-(  ( f--)     if (f != 0), execute code until ), else skip code until )
-[  ( f--f)    begin while loop if (f != 0), else skip code until ]
-]  ( f--)     repeat loop if (f != 0).
+<  ( a b--f)  true (-1) if b is < a, false (0) otherwise
+>  ( a b--f)  true (-1) if b is > a, false (0) otherwise
+=  ( a b--f)  true (-1) if a is queal to b, flase (0) otherwise
+(  ( f--)     if f is true, execute content until ), if false skip code until )
+[  ( f--f)    begin while loop if f is true. leave f on stack. If f is false, skip code until ]
+]  ( f--)     repeat the loop if f is true.
 
 other
-B    ( --)      Output a space
-C@   ( a--b)    Fetch byte from code space [a]
-C!   ( v a--)   Store byte v to code space [a]
-IA   ( --)      Info: All (CARSV)
-IC   ( --)      Info: Code
-IA   ( --)      Info: Functions
-IR   ( --)      Info: Registers
-IS   ( --)      Info: Stack
-IV   ( --)      Info: Variables
-K    ( a--b)    Multiply TOS by 1000
-M    ( --a)     Push current time (GetTickCount() or millis())
-R    ( --)      Output a CR/LF
-SS   ( --)      Easter egg for Sandor!
-XX   ( --)      Reset S4 to initial state
-bye  ( --)      Exit S4
+B    ( --)     output a space
+IA   ( --)     Info: All (CARSV)
+IC   ( --)     Info: Code
+IA   ( --)     Info: Functions
+IR   ( --)     Info: Registers
+IS   ( --)     Info: Stack
+IV   ( --)     Info: Variables
+K    ( a--a1)  multiply TOS by 1000
+M    ( --a)    push current time (Arduino millis())
+R    ( --)     output a CR/LF
+SS   ( --)     Easter egg for Sandor!
+XX   ( --)     Reset S4 to initial state
+bye  ( --)     exit S4
