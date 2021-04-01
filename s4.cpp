@@ -8,12 +8,13 @@
 #ifdef __DEV_BOARD__
     #include <Arduino.h>
     // **NOTE** tweak these for the given dev board
+    // These would be f r a board like the Teensy 4.0
     #define mySerial SerialUSB
-    #define CODE_SZ       8192
+    #define CODE_SZ   (1024*32)
     #define STK_SZ          63
     #define NUM_VARS        32
     #define TIB_SZ          96
-    #define NUM_FUNCS       64
+    #define NUM_FUNCS   (52*52)
 #else
     #include <windows.h>
     #include <conio.h>
@@ -79,6 +80,7 @@ void vmInit() {
     for (int i = 0; i < CODE_SZ; i++) { code[i] = 0; }
     for (int i = 0; i < NUM_FUNCS; i++) { func[i] = 0; }
     for (int i = 0; i < NUM_REGS; i++) { reg[i] = 0; }
+    for (int i = 0; i < NUM_VARS; i++) { var[i] = 0; }
     printString("S4 - v0.0.1 - Chris Curl\r\nHello.");
 }
 
@@ -170,6 +172,7 @@ void dumpCode() {
         x++;
     }
     if (ti) { txt[ti] = 0;  printStringF(" ; %s", txt); }
+    if (here == 0) { printString("\r\n(no code defined)"); }
 }
 
 void dumpFuncs() {
@@ -183,6 +186,7 @@ void dumpFuncs() {
         printStringF("f%d: %-4d", fId, (int)func[i]);
         ++n;
     }
+    if (n == 0) { printString("\r\n(no functions defined)"); }
 }
 
 void dumpRegs() {
@@ -202,20 +206,24 @@ void dumpStack() {
 }
 
 void dumpVars() {
+    int n = 0;
     printString("\r\nVARIABLES");
     for (int i = 0; i < NUM_VARS; i++) {
-        if ((0 < i) && (i % 5)) { printStringF("    "); }
+        if (var[i] == 0) { continue; }
+        if ((0 < n) && (n % 5)) { printStringF("    "); }
         else { printString("\r\n"); }
         printStringF("[%03d]: %-10d", i, var[i]);
+        ++n;
     }
+    if (n == 0) { printString("\r\n(all variables empty)"); }
 }
 
 void dumpAll() {
-    dumpStack();
-    dumpRegs();
-    dumpFuncs();
-    dumpVars();
-    dumpCode();
+    dumpStack();   printString("\r\n");
+    dumpRegs();    printString("\r\n");
+    dumpFuncs();   printString("\r\n");
+    dumpVars();    printString("\r\n");
+    dumpCode();    printString("\r\n");
 }
 
 int run(int pc) {
@@ -363,7 +371,7 @@ void loop() {
             }
         }
     }
-    if (regs[25]) { run(regs[25]); }    // autorun?
+    if (reg[25]) { run(reg[25]); }    // autorun?
 }
 
 #else
