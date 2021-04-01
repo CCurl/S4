@@ -1,1 +1,13 @@
-{ElM$-#1K/.1KB%.}{BM"S"M$[--#]\"E "fEl}IA
+0( R"Bm: Benchmark" )
+{BmM$[--#]\M$-#1000%$1000/.B.}
+
+0( CS: Clear Screen, XY: Cursor to (X,Y) )
+{CS27,"[2J"27,"[;H"}{XY27,"[".";"."H"}
+
+0( R"Aa: FN helper" )
+{Aa#25<(65+,0)#25>(26-97+,)\}
+
+0( R"FN: given a function number, print the function name" )
+{FN#52/$52%fAafAa}
+
+0( R"---System info---" IA )
