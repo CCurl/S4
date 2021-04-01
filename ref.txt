@@ -33,9 +33,9 @@ x+  ( --)       select and increment register by 1
 x-  ( --)       select and decrement register by 1
 
 functions
-{X  ( --)  define function X (X: [A..Z]|[a..z])
-}   ( --)  end of definition
-fX  ( --)  call function <X>
+{XY  ( --)  define function XY (XY: [AA..zz])
+}    ( --)  end of definition
+fXY  ( --)  call function <XY>
 
 input/output
 .    ( a--)    print TOS as decimal number

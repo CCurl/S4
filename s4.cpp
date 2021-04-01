@@ -26,7 +26,7 @@
 #include <string.h>
 #include <stdarg.h>
 
-#define NUM_FUNCS  52
+#define NUM_FUNCS  (52*52)
 #define NUM_REGS   26
 
 typedef unsigned short ushort;
@@ -40,8 +40,8 @@ ushort dsp, rsp;
 #define T dstack[dsp]
 #define N dstack[dsp-1]
 
-#define IHERE_INIT    (CODE_SZ-100)
-#define IHERE_SZ       96
+#define TIB    (CODE_SZ-100)
+#define TIB_SZ       96
 
 char input_fn[24];
 long reg[NUM_REGS];
@@ -71,7 +71,7 @@ void printString(const char* str) {
 
 void vmInit() {
     dsp = rsp = here = curReg = 0;
-    ihere = IHERE_INIT;
+    ihere = TIB;
     for (int i = 0; i < CODE_SZ; i++) { code[i] = 0; }
     for (int i = 0; i < NUM_FUNCS; i++) { func[i] = 0; }
     for (int i = 0; i < NUM_REGS; i++) { reg[i] = 0; }
@@ -102,23 +102,35 @@ int alpha(byte c) {
 int number(int pc) {
     long num = 0;
     while (('0' <= code[pc]) && (code[pc] <= '9')) {
-        num = (num * 10) + code[pc] - '0';
+        num = (num * 10) + (code[pc] - '0');
         pc++;
     }
     push(num);
     return pc;
 }
 
+int getFN(int pc) {
+    int fL = alpha(code[pc]);
+    int fH = alpha(code[pc+1]);
+    if ((0 <= fL) && (0 <= fH)) {
+        int fn = ((fH*52)+fL); 
+        if ((0 <= fn) && (fn < NUM_FUNCS)) { return fn; }
+    }
+    return -1;
+}
+
 int defineFunc(int pc) {
-    byte fId = code[pc++];
-    int fn = alpha(fId);
-    int v = ((0 <= fn) && (fn < NUM_FUNCS) && (here < pc)) ? 1 : 0;
+    int fn = getFN(pc);
+    int v = (0 <= fn) ? 1 : 0;
     if (v) {
         code[here++] = '{';
-        code[here++] = fId;
+        code[here++] = code[pc];
+        code[here++] = code[pc+1];
         func[fn] = here;
     }
-    else { printStringF("-invalid function number (A:%c)-", 'a' - 1 + (NUM_FUNCS - 26)); }
+    else { printStringF("-invalid function '%c%c' (0:%d)-", code[pc], code[pc+1], NUM_FUNCS); }
+    pc += 2;
+    v = (v && (here < pc)) ? 1 : 0;
     while ((pc < CODE_SZ) && code[pc]) {
         if (v) { code[here++] = code[pc]; }
         if (code[pc] == '}') { break; }
@@ -128,10 +140,11 @@ int defineFunc(int pc) {
 }
 
 int doFunc(int pc) {
-    int f = alpha(code[pc++]);
-    if ((0 <= f) && (f < NUM_FUNCS) && (func[f])) {
+    int fn = getFN(pc); 
+    pc += 2;
+    if ((0 <= fn) && (func[fn])) {
         rpush(pc);
-        pc = func[f];
+        pc = func[fn];
     }
     return pc;
 }
@@ -156,12 +169,15 @@ void dumpCode() {
 }
 
 void dumpFuncs() {
+    int n = 0;
     printString("\r\nFUNCTIONS");
     for (int i = 0; i < NUM_FUNCS; i++) {
-        byte fId = ((i < 26) ? 'A' : 'a') + (i % 26);
-        if ((0 < i) && (i % 5)) { printStringF("    "); }
+        if (func[i] == 0) { continue; }
+        byte fId = i; //  ((i < 26) ? 'A' : 'a') + (i % 26);
+        if ((0 < n) && (n % 5)) { printStringF("    "); }
         else { printString("\r\n"); }
         printStringF("f%c: %-4d", fId, (int)func[i]);
+        ++n;
     }
 }
 
@@ -295,10 +311,10 @@ void ok() {
 }
 
 void loadCode(const char *src) {
-    char* tgt = (char *)&code[IHERE_INIT];
+    char* tgt = (char *)&code[TIB];
     while (*src) { *(tgt++) = *(src++); }
     *tgt = 0;
-    run(IHERE_INIT);
+    run(TIB);
 }
 
 #ifdef __DEV_BOARD__
@@ -331,7 +347,7 @@ void loop() {
         if (c == 13) {
             code[ihere] = (char)0;
             printString(" ");
-            ihere = IHERE_INIT;
+            ihere = TIB;
             run(ihere);
             ok();
         }
@@ -348,10 +364,10 @@ void loop() {
 
 #else
 int loop() {
-    ihere = IHERE_INIT;
+    ihere = TIB;
     char* buf = (char*)&code[ihere];
     ok();
-    fgets(buf, IHERE_SZ, stdin);
+    fgets(buf, TIB_SZ, stdin);
     if (strcmp(buf, "bye\n") == 0) { return 0; }
     run(ihere);
     return 1;
@@ -391,7 +407,7 @@ int main(int argc, char** argv) {
         FILE* fp = NULL;
         fopen_s(&fp, input_fn, "rt");
         if (fp) {
-            while (fgets(buf, IHERE_SZ, fp) == buf) { run(ihere); }
+            while (fgets(buf, TIB_SZ, fp) == buf) { run(ihere); }
             fclose(fp);
         }
     }
