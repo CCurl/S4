@@ -2,23 +2,28 @@
 // see https://w3group.de/stable.html
 
 #ifndef _WIN32
-    #define __DEV_BOARD__
+#define __DEV_BOARD__
 #endif
 
 #ifdef __DEV_BOARD__
     #include <Arduino.h>
+    // **NOTE** tweak these for the given dev board
     #define mySerial SerialUSB
-    #define CODE_SZ  8192
-    #define STK_SZ     63
-    #define NUM_VARS   32
+    #define CODE_SZ       8192
+    #define STK_SZ          63
+    #define NUM_VARS        32
+    #define TIB_SZ          96
+    #define NUM_FUNCS       64
 #else
     #include <windows.h>
     #include <conio.h>
     long millis() { return GetTickCount(); }
     HANDLE hStdOut = 0;
-    #define CODE_SZ  8192
-    #define STK_SZ     63
-    #define NUM_VARS   32
+    #define CODE_SZ   (1024*64)
+    #define STK_SZ          63
+    #define NUM_VARS        32
+    #define TIB_SZ         128
+    #define NUM_FUNCS   (52*52)
 #endif
 
 #include <stdio.h>
@@ -40,8 +45,7 @@ ushort dsp, rsp;
 #define T dstack[dsp]
 #define N dstack[dsp-1]
 
-#define TIB    (CODE_SZ-100)
-#define TIB_SZ       96
+#define TIB          (CODE_SZ-TIB_SZ-4)
 
 char input_fn[24];
 long reg[NUM_REGS];
@@ -111,9 +115,9 @@ int number(int pc) {
 
 int getFN(int pc) {
     int fL = alpha(code[pc]);
-    int fH = alpha(code[pc+1]);
+    int fH = alpha(code[pc + 1]);
     if ((0 <= fL) && (0 <= fH)) {
-        int fn = ((fH*52)+fL); 
+        int fn = ((fH * 52) + fL);
         if ((0 <= fn) && (fn < NUM_FUNCS)) { return fn; }
     }
     return -1;
@@ -125,10 +129,10 @@ int defineFunc(int pc) {
     if (v) {
         code[here++] = '{';
         code[here++] = code[pc];
-        code[here++] = code[pc+1];
+        code[here++] = code[pc + 1];
         func[fn] = here;
     }
-    else { printStringF("-invalid function '%c%c' (0:%d)-", code[pc], code[pc+1], NUM_FUNCS); }
+    else { printStringF("-invalid function '%c%c' (0:%d)-", code[pc], code[pc + 1], NUM_FUNCS); }
     pc += 2;
     v = (v && (here < pc)) ? 1 : 0;
     while ((pc < CODE_SZ) && code[pc]) {
@@ -140,7 +144,7 @@ int defineFunc(int pc) {
 }
 
 int doFunc(int pc) {
-    int fn = getFN(pc); 
+    int fn = getFN(pc);
     pc += 2;
     if ((0 <= fn) && (func[fn])) {
         rpush(pc);
@@ -150,7 +154,7 @@ int doFunc(int pc) {
 }
 
 void dumpCode() {
-    printStringF("\r\nCODE\r\nhere: %04d", here);
+    printStringF("\r\nCODE\r\nhere: %04d, CODE_SZ=%d", here, CODE_SZ);
     char* txt = (char*)&code[here + 10]; int ti = 0;
     for (int i = 0; i < here; i++) {
         if ((i % 20) == 0) {
@@ -239,7 +243,7 @@ int run(int pc) {
         case 'a': case 'b': case 'c': case 'd': case 'e': /* case 'f': */ case 'g':
         case 'h': case 'i': case 'j': case 'k': case 'l': case 'm': case 'n':
         case 'o': case 'p': case 'q': case 'r': case 's': case 't': case 'u':
-        case 'v': case 'w': case 'x': case 'y': case 'z': 
+        case 'v': case 'w': case 'x': case 'y': case 'z':
             curReg = ir - 'a';
             if (code[pc] == '+') { ++pc; reg[curReg]++; }
             if (code[pc] == '-') { ++pc; reg[curReg]--; }
@@ -286,16 +290,16 @@ int run(int pc) {
         case 'K': T *= 1000; break;
         case 'L': break;
         case 'M': push(millis()); break;
-        case 'N': case 'O': case 'P': case 'Q': 
+        case 'N': case 'O': case 'P': case 'Q':
             break;
         case 'R': printString("\r\n"); break;
-        case 'S': t1 = code[pc++]; 
-            if (t1 == 'S') { printString("Halleluya!"); } 
+        case 'S': t1 = code[pc++];
+            if (t1 == 'S') { printString("Halleluya!"); }
             break;
-        case 'T': case 'U': case 'V': case 'W': 
+        case 'T': case 'U': case 'V': case 'W':
             break;
-        case 'X': t1 = code[pc++]; 
-            if (t1 == 'X') { vmInit(); } 
+        case 'X': t1 = code[pc++];
+            if (t1 == 'X') { vmInit(); }
             break;
         case 'Y': case 'Z': break;
         default: break;
@@ -310,8 +314,8 @@ void ok() {
     printString(" )\r\n");
 }
 
-void loadCode(const char *src) {
-    char* tgt = (char *)&code[TIB];
+void loadCode(const char* src) {
+    char* tgt = (char*)&code[TIB];
     while (*src) { *(tgt++) = *(src++); }
     *tgt = 0;
     run(TIB);
@@ -364,12 +368,11 @@ void loop() {
 
 #else
 int loop() {
-    ihere = TIB;
-    char* buf = (char*)&code[ihere];
+    char* tib = (char*)&code[TIB];
     ok();
-    fgets(buf, TIB_SZ, stdin);
-    if (strcmp(buf, "bye\n") == 0) { return 0; }
-    run(ihere);
+    fgets(tib, TIB_SZ, stdin);
+    if (strcmp(tib, "bye\n") == 0) { return 0; }
+    run(TIB);
     return 1;
 }
 
@@ -393,7 +396,6 @@ int main(int argc, char** argv) {
     DWORD m; GetConsoleMode(hStdOut, &m);
     SetConsoleMode(hStdOut, (m | ENABLE_VIRTUAL_TERMINAL_PROCESSING));
     vmInit();
-    char* buf = (char*)&code[ihere];
     strcpy_s(input_fn, sizeof(input_fn), "");
 
     for (int i = 1; i < argc; i++)
@@ -407,7 +409,8 @@ int main(int argc, char** argv) {
         FILE* fp = NULL;
         fopen_s(&fp, input_fn, "rt");
         if (fp) {
-            while (fgets(buf, TIB_SZ, fp) == buf) { run(ihere); }
+            char* tib = (char*)&code[TIB];
+            while (fgets(tib, TIB_SZ, fp) == tib) { run(TIB); }
             fclose(fp);
         }
     }
