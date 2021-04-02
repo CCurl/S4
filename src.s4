@@ -1,17 +1,17 @@
 0( R"Bm: Benchmark decrement loop" )
-{BmT$[--#]\T$-#1K%$1K/.B.}
+{BmTS[--#]\TS-#1K%S1K/.B.}
 
 0( cs: Send <ESC>[ -- ANSI CSI code )
 {cs27,91,}
 
 0( CS: Clear Screen: fCS )
-{CSfcs"2J"fcs";H"}
+{CSccs"2J"ccs";H"}
 
 0( XY: Set cursor pos: x y fXY )
-{XYfcs.59,.72,}
+{XYccs.59,.72,}
 
 0( R"SC: Set Color: fc bg fSC " )
-{SCfcs.59,.125,}
+{SCccs.59,.125,}
 
 0( R"save the cursor pos: fcs115," )
 0( R"go back to saved cursor pos: fcs117," )
