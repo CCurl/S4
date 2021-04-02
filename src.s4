@@ -1,14 +1,20 @@
 0( R"Bm: Benchmark decrement loop" )
-{BmM$[--#]\M$-#1000%$1000/.B.}
+{BmT$[--#]\T$-#1K%$1K/.B.}
+
+0( cs: Send <ESC>[ -- ANSI CSI code )
+{cs27,91,}
 
 0( CS: Clear Screen: fCS )
-{CS27,"[2J"27,"[;H"}
+{CSfcs"2J"fcs";H"}
 
 0( XY: Set cursor pos: x y fXY )
-{XY27,"[".";"."H"}
+{XYfcs.59,.72,}
 
 0( R"SC: Set Color: fc bg fSC " )
-{SC$27,"[".";"."m"}
+{SCfcs.59,.125,}
+
+0( R"save the cursor pos: fcs115," )
+0( R"go back to saved cursor pos: fcs117," )
 
 0( R"FN: given a code address, print the function name" )
 {FN2-#C@,++C@,}
