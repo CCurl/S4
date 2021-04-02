@@ -239,21 +239,24 @@ int run(int pc) {
         // printStringF("\npc:%04d, ir:%03d [%c] ", pc - 1, ir, ir); dumpStack(0);
         switch (ir) {
         case 0: return pc;
-        case '{': pc = defineFunc(pc); break;
-        case '}': pc = rpop(); break;
-        case '#': push(T); break;
-        case '$': t1 = pop(); t2 = pop(); push(t1); push(t2); break;
-        case '@': push(N); break;
-        case '\\': pop(); break;
-        case ';': push(reg[curReg]); break;
-        case ':': reg[curReg] = pop(); break;
-        case '!': t1 = reg[curReg]; ((0 <= t1) && (t1 < NUM_VARS)) ? var[t1] = pop() : pop(); break;
-        case '?': t1 = reg[curReg]; ((0 <= t1) && (t1 < NUM_VARS)) ? push(var[t1]) : push(0); break;
+        case ' ': break;
         case '0': case '1': case '2': case '3': case '4':
         case '5': case '6': case '7': case '8': case '9':
             pc = number(pc - 1); break;
-        case 'f': pc = doFunc(pc); break;
-        case 'a': case 'b': case 'c': case 'd': case 'e': /* case 'f': */ case 'g':
+        case '{': pc = defineFunc(pc); break;
+        case '}': pc = rpop(); break;
+        case '#': push(T); break;
+        case '$': break;
+        case '\\': pop(); break;
+        case '\'': pop(); break;
+        case '`': pop(); break;
+        case ';': push(reg[curReg]); break;
+        case ':': reg[curReg] = pop(); break;
+        case '@': T = ((0 <= T) && (T < NUM_VARS)) ? var[T] : 0;  break;
+        case '!': t2 = pop(); t1 = pop(); if ((0 <= T) && (T < NUM_VARS)) { var[t1] = t2; } break;
+        case '?': break;
+        case 'c': pc = doFunc(pc); break;
+        case 'a': case 'b': /*case 'c':*/ case 'd': case 'e': case 'f': case 'g':
         case 'h': case 'i': case 'j': case 'k': case 'l': case 'm': case 'n':
         case 'o': case 'p': case 'q': case 'r': case 's': case 't': case 'u':
         case 'v': case 'w': case 'x': case 'y': case 'z':
@@ -280,8 +283,7 @@ int run(int pc) {
         case '>': if (dsp > 1) { t1 = pop(); T = (T > t1) ? -1 : 0; } break;
         case '^': push(_getch()); break;
         case '[': rpush(pc); if (T == 0) { while ((pc < CODE_SZ) && (code[pc] != ']')) { pc++; } } break;
-        case ']': if (pop()) { pc = rstack[rsp]; }
-                else { rpop(); } break;
+        case ']': if (pop()) { pc = rstack[rsp]; } else { rpop(); } break;
         case '(': if (pop() == 0) { while ((pc < CODE_SZ) && (code[pc] != ')')) { pc++; } } break;
         case 'A': t1 = code[pc++];
             if (t1 == 'R') { T = analogRead(T); }
@@ -296,8 +298,7 @@ int run(int pc) {
             if (t1 == 'R') { T = digitalRead(T); }
             if (t1 == 'W') { t2 = pop(); t1 = pop(); digitalWrite(t2, t1); }
           break;
-        case 'E': case 'F': case 'G': case 'H':
-            break;
+        case 'E': case 'F': case 'G': case 'H': break;
         case 'I': t1 = code[pc++];
             if (t1 == 'A') { dumpAll(); }
             if (t1 == 'C') { dumpCode(); }
@@ -310,7 +311,8 @@ int run(int pc) {
         case 'K': T *= 1000; break;
         case 'L': break;
         case 'M': break;
-        case 'N': case 'O': break;
+        case 'N': break;
+        case 'O': push(N); break;
         case 'P': t1 = code[pc++]; t2 = pop();
             if (t1 == 'I') { pinMode(t2, INPUT); }
             if (t1 == 'O') { pinMode(t2, OUTPUT); }
@@ -318,16 +320,12 @@ int run(int pc) {
             break;
         case 'Q': break;
         case 'R': printString("\r\n"); break;
-        case 'S': t1 = code[pc++];
-            if (t1 == 'S') { printString("Halleluya!"); }
-            break;
+        case 'S': t1 = pop(); t2 = pop(); push(t1); push(t2);  break;
         case 'T': push(millis()); break;
-        case 'U': case 'V': break;
-        case 'W': delay(pop());
-            break;
-        case 'X': t1 = code[pc++];
-            if (t1 == 'X') { vmInit(); }
-            break;
+        case 'U': break;
+        case 'V': break;
+        case 'W': delay(pop()); break;
+        case 'X': t1 = code[pc++]; if (t1 == 'X') { vmInit(); } break;
         case 'Y': case 'Z': break;
         default: break;
         }
@@ -337,7 +335,7 @@ int run(int pc) {
 
 void s4() {
     printString("\r\ns4:"); dumpStack(0);
-    printString(">> ");
+    printString("> ");
 }
 
 void loadCode(const char* src) {

@@ -16,10 +16,10 @@ bit manipulation
 ~  (  n -- n')  not, all bits reversed (0110010=>1001101)
 
 stack
-#  ( a--a a)      duplicate TOS (dup)
-\  ( a b--a)      drop TOS (drop)
-$  ( a b--b a)    swap top 2 stack items (swap)
-@  ( a b--a b a)  push next (over)
+#  ( a--a a)      duplicate TOS (forth dup)
+\  ( a b--a)      drop TOS (forth drop)
+S  ( a b--b a)    swap top 2 stack items (forth swap)
+O  ( a b--a b a)  push next (forth over)
 ++ ( a--a+1)      increment TOS
 -- ( a--a-1)      decrement TOS
 
@@ -27,15 +27,13 @@ registers
 x   ( --)       select register x (x: [a..z])
 ;   ( --value)  fetch from selected register
 :   ( value--)  store into selected register
-?   ( --value)  selected register contains an address. Fetch variable from there.
-!   ( value--)  selected register contains an address. Store variable there.
 x+  ( --)       select and increment register by 1
 x-  ( --)       select and decrement register by 1
 
 functions
-{X  ( --)  define function X (X: [A..Z]|[a..z])
+{XX ( --)  define function X (X: [A..Z]|[a..z])
 }   ( --)  end of definition
-fX  ( --)  call function <X>
+cX  ( --)  call function <X>
 
 input/output
 .    ( a--)    print TOS as decimal number
@@ -55,6 +53,8 @@ conditions
 ]  ( f--)     repeat the loop if f is true.
 
 other
+?    (a--n)    Fetch variable from a.
+!    (n a--)   Store n to variable a.
 B    ( --)     output a space
 C@   ()
 C!   ()
