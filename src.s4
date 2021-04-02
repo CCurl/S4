@@ -1,13 +1,16 @@
-0( R"Bm: Benchmark" )
+0( R"Bm: Benchmark decrement loop" )
 {BmM$[--#]\M$-#1000%$1000/.B.}
 
-0( CS: Clear Screen, XY: Cursor to (X,Y) )
-{CS27,"[2J"27,"[;H"}{XY27,"[".";"."H"}
+0( CS: Clear Screen: fCS )
+{CS27,"[2J"27,"[;H"}
 
-0( R"Aa: FN helper" )
-{Aa#25<(65+,0)#25>(26-97+,)\}
+0( XY: Set cursor pos: x y fXY )
+{XY27,"[".";"."H"}
 
-0( R"FN: given a function number, print the function name" )
-{FN#52/$52%fAafAa}
+0( R"SC: Set Color: fc bg fSC " )
+{SC$27,"[".";"."m"}
+
+0( R"FN: given a code address, print the function name" )
+{FN2-#C@,++C@,}
 
 0( R"---System info---" IA )
