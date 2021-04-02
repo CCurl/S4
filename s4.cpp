@@ -5,6 +5,8 @@
 #define __DEV_BOARD__
 #endif
 
+void printStringF(const char *fmt, ...);
+
 #ifdef __DEV_BOARD__
     #include <Arduino.h>
     // **NOTE** tweak these for the given dev board
@@ -19,6 +21,14 @@
     #include <windows.h>
     #include <conio.h>
     long millis() { return GetTickCount(); }
+    int analogRead(int pin) { printStringF("-AR(%d)-", pin); return 0; }
+    void analogWrite(int pin, int val) { printStringF("-AW(%d,%d)-", pin, val); }
+    int digitalRead(int pin) { printStringF("-DR(%d)-", pin); return 0;  }
+    void digitalWrite(int pin, int val) { printStringF("-DW(%d,%d)-", pin, val); }
+    void pinMode(int pin, int mode) { printStringF("-pinMode(%d%d)-", pin, mode); }
+    void delay(DWORD ms) { Sleep(ms); }
+    #define INPUT 0
+    #define OUTPUT 0
     HANDLE hStdOut = 0;
     #define CODE_SZ   (1024*64)
     #define STK_SZ          63
@@ -161,7 +171,7 @@ void dumpCode() {
     for (int i = 0; i < here; i++) {
         if ((i % 20) == 0) {
             if (ti) { txt[ti] = 0;  printStringF(" ; %s", txt); ti = 0; }
-            printStringF("\n%04d: ", i);
+            printStringF("\n\r%04d: ", i);
         }
         txt[ti++] = (code[i] < 32) ? '.' : code[i];
         printStringF(" %02x", code[i]);
@@ -278,13 +288,20 @@ int run(int pc) {
         case ']': if (pop()) { pc = rstack[rsp]; }
                 else { rpop(); } break;
         case '(': if (pop() == 0) { while ((pc < CODE_SZ) && (code[pc] != ')')) { pc++; } } break;
-        case 'A': break;
+        case 'A': t1 = code[pc++];
+            if (t1 == 'R') { T = analogRead(T); }
+            if (t1 == 'W') { t2 = pop(); t1 = pop(); analogWrite(t2, t1); }
+          break;
         case 'B': printString(" "); break;
         case 'C': t1 = code[pc++];
             if (t1 == '@') { if ((0 <= T) && (T < CODE_SZ)) { T = code[T]; } }
             if (t1 == '!') { t1 = pop(); t2 = pop(); if ((0 <= t1) && (t1 < CODE_SZ)) { code[t1] = (byte)t2; } }
             break;
-        case 'D': case 'E': case 'F': case 'G': case 'H':
+        case 'D': t1 = code[pc++];
+            if (t1 == 'R') { T = digitalRead(T); }
+            if (t1 == 'W') { t2 = pop(); t1 = pop(); digitalWrite(t2, t1); }
+          break;
+        case 'E': case 'F': case 'G': case 'H':
             break;
         case 'I': t1 = code[pc++];
             if (t1 == 'A') { dumpAll(); }
@@ -298,13 +315,19 @@ int run(int pc) {
         case 'K': T *= 1000; break;
         case 'L': break;
         case 'M': push(millis()); break;
-        case 'N': case 'O': case 'P': case 'Q':
+        case 'N': case 'O': break;
+        case 'P': t1 = code[pc++]; t2 = pop();
+            if (t1 == 'I') { pinMode(t2, INPUT); }
+            if (t1 == 'O') { pinMode(t2, OUTPUT); }
+            printStringF("-pinMode(%d, %c)-", t2, t1);
             break;
+        case 'Q': break;
         case 'R': printString("\r\n"); break;
         case 'S': t1 = code[pc++];
             if (t1 == 'S') { printString("Halleluya!"); }
             break;
-        case 'T': case 'U': case 'V': case 'W':
+        case 'T': case 'U': case 'V': break;
+        case 'W': delay(pop());
             break;
         case 'X': t1 = code[pc++];
             if (t1 == 'X') { vmInit(); }
