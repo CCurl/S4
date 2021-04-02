@@ -13,7 +13,7 @@ _  (   n-- -n)  negate
 bit manipulation
 & ( a b--a&b)   32 bits and
 |  ( a b--a|b)  32 bits or
-~  (  n -- n')  not, all bits inversed (0=>1 1=>0)
+~  (  n -- n')  not, all bits reversed (0110010=>1001101)
 
 stack
 #  ( a--a a)      duplicate TOS (dup)
@@ -56,6 +56,8 @@ conditions
 
 other
 B    ( --)     output a space
+C@   ()
+C!   ()
 IA   ( --)     Info: All (CARSV)
 IC   ( --)     Info: Code
 IA   ( --)     Info: Functions
@@ -63,7 +65,7 @@ IR   ( --)     Info: Registers
 IS   ( --)     Info: Stack
 IV   ( --)     Info: Variables
 K    ( a--a1)  multiply TOS by 1000
-M    ( --a)    push current time (Arduino millis())
+T    ( --a)    Time (Arduino millis())
 R    ( --)     output a CR/LF
 SS   ( --)     Easter egg for Sandor!
 XX   ( --)     Reset S4 to initial state
