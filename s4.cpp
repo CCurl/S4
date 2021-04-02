@@ -32,7 +32,7 @@ void printStringF(const char *fmt, ...);
     HANDLE hStdOut = 0;
     #define CODE_SZ   (1024*64)
     #define STK_SZ          63
-    #define NUM_VARS        32
+    #define NUM_VARS  (32*1024)
     #define TIB_SZ         128
     #define NUM_FUNCS   (52*52)
 #endif
@@ -160,7 +160,7 @@ int doFunc(int pc) {
 }
 
 void dumpCode() {
-    printStringF("\r\nCODE\r\nhere: %04d, CODE_SZ=%d", here, CODE_SZ);
+    printStringF("\r\nCODE, size: %d, here: %d", CODE_SZ, here);
     if (here == 0) { printString("\r\n(no code defined)"); return; }
     int ti = 0, x = here; 
     char* txt = (char*)&code[here + 10];
@@ -170,17 +170,17 @@ void dumpCode() {
             printStringF("\n\r%04d: ", i);
         }
         txt[ti++] = (code[i] < 32) ? '.' : code[i];
-        printStringF(" %02x", code[i]);
+        printStringF(" %3d", code[i]);
     }
     while (x % 20) {
-        printString("   ");
+        printString("    ");
         x++;
     }
     if (ti) { txt[ti] = 0;  printStringF(" ; %s", txt); }
 }
 
 void dumpFuncs() {
-    printString("\r\nFUNCTIONS");
+    printStringF("\r\nFUNCTIONS, %d available", NUM_FUNCS);
     int n = 0;
     for (int i = 0; i < NUM_FUNCS; i++) {
         if (func[i] == 0) { continue; }
@@ -204,7 +204,7 @@ void dumpRegs() {
 }
 
 void dumpStack(int hdr) {
-    if (hdr) { printString("\r\nSTACK: "); }
+    if (hdr) { printStringF("\r\nSTACK, size is %d ", STK_SZ); }
     printString("(");
     for (int i = 1; i <= dsp; i++) { printStringF("%s%d", (i>1?" ":""), dstack[i]); }
     printString(")");
@@ -212,7 +212,7 @@ void dumpStack(int hdr) {
 
 void dumpVars() {
     int n = 0;
-    printString("\r\nVARIABLES");
+    printStringF("\r\nVARIABLES, %d available", NUM_VARS);
     for (int i = 0; i < NUM_VARS; i++) {
         if (var[i] == 0) { continue; }
         if ((0 < n) && (n % 5)) { printStringF("    "); }
@@ -309,7 +309,7 @@ int run(int pc) {
         case 'J':  break;
         case 'K': T *= 1000; break;
         case 'L': break;
-        case 'M': push(millis()); break;
+        case 'M': break;
         case 'N': case 'O': break;
         case 'P': t1 = code[pc++]; t2 = pop();
             if (t1 == 'I') { pinMode(t2, INPUT); }
@@ -321,7 +321,8 @@ int run(int pc) {
         case 'S': t1 = code[pc++];
             if (t1 == 'S') { printString("Halleluya!"); }
             break;
-        case 'T': case 'U': case 'V': break;
+        case 'T': push(millis()); break;
+        case 'U': case 'V': break;
         case 'W': delay(pop());
             break;
         case 'X': t1 = code[pc++];
@@ -335,7 +336,7 @@ int run(int pc) {
 }
 
 void s4() {
-    printString("\r\n-s4-"); dumpStack(0);
+    printString("\r\ns4:"); dumpStack(0);
     printString(">> ");
 }
 
