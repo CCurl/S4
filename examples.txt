@@ -8,14 +8,14 @@ S4 examples:
     0( {yy"yy is not defined"} )
 
 - A simple benchmark for 100 million (1KK) empty loops:
-    100KKM$[--#]\M$-#1000%$1000/.B.
+    100KKT$[--#]\T$-#1000%$1000/.B.
 
  -- explained:
     100KK       0( push 100KK [--100000000] )
-    M           0( push current time MS [100KK--100KK t1] )
+    T           0( push current time MS [100KK--100KK t1] )
     $           0( swap the top 2 stack items [100KK t1--t1 100KK] )
     [--#]       0( an empty decrement loop [t1 100KK--t1 0] )
-    \M          0( drop TOS, push current time MS [t1 0-- t1 t2] )
+    \T          0( drop TOS, push current time MS [t1 0-- t1 t2] )
     $-          0( swap, subtract [t1 t2--et] )
     # 1000 %    0( dup TOS, push 1000, modulo [et--et MS] )
     $ 1000 /    0( dup TOS, push 1000, divide [et MS--MS S] )
