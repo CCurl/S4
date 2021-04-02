@@ -9,8 +9,8 @@ void printStringF(const char *fmt, ...);
 
 #ifdef __DEV_BOARD__
     #include <Arduino.h>
-    // **NOTE** tweak these for the given dev board
-    // These would be f r a board like the Teensy 4.0
+    // **NOTE** tweak these for your target dev board
+    // These would be for a board like the Teensy 4.0
     #define mySerial SerialUSB
     #define CODE_SZ   (1024*32)
     #define STK_SZ          63
@@ -42,8 +42,8 @@ void printStringF(const char *fmt, ...);
 #include <string.h>
 #include <stdarg.h>
 
-#define NUM_FUNCS  (52*52)
-#define NUM_REGS   26
+#define NUM_REGS     26
+#define TIB         (CODE_SZ-TIB_SZ-4)
 
 typedef unsigned short ushort;
 typedef unsigned long ulong;
@@ -56,15 +56,12 @@ ushort dsp, rsp;
 #define T dstack[dsp]
 #define N dstack[dsp-1]
 
-#define TIB          (CODE_SZ-TIB_SZ-4)
-
 char input_fn[24];
 long reg[NUM_REGS];
 ushort func[NUM_FUNCS];
 long var[NUM_VARS];
 byte code[CODE_SZ];
 ushort here = 0;
-ushort ihere = 0;
 ushort curReg = 0;
 
 void push(long v) { if (dsp < STK_SZ) { dstack[++dsp] = v; } }
@@ -86,7 +83,6 @@ void printString(const char* str) {
 
 void vmInit() {
     dsp = rsp = here = curReg = 0;
-    ihere = TIB;
     for (int i = 0; i < CODE_SZ; i++) { code[i] = 0; }
     for (int i = 0; i < NUM_FUNCS; i++) { func[i] = 0; }
     for (int i = 0; i < NUM_REGS; i++) { reg[i] = 0; }
@@ -103,15 +99,13 @@ void printStringF(const char* fmt, ...) {
     printString(buf);
 }
 
-int digit(byte c) { return (('0' <= c) && (c <= '9')) ? (c - '0') : -1; }
+int digit(byte c)  { return (('0' <= c) && (c <= '9')) ? (c - '0') : -1; }
 int alphaL(byte c) { return (('a' <= c) && (c <= 'z')) ? (c - 'a') : -1; }
 int alphaU(byte c) { return (('A' <= c) && (c <= 'Z')) ? (c - 'A') : -1; }
 
 int alpha(byte c) {
-    int x = alphaU(c);
-    if (0 <= x) return x;
-    x = alphaL(c);
-    if (0 <= x) return x + 26;
+    int x = alphaU(c); if (0 <= x) return x;
+    x     = alphaL(c); if (0 <= x) return x + 26;
     return -1;
 }
 
@@ -167,7 +161,9 @@ int doFunc(int pc) {
 
 void dumpCode() {
     printStringF("\r\nCODE\r\nhere: %04d, CODE_SZ=%d", here, CODE_SZ);
-    char* txt = (char*)&code[here + 10]; int ti = 0;
+    if (here == 0) { printString("\r\n(no code defined)"); return; }
+    int ti = 0, x = here; 
+    char* txt = (char*)&code[here + 10];
     for (int i = 0; i < here; i++) {
         if ((i % 20) == 0) {
             if (ti) { txt[ti] = 0;  printStringF(" ; %s", txt); ti = 0; }
@@ -176,18 +172,16 @@ void dumpCode() {
         txt[ti++] = (code[i] < 32) ? '.' : code[i];
         printStringF(" %02x", code[i]);
     }
-    int x = here;
     while (x % 20) {
         printString("   ");
         x++;
     }
     if (ti) { txt[ti] = 0;  printStringF(" ; %s", txt); }
-    if (here == 0) { printString("\r\n(no code defined)"); }
 }
 
 void dumpFuncs() {
-    int n = 0;
     printString("\r\nFUNCTIONS");
+    int n = 0;
     for (int i = 0; i < NUM_FUNCS; i++) {
         if (func[i] == 0) { continue; }
         int fId = i; //  ((i < 26) ? 'A' : 'a') + (i % 26);
@@ -209,10 +203,11 @@ void dumpRegs() {
     }
 }
 
-void dumpStack() {
-    printString("\r\nSTACK: (");
-    for (int i = 1; i <= dsp; i++) { printStringF(" %d", dstack[i]); }
-    printString(" )");
+void dumpStack(int hdr) {
+    if (hdr) { printString("\r\nSTACK: "); }
+    printString("(");
+    for (int i = 1; i <= dsp; i++) { printStringF("%s%d", (i>1?" ":""), dstack[i]); }
+    printString(")");
 }
 
 void dumpVars() {
@@ -229,7 +224,7 @@ void dumpVars() {
 }
 
 void dumpAll() {
-    dumpStack();   printString("\r\n");
+    dumpStack(1);  printString("\r\n");
     dumpRegs();    printString("\r\n");
     dumpFuncs();   printString("\r\n");
     dumpVars();    printString("\r\n");
@@ -241,7 +236,7 @@ int run(int pc) {
     while (rsp >= 0) {
         if ((pc < 0) || (CODE_SZ <= pc)) { return 0; }
         byte ir = code[pc++];
-        // printStringF("\npc:%04d, ir:%03d [%c] ", pc - 1, ir, ir); dumpStack();
+        // printStringF("\npc:%04d, ir:%03d [%c] ", pc - 1, ir, ir); dumpStack(0);
         switch (ir) {
         case 0: return pc;
         case '{': pc = defineFunc(pc); break;
@@ -308,7 +303,7 @@ int run(int pc) {
             if (t1 == 'C') { dumpCode(); }
             if (t1 == 'F') { dumpFuncs(); }
             if (t1 == 'R') { dumpRegs(); }
-            if (t1 == 'S') { dumpStack(); }
+            if (t1 == 'S') { dumpStack(1); }
             if (t1 == 'V') { dumpVars(); }
             break;
         case 'J':  break;
@@ -339,10 +334,9 @@ int run(int pc) {
     return 0;
 }
 
-void ok() {
-    printString(" ok. (");
-    for (int i = 1; i <= dsp; i++) { printStringF(" %d", dstack[i]); }
-    printString(" )\r\n");
+void s4() {
+    printString("\r\n-s4-"); dumpStack(0);
+    printString(">> ");
 }
 
 void loadCode(const char* src) {
@@ -353,6 +347,7 @@ void loadCode(const char* src) {
 }
 
 #ifdef __DEV_BOARD__
+ushort ihere = 0;
 #define iLed 13
 ulong nextBlink = 0;
 int ledState = 0;
@@ -361,12 +356,13 @@ void setup() {
     while (!mySerial) {}
     while (mySerial.available()) {}
     vmInit();
+    ihere = TIB;
     pinMode(iLed, OUTPUT);
     // ********************************************
     // * HERE is where you load your default code *
     // ********************************************
     // loadCode("R{T\"test 12345\"}fT");
-    ok();
+    S4();
 }
 
 void loop() {
@@ -384,7 +380,7 @@ void loop() {
             printString(" ");
             ihere = TIB;
             run(ihere);
-            ok();
+            s4();
         }
         else {
             if (ihere < CODE_SZ) {
@@ -400,7 +396,7 @@ void loop() {
 #else
 int loop() {
     char* tib = (char*)&code[TIB];
-    ok();
+    s4();
     fgets(tib, TIB_SZ, stdin);
     if (strcmp(tib, "bye\n") == 0) { return 0; }
     run(TIB);
