@@ -206,7 +206,7 @@ void dumpRegs() {
 void dumpStack(int hdr) {
     if (hdr) { printStringF("\r\nSTACK, size is %d ", STK_SZ); }
     printString("(");
-    for (int i = 1; i <= dsp; i++) { printStringF("%s%d", (i>1?" ":""), dstack[i]); }
+    for (int i = 1; i <= dsp; i++) { printStringF("%s%ld", (i>1?" ":""), dstack[i]); }
     printString(")");
 }
 
@@ -361,7 +361,7 @@ void setup() {
     // * HERE is where you load your default code *
     // ********************************************
     // loadCode("R{T\"test 12345\"}fT");
-    S4();
+    s4();
 }
 
 void loop() {
