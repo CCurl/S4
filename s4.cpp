@@ -29,12 +29,13 @@ void printStringF(const char *fmt, ...);
     void delay(DWORD ms) { Sleep(ms); }
     #define INPUT 0
     #define OUTPUT 0
-    HANDLE hStdOut = 0;
     #define CODE_SZ   (1024*64)
     #define STK_SZ          63
     #define NUM_VARS  (32*1024)
     #define TIB_SZ         128
     #define NUM_FUNCS   (52*52)
+    HANDLE hStdOut = 0;
+    char input_fn[24];
 #endif
 
 #include <stdio.h>
@@ -49,20 +50,18 @@ typedef unsigned short ushort;
 typedef unsigned long ulong;
 typedef unsigned char byte;
 
+byte code[CODE_SZ];
 long   dstack[STK_SZ + 1];
 ushort rstack[STK_SZ + 1];
 ushort dsp, rsp;
-
-#define T dstack[dsp]
-#define N dstack[dsp-1]
-
-char input_fn[24];
 long reg[NUM_REGS];
 ushort func[NUM_FUNCS];
 long var[NUM_VARS];
-byte code[CODE_SZ];
 ushort here = 0;
 ushort curReg = 0;
+
+#define T dstack[dsp]
+#define N dstack[dsp-1]
 
 void push(long v) { if (dsp < STK_SZ) { dstack[++dsp] = v; } }
 long pop() { return (dsp > 0) ? dstack[dsp--] : 0; }
