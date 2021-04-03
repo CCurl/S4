@@ -29,12 +29,13 @@ void printStringF(const char *fmt, ...);
     void delay(DWORD ms) { Sleep(ms); }
     #define INPUT 0
     #define OUTPUT 0
-    HANDLE hStdOut = 0;
     #define CODE_SZ   (1024*64)
     #define STK_SZ          63
     #define NUM_VARS  (32*1024)
     #define TIB_SZ         128
     #define NUM_FUNCS   (52*52)
+    HANDLE hStdOut = 0;
+    char input_fn[24];
 #endif
 
 #include <stdio.h>
@@ -49,20 +50,18 @@ typedef unsigned short ushort;
 typedef unsigned long ulong;
 typedef unsigned char byte;
 
+byte code[CODE_SZ];
 long   dstack[STK_SZ + 1];
 ushort rstack[STK_SZ + 1];
 ushort dsp, rsp;
-
-#define T dstack[dsp]
-#define N dstack[dsp-1]
-
-char input_fn[24];
 long reg[NUM_REGS];
 ushort func[NUM_FUNCS];
 long var[NUM_VARS];
-byte code[CODE_SZ];
 ushort here = 0;
 ushort curReg = 0;
+
+#define T dstack[dsp]
+#define N dstack[dsp-1]
 
 void push(long v) { if (dsp < STK_SZ) { dstack[++dsp] = v; } }
 long pop() { return (dsp > 0) ? dstack[dsp--] : 0; }
@@ -217,7 +216,7 @@ void dumpVars() {
         if (var[i] == 0) { continue; }
         if ((0 < n) && (n % 5)) { printStringF("    "); }
         else { printString("\r\n"); }
-        printStringF("[%03d]: %-10d", i, var[i]);
+        printStringF("[%03d]: %-10ld", i, var[i]);
         ++n;
     }
     if (n == 0) { printString("\r\n(all variables empty)"); }
@@ -248,12 +247,12 @@ int run(int pc) {
         case '#': push(T); break;
         case '$': break;
         case '\\': pop(); break;
-        case '\'': pop(); break;
-        case '`': pop(); break;
+        case '\'': break;
+        case '`': break;
         case ';': push(reg[curReg]); break;
         case ':': reg[curReg] = pop(); break;
         case '@': T = ((0 <= T) && (T < NUM_VARS)) ? var[T] : 0;  break;
-        case '!': t2 = pop(); t1 = pop(); if ((0 <= T) && (T < NUM_VARS)) { var[t1] = t2; } break;
+        case '!': t2 = pop(); t1 = pop(); if ((0 <= t2) && (t2 < NUM_VARS)) { var[t2] = t1; } break;
         case '?': break;
         case 'c': pc = doFunc(pc); break;
         case 'a': case 'b': /*case 'c':*/ case 'd': case 'e': case 'f': case 'g':
@@ -269,7 +268,7 @@ int run(int pc) {
         case '-': if (code[pc] == '-') { pc++; T--; }
                 else { if (dsp > 1) { t1 = pop(); T -= t1; } } break;
         case '*': if (dsp > 1) { t1 = pop(); T *= t1; } break;
-        case '/': if (dsp > 1) { t1 = pop(); T /= t1; } break;
+        case '/': if (dsp > 1) { t1 = pop(); if (t1) T /= t1; } break;
         case '%': if (dsp > 1) { t1 = pop(); T %= t1; } break;
         case '|': if (dsp > 1) { t1 = pop(); T |= t1; } break;
         case '&': if (dsp > 1) { t1 = pop(); T &= t1; } break;
@@ -278,9 +277,9 @@ int run(int pc) {
         case '.': printStringF("%ld", pop());  break;
         case ',': printStringF("%c", (char)pop());  break;
         case '"': while ((code[pc] != '"') && (pc < CODE_SZ)) { printStringF("%c", code[pc]); pc++; } pc++; break;
-        case '=': if (dsp > 1) { t1 = pop(); T = (T == t1) ? -1 : 0; } break;
-        case '<': if (dsp > 1) { t1 = pop(); T = (T < t1) ? -1 : 0; } break;
-        case '>': if (dsp > 1) { t1 = pop(); T = (T > t1) ? -1 : 0; } break;
+        case '=': t1 = (dsp > 1) ? pop() : 0; T = (T == t1) ? -1 : 0; break;
+        case '<': t1 = (dsp > 1) ? pop() : 0; T = (T < t1)  ? -1 : 0;  break;
+        case '>': t1 = (dsp > 1) ? pop() : 0; T = (T > t1)  ? -1 : 0;  break;
         case '^': push(_getch()); break;
         case '[': rpush(pc); if (T == 0) { while ((pc < CODE_SZ) && (code[pc] != ']')) { pc++; } } break;
         case ']': if (pop()) { pc = rstack[rsp]; } else { rpop(); } break;
@@ -288,7 +287,7 @@ int run(int pc) {
         case 'A': t1 = code[pc++];
             if (t1 == 'R') { T = analogRead(T); }
             if (t1 == 'W') { t2 = pop(); t1 = pop(); analogWrite(t2, t1); }
-          break;
+            break;
         case 'B': printString(" "); break;
         case 'C': t1 = code[pc++];
             if (t1 == '@') { if ((0 <= T) && (T < CODE_SZ)) { T = code[T]; } }
@@ -346,10 +345,11 @@ void loadCode(const char* src) {
 }
 
 #ifdef __DEV_BOARD__
-ushort ihere = 0;
 #define iLed 13
+ushort ihere = 0;
 ulong nextBlink = 0;
 int ledState = 0;
+
 void setup() {
     mySerial.begin(19200);
     while (!mySerial) {}
@@ -360,7 +360,7 @@ void setup() {
     // ********************************************
     // * HERE is where you load your default code *
     // ********************************************
-    // loadCode("R{T\"test 12345\"}fT");
+    // loadCode("IA");
     s4();
 }
 
@@ -377,9 +377,9 @@ void loop() {
         if (c == 13) {
             code[ihere] = (char)0;
             printString(" ");
-            ihere = TIB;
-            run(ihere);
+            run(TIB);
             s4();
+            ihere = TIB;
         }
         else {
             if (ihere < CODE_SZ) {
@@ -389,7 +389,7 @@ void loop() {
             }
         }
     }
-    if (reg[25]) { run(reg[25]); }    // autorun?
+    if (reg[25]) { run(reg[25]); }    // autorun
 }
 
 #else
