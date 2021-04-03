@@ -3,117 +3,75 @@ Reference to S4
 VM operations:
 
 arithmetic
-+  (a b--a+b)  addition
--  (a b--a-b)  subtraction
-*  (a b--a*b)  multiplication
-/  (a b--a/b)  division
-%  (a b--a%b)  modulo (division remainder)
-_  (  n-- -n)  negate
++  (a b--a+b)    addition
+-  (a b--a-b)    subtraction
+*  (a b--a*b)    multiplication
+/  (a b--a/b)    division
+%  (a b--a%b)    modulo (division remainder)
+_  (n1--n2)      negate TOS (34 => -34)
 
 bit manipulation
-& ( a b--a&b)   32 bits and
-|  ( a b--a|b)  32 bits or
-~  (  n -- n')  not, all bits reversed (0110010=>1001101)
-&  (a b--a&b)  32 bits and
-|  (a b--a|b)  32 bits or
-~  (n -- n')   not, all bits inversed (0=>1, 1=>0)
+&  (a b--n)      32 bit and
+|  (a b--n)      32 bit or
+~  (n1-- n2)     not, all bits reversed (0110010 => 1001101)
 
 stack
-<<<<<<< HEAD
-#  (a--a a)      duplicate TOS (dup)
-\  (a b--a)      drop TOS (drop)
-$  (a b--b a)    swap top 2 stack items (swap)
-@  (a b--a b a)  push next (over)
-++ (a--a+1)      increment TOS
--- (a--a-1)      decrement TOS
+#  (a--a a)      Duplicate TOS (forth dup)
+\  (a b--a)      Drop TOS (forth drop)
+S  (a b--b a)    Swap top 2 stack items (forth swap)
+O  (a b--a b a)  Push next (forth over)
+++ (a--a+1)      Increment TOS
+-- (a--a-1)      Decrement TOS
 
 registers
-x   (--)       select register x (x: [a..z])
-;   (--value)  fetch from selected register
-:   (value--)  store into selected register
-?   (--value)  selected register contains an address. Fetch variable from there.
-!   (value--)  selected register contains an address. Store variable there.
-x+  (--)       select and increment register by 1
-x-  (--)       select and decrement register by 1
+x   (--)         Select register x (x: [a..z] except for 'c')
+;   (--value)    Fetch from selected register
+:   (value--)    Store into selected register
+x+  (--)         Select register x and increment it by 1
+x-  (--)         Select register x and decrement it by 1
 
 functions
-{X  (--)  define function X (X: [A..Z]|[a..z])
-}   (--)  end of definition
-fX  (--)  call function <X>
-=======
-#  ( a--a a)      duplicate TOS (forth dup)
-\  ( a b--a)      drop TOS (forth drop)
-S  ( a b--b a)    swap top 2 stack items (forth swap)
-O  ( a b--a b a)  push next (forth over)
-++ ( a--a+1)      increment TOS
--- ( a--a-1)      decrement TOS
-
-registers
-x   ( --)       select register x (x: [a..z])
-;   ( --value)  fetch from selected register
-:   ( value--)  store into selected register
-x+  ( --)       select and increment register by 1
-x-  ( --)       select and decrement register by 1
-
-functions
-{XX ( --)  define function X (X: [A..Z]|[a..z])
-}   ( --)  end of definition
-cX  ( --)  call function <X>
->>>>>>> 3c5e729c1ed1dd5a21787de1c8dd563b8cbc4b01
+{XX  (--)         define function X (X: [A..Z]|[a..z])
+}    (--)         end of definition
+cXX  (--)         call function <X>
 
 input/output
-.    (a--)    print TOS as decimal number
-,    (a--)    write TOS (27 is ESC, 10 is newline, etc) (emit)
-^    ( --key)  read key, don't wait for newline.
-"    (--)     write string until next " to terminal
-0..9 (--a)    scan decimal number until non digit. 
-                  to push multiple values, separate them by space (4711 3333)
-                  to enter a negative number use _ (negate) after the number
+.    (a--)        print TOS as decimal number
+,    (a--)        write TOS (27 is ESC, 10 is newline, etc) (emit)
+^    ( --key)     read key, don't wait for newline.
+"    (--)         write string until next " to terminal
+0..9 (--a)        scan decimal number until non digit. 
+                      to push multiple values, separate them by space (4711 3333)
+                      to enter a negative number use _ (negate) after the number
 
 conditions
-<   (a b--f)  true (-1) if a is < b, false (0) otherwise
->   (a b--f)  true (-1) if a is > b, false (0) otherwise
-=   (a b--f)  true (-1) if a is equal to b, flase (0) otherwise
-(   (f--)     if f is true, execute until ), if false skip until )
-[   (f--f)    begin while loop if f is true. leave f on stack. If f is false, skip code until ]
-]   (f--)     repeat the loop if f is true.
+<   (a b--f)      if (a < b), f=-1, else f=0
+>   (a b--f)      if (a > b), f=-1, else f=0
+=   (a b--f)      if (a = b), f=-1, else f=0
+(   (f--)         if (f != 0), execute until ')', if false skip until ')'
+[   (f--f)        if (f != 0), begin while loop. Leave f on stack. Else, skip code until ']'
+]   (f--)         if (f != 0), repeat the loop.
 
 other
-?    (a--n)    Fetch variable from a.
-!    (n a--)   Store n to variable a.
-B    ( --)     output a space
-C@   ()
-C!   ()
-IA   ( --)     Info: All (CARSV)
-IC   ( --)     Info: Code
-IA   ( --)     Info: Functions
-IR   ( --)     Info: Registers
-IS   ( --)     Info: Stack
-IV   ( --)     Info: Variables
-K    ( a--a1)  multiply TOS by 1000
-T    ( --a)    Time (Arduino millis())
-R    ( --)     output a CR/LF
-SS   ( --)     Easter egg for Sandor!
-XX   ( --)     Reset S4 to initial state
-bye  ( --)     exit S4
-AR   (p--v)   Arduino read analog pin (v = analogRead(p))
-AW   (v p--)  Arduino write to analog pin (analogWrite(p, v))
-B    (--)     Output a space
-C@   (a--b)   Read a byte from code address a
-C!   (b a--)  Write byte b to code address a
-DR   (p--v)   Arduino read digital pin (v = digitalRead(p))
-DW   (v p--)  Arduino write to digital pin (digitalWrite(p, v))
-IA   (--)     Info: All (CARSV)
-IC   (--)     Info: Code
-IA   (--)     Info: Functions
-IR   (--)     Info: Registers
-IS   (--)     Info: Stack
-IV   (--)     Info: Variables
-K    (a--a1)  multiply TOS by 1000
-M    (--a)    Push current time (Arduino millis(), Windows GetTickCount())
-PI   (p--)    Arduino pinMode(p, INPUT)
-PO   (p--)    Arduino pinMode(p, OUTPUT)
-R    (--)     Output a CR/LF
-SS   (--)     Easter egg for Sandor Schneider
-XX   (--)     Reset S4 to initial state
-bye  (--)     exit S4
+@    (a--n)       Fetch variable from a.
+!    (n a--)      Store n to variable a.
+AR   (p--v)       Arduino read analog pin (v = analogRead(p))
+AW   (v p--)      Arduino write to analog pin (analogWrite(p, v))
+B    ( --)        Output a space
+C@   (a--b)       Fetch byte from code address a
+C!   (b a--)      Store byte b to code address a
+DR   (p--v)       Arduino read digital pin (v = digitalRead(p))
+DW   (v p--)      Arduino write to digital pin (digitalWrite(p, v))
+IA   (--)         Info: All (CARSV)
+IC   (--)         Info: Code
+IA   (--)         Info: Functions
+IR   ( --)        Info: Registers
+IS   (--)         Info: Stack
+IV   (--)         Info: Variables
+K    (a--a1)      Multiply TOS by 1000
+PI   (p--)        Arduino pinMode(p, INPUT)
+PO   (p--)        Arduino pinMode(p, OUTPUT)
+R    (--)         Output a CR/LF
+T    (--a)        Time (Arduino millis())
+XX   (--)         Reset S4 to initial state
+bye  (--)         Exit S4
