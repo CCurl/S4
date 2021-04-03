@@ -206,7 +206,7 @@ void dumpRegs() {
 void dumpStack(int hdr) {
     if (hdr) { printStringF("\r\nSTACK, size is %d ", STK_SZ); }
     printString("(");
-    for (int i = 1; i <= dsp; i++) { printStringF("%s%d", (i>1?" ":""), dstack[i]); }
+    for (int i = 1; i <= dsp; i++) { printStringF("%s%ld", (i>1?" ":""), dstack[i]); }
     printString(")");
 }
 
@@ -217,7 +217,7 @@ void dumpVars() {
         if (var[i] == 0) { continue; }
         if ((0 < n) && (n % 5)) { printStringF("    "); }
         else { printString("\r\n"); }
-        printStringF("[%03d]: %-10d", i, var[i]);
+        printStringF("[%03d]: %-10ld", i, var[i]);
         ++n;
     }
     if (n == 0) { printString("\r\n(all variables empty)"); }
@@ -346,10 +346,11 @@ void loadCode(const char* src) {
 }
 
 #ifdef __DEV_BOARD__
-ushort ihere = 0;
 #define iLed 13
+ushort ihere = 0;
 ulong nextBlink = 0;
 int ledState = 0;
+
 void setup() {
     mySerial.begin(19200);
     while (!mySerial) {}
@@ -360,8 +361,8 @@ void setup() {
     // ********************************************
     // * HERE is where you load your default code *
     // ********************************************
-    // loadCode("R{T\"test 12345\"}fT");
-    S4();
+    // loadCode("IA");
+    s4();
 }
 
 void loop() {
@@ -377,9 +378,9 @@ void loop() {
         if (c == 13) {
             code[ihere] = (char)0;
             printString(" ");
-            ihere = TIB;
-            run(ihere);
+            run(TIB);
             s4();
+            ihere = TIB;
         }
         else {
             if (ihere < CODE_SZ) {
@@ -389,7 +390,7 @@ void loop() {
             }
         }
     }
-    if (reg[25]) { run(reg[25]); }    // autorun?
+    if (reg[25]) { run(reg[25]); }    // autorun
 }
 
 #else
