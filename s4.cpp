@@ -160,7 +160,7 @@ int doFunc(int pc) {
 }
 
 void dumpCode() {
-    printStringF("\r\nCODE, size: %d, here: %d", CODE_SZ, here);
+    printStringF("\r\nCODE: size: %d, HERE: %d", CODE_SZ, here);
     if (here == 0) { printString("\r\n(no code defined)"); return; }
     int ti = 0, x = here; 
     char* txt = (char*)&code[here + 10];
@@ -180,21 +180,21 @@ void dumpCode() {
 }
 
 void dumpFuncs() {
-    printStringF("\r\nFUNCTIONS, %d available", NUM_FUNCS);
+    printStringF("\r\nFUNCTIONS: size: %d", NUM_FUNCS);
     int n = 0;
     for (int i = 0; i < NUM_FUNCS; i++) {
-        if (func[i] == 0) { continue; }
-        int fId = i; //  ((i < 26) ? 'A' : 'a') + (i % 26);
+        int a = func[i];
+        if (a == 0) { continue; }
         if ((0 < n) && (n % 5)) { printStringF("    "); }
         else { printString("\r\n"); }
-        printStringF("f%d: %-4d", fId, (int)func[i]);
+        printStringF("%c%c: %-4d", code[a-2], code[a-1], (int)a);
         ++n;
     }
     if (n == 0) { printString("\r\n(no functions defined)"); }
 }
 
 void dumpRegs() {
-    printString("\r\nREGISTERS");
+    printString("\r\nREGISTERS:");
     for (int i = 0; i < NUM_REGS; i++) {
         byte fId = 'a' + i;
         if ((0 < i) && (i % 5)) { printStringF("    "); }
@@ -204,7 +204,7 @@ void dumpRegs() {
 }
 
 void dumpStack(int hdr) {
-    if (hdr) { printStringF("\r\nSTACK, size is %d ", STK_SZ); }
+    if (hdr) { printStringF("\r\nSTACK: size: %d ", STK_SZ); }
     printString("(");
     for (int i = 1; i <= dsp; i++) { printStringF("%s%ld", (i>1?" ":""), dstack[i]); }
     printString(")");
@@ -212,7 +212,7 @@ void dumpStack(int hdr) {
 
 void dumpVars() {
     int n = 0;
-    printStringF("\r\nMEMORY, MEM_SZ=%d", NUM_VARS);
+    printStringF("\r\nMEMORY, size=%d", NUM_VARS);
     for (int i = 0; i < NUM_VARS; i++) {
         if (var[i] == 0) { continue; }
         if ((0 < n) && (n % 5)) { printStringF("    "); }
