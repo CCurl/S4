@@ -59,6 +59,7 @@ ushort func[NUM_FUNCS];
 long var[NUM_VARS];
 ushort here = 0;
 ushort curReg = 0;
+byte isBye = 0;
 
 #define T dstack[dsp]
 #define N dstack[dsp-1]
@@ -211,15 +212,15 @@ void dumpStack(int hdr) {
 
 void dumpVars() {
     int n = 0;
-    printStringF("\r\nVARIABLES, %d available", NUM_VARS);
+    printStringF("\r\nMEMORY, MEM_SZ=%d", NUM_VARS);
     for (int i = 0; i < NUM_VARS; i++) {
         if (var[i] == 0) { continue; }
         if ((0 < n) && (n % 5)) { printStringF("    "); }
         else { printString("\r\n"); }
-        printStringF("[%03d]: %-10ld", i, var[i]);
+        printStringF("[%04d]: %-10ld", i, var[i]);
         ++n;
     }
-    if (n == 0) { printString("\r\n(all variables empty)"); }
+    if (n == 0) { printString("\r\n(all memory empty)"); }
 }
 
 void dumpAll() {
@@ -249,13 +250,12 @@ int run(int pc) {
         case '\\': pop(); break;
         case '\'': break;
         case '`': break;
-        case ';': push(reg[curReg]); break;
-        case ':': reg[curReg] = pop(); break;
-        case '@': T = ((0 <= T) && (T < NUM_VARS)) ? var[T] : 0;  break;
-        case '!': t2 = pop(); t1 = pop(); if ((0 <= t2) && (t2 < NUM_VARS)) { var[t2] = t1; } break;
+        case ':': pc = doFunc(pc); break;
+        case ';': break;
+        case '@': push(reg[curReg]); break;
+        case '!': reg[curReg] = pop(); break;
         case '?': break;
-        case 'c': pc = doFunc(pc); break;
-        case 'a': case 'b': /*case 'c':*/ case 'd': case 'e': case 'f': case 'g':
+        case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': case 'g':
         case 'h': case 'i': case 'j': case 'k': case 'l': case 'm': case 'n':
         case 'o': case 'p': case 'q': case 'r': case 's': case 't': case 'u':
         case 'v': case 'w': case 'x': case 'y': case 'z':
@@ -297,7 +297,11 @@ int run(int pc) {
             if (t1 == 'R') { T = digitalRead(T); }
             if (t1 == 'W') { t2 = pop(); t1 = pop(); digitalWrite(t2, t1); }
           break;
-        case 'E': case 'F': case 'G': case 'H': break;
+        case 'E': case 'F': case 'G': break;
+        case 'H': t1 = code[pc++];
+            if (t1 == '@') { push(here); }
+            if (t1 == '!') { t2 = pop(); if ((0 < t2) && (t2 < CODE_SZ)) { here = (ushort)t2; } }
+            break;
         case 'I': t1 = code[pc++];
             if (t1 == 'A') { dumpAll(); }
             if (t1 == 'C') { dumpCode(); }
@@ -309,7 +313,10 @@ int run(int pc) {
         case 'J':  break;
         case 'K': T *= 1000; break;
         case 'L': break;
-        case 'M': break;
+        case 'M': t1 = code[pc++];
+            if (t1 == '@') { if ((0 <= T) && (T < NUM_VARS)) { T = var[T]; } }
+            if (t1 == '!') { t2 = pop(); t1 = pop(); if ((0 <= t2) && (t2 < NUM_VARS)) { var[t2] = t1; } }
+            break;
         case 'N': break;
         case 'O': push(N); break;
         case 'P': t1 = code[pc++]; t2 = pop();
@@ -325,7 +332,8 @@ int run(int pc) {
         case 'V': break;
         case 'W': delay(pop()); break;
         case 'X': t1 = code[pc++]; if (t1 == 'X') { vmInit(); } break;
-        case 'Y': case 'Z': break;
+        case 'Y': break;
+        case 'Z': isBye = code[pc];
         default: break;
         }
     }
@@ -393,13 +401,11 @@ void loop() {
 }
 
 #else
-int loop() {
+void loop() {
     char* tib = (char*)&code[TIB];
     s4();
     fgets(tib, TIB_SZ, stdin);
-    if (strcmp(tib, "bye\n") == 0) { return 0; }
     run(TIB);
-    return 1;
 }
 
 void process_arg(char* arg)
@@ -441,6 +447,6 @@ int main(int argc, char** argv) {
         }
     }
 
-    while (loop());
+    while (isBye == 0) { loop(); }
 }
 #endif

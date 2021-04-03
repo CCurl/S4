@@ -5,16 +5,16 @@
 {cs27,91,}
 
 0( CS: Clear Screen: fCS )
-{CSccs"2J"ccs";H"}
+{CS:cs"2J":cs";H"}
 
 0( XY: Set cursor pos: x y fXY )
-{XYccs.59,.72,}
+{XY:cs.59,.72,}
 
 0( R"SC: Set Color: fc bg fSC " )
-{SCccs.59,.125,}
+{SC:cs.59,.125,}
 
-0( R"save the cursor pos: fcs115," )
-0( R"go back to saved cursor pos: fcs117," )
+0( R"save the cursor pos: :cs115," )
+0( R"go back to saved cursor pos: :cs117," )
 
 0( R"FN: given a code address, print the function name" )
 {FN2-#C@,++C@,}
