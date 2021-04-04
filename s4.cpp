@@ -247,14 +247,15 @@ int run(int pc) {
         case '}': pc = rpop(); break;
         case '#': push(T); break;
         case '$': break;
-        case '\\': pop(); break;
-        case '\'': break;
+        case 92: pop();            break; // (\)
+        case 39: push(code[pc++]); break; // (')
+        case '^': pc = rpop(); break;
         case '`': break;
         case ':': pc = doFunc(pc); break;
         case ';': break;
         case '@': push(reg[curReg]); break;
         case '!': reg[curReg] = pop(); break;
-        case '?': break;
+        case '?': push(_getch()); break;
         case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': case 'g':
         case 'h': case 'i': case 'j': case 'k': case 'l': case 'm': case 'n':
         case 'o': case 'p': case 'q': case 'r': case 's': case 't': case 'u':
@@ -280,7 +281,6 @@ int run(int pc) {
         case '=': t1 = (dsp > 1) ? pop() : 0; T = (T == t1) ? -1 : 0; break;
         case '<': t1 = (dsp > 1) ? pop() : 0; T = (T < t1)  ? -1 : 0;  break;
         case '>': t1 = (dsp > 1) ? pop() : 0; T = (T > t1)  ? -1 : 0;  break;
-        case '^': push(_getch()); break;
         case '[': rpush(pc); if (T == 0) { while ((pc < CODE_SZ) && (code[pc] != ']')) { pc++; } } break;
         case ']': if (pop()) { pc = rstack[rsp]; } else { rpop(); } break;
         case '(': if (pop() == 0) { while ((pc < CODE_SZ) && (code[pc] != ')')) { pc++; } } break;

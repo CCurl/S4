@@ -30,14 +30,16 @@ x+  (--)         Select register x and increment it by 1
 x-  (--)         Select register x and decrement it by 1
 
 functions
-{XX  (--)         define function X (X: [A..Z]|[a..z])
-}    (--)         end of definition
-cXX  (--)         call function <X>
+{XX  (--)         Define function X (X: [A..Z]|[a..z])
+}    (--)         End of definition, return
+:XX  (--)         Call function <X>
+^    (--)         Return from function imediately (i.e. - before reaching '}')
+                  NOTE: do NOT use inside of []
 
 input/output
 .    (n--)        print TOS as decimal number
 ,    (n--)        write TOS (27 is ESC, 10 is newline, etc) (emit)
-^    ( --key)     read key, don't wait for newline.
+?    ( --key)     read key, don't wait for newline.
 "    (--)         output bytes until next '"'
 0..9 (--n)        scan decimal number until non digit. 
                       to push multiple values, separate them by space (4711 3333)
@@ -54,6 +56,7 @@ conditions
 other
 ++   (n1--n2)     Increment (TOS <- TOS+1)
 --   (n1--n2)     Decrement (TOS <- TOS-1)
+'x   (--n)        Push the ascii value of x (x: [any char possible])
 AR   (p--n)       Arduino: read analog pin (v = analogRead(p))
 AW   (n p--)      Arduino: write to analog pin (analogWrite(p, v))
 B    (--)         Output a space
