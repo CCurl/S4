@@ -1,36 +1,36 @@
-Reference to S4
-
-VM operations:
+S4 Reference
 
 arithmetic
-+  (a b--a+b)    addition
--  (a b--a-b)    subtraction
-*  (a b--a*b)    multiplication
-/  (a b--a/b)    division
-%  (a b--a%b)    modulo (division remainder)
-_  (n1--n2)      negate TOS (34 => -34)
++  (a b--a+b)     addition
+-  (a b--a-b)     subtraction
+*  (a b--a*b)     multiplication
+/  (a b--a/b)     division
+%  (a b--a%b)     modulo (division remainder)
+_  (n1--n2)       negate TOS (34 => -34)
 
 bit manipulation
-&  (a b--n)      32-bit and
-|  (a b--n)      32-bit or
-~  (n1-- n2)     not, all bits reversed (0110010 => 1001101)
+&  (a b--n)       32-bit and
+|  (a b--n)       32-bit or
+~  (n1-- n2)      not, all bits reversed (0110010 => 1001101)
 
 stack
-#  (a--a a)      Duplicate TOS (forth DUP)
-\  (a b--a)      Drop TOS (forth DROP)
-S  (a b--b a)    Swap top 2 stack items (forth SWAP)
-O  (a b--a b a)  Push next (forth OVER)
+#  (a--a a)       Duplicate TOS (forth DUP)
+\  (a b--a)       Drop TOS (forth DROP)
+S  (a b--b a)     Swap top 2 stack items (forth SWAP)
+O  (a b--a b a)   Push next (forth OVER)
+++   (n1--n2)     Increment (TOS <- TOS+1)
+--   (n1--n2)     Decrement (TOS <- TOS-1)
 
 registers
-x   (--)         Select register x (x: [a..z]). 
-                 NOTE: Register stays selected until another register is selected.
-@   (--n)        Fetch value from selected register
-!   (n--)        Store value to selected register
-x+  (--)         Select register x and increment it by 1
-x-  (--)         Select register x and decrement it by 1
+x   (--)          Select register x (x: [a..z]). 
+                  NOTE: Register stays selected until another register is selected.
+@   (--n)         Fetch value from selected register
+!   (n--)         Store value to selected register
+x+  (--)          Select register x and increment it by 1
+x-  (--)          Select register x and decrement it by 1
 
 functions
-{XX  (--)         Define function X (X: [A..Z]|[a..z])
+{XX  (--)         Define function X (X: [A..Z]|[a..z]). MUST be exactly 2 characters.
 }    (--)         End of definition, return
 :XX  (--)         Call function <X>
 ^    (--)         Return from function imediately (i.e. - before reaching '}')
@@ -54,8 +54,6 @@ conditions
 ]   (f--)         if (f != 0), repeat the loop.
 
 other
-++   (n1--n2)     Increment (TOS <- TOS+1)
---   (n1--n2)     Decrement (TOS <- TOS-1)
 'x   (--n)        Push the ascii value of x (x: [any char possible])
 AR   (p--n)       Arduino: read analog pin (v = analogRead(p))
 AW   (n p--)      Arduino: write to analog pin (analogWrite(p, v))
@@ -66,12 +64,12 @@ DR   (p--n)       Arduino: read digital pin (n = digitalRead(p))
 DW   (v p--)      Arduino: write to digital pin (digitalWrite(p, n))
 H@   (--n)        Fetch value of HERE register.
 H!   (n--)        Store n HERE register.
-IA   (--)         Info: All (CARSV)
+IA   (--)         Info: All (CFMRS)
 IC   (--)         Info: Code
-IA   (--)         Info: Functions
+IF   (--)         Info: Functions
+IM   (--)         Info: Memory
 IR   (--)         Info: Registers
 IS   (--)         Info: Stack
-IV   (--)         Info: Variables
 K    (n--n1)      Multiply TOS by 1000
 M@   (a--n)       Fetch value from memory address a.
 M!   (n a--)      Store n to memory address a.

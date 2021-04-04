@@ -14,7 +14,7 @@ void printStringF(const char *fmt, ...);
     #define mySerial SerialUSB
     #define CODE_SZ   (1024*32)
     #define STK_SZ          63
-    #define NUM_VARS        32
+    #define MEM_SZ        32
     #define TIB_SZ          96
     #define NUM_FUNCS   (52*52)
 #else
@@ -31,7 +31,7 @@ void printStringF(const char *fmt, ...);
     #define OUTPUT 0
     #define CODE_SZ   (1024*64)
     #define STK_SZ          63
-    #define NUM_VARS  (32*1024)
+    #define MEM_SZ  (32*1024)
     #define TIB_SZ         128
     #define NUM_FUNCS   (52*52)
     HANDLE hStdOut = 0;
@@ -56,7 +56,7 @@ ushort rstack[STK_SZ + 1];
 ushort dsp, rsp;
 long reg[NUM_REGS];
 ushort func[NUM_FUNCS];
-long var[NUM_VARS];
+long memory[MEM_SZ];
 ushort here = 0;
 ushort curReg = 0;
 byte isBye = 0;
@@ -86,7 +86,7 @@ void vmInit() {
     for (int i = 0; i < CODE_SZ; i++) { code[i] = 0; }
     for (int i = 0; i < NUM_FUNCS; i++) { func[i] = 0; }
     for (int i = 0; i < NUM_REGS; i++) { reg[i] = 0; }
-    for (int i = 0; i < NUM_VARS; i++) { var[i] = 0; }
+    for (int i = 0; i < MEM_SZ; i++) { memory[i] = 0; }
     printString("S4 - v0.0.1 - Chris Curl\r\nHello.");
 }
 
@@ -160,7 +160,7 @@ int doFunc(int pc) {
 }
 
 void dumpCode() {
-    printStringF("\r\nCODE: size: %d, HERE: %d", CODE_SZ, here);
+    printStringF("\r\nCODE: size: %d, HERE=%d", CODE_SZ, here);
     if (here == 0) { printString("\r\n(no code defined)"); return; }
     int ti = 0, x = here; 
     char* txt = (char*)&code[here + 10];
@@ -204,20 +204,20 @@ void dumpRegs() {
 }
 
 void dumpStack(int hdr) {
-    if (hdr) { printStringF("\r\nSTACK: size: %d ", STK_SZ); }
+    if (hdr) { printStringF("\r\nSTACK: size: %d", STK_SZ); }
     printString("(");
     for (int i = 1; i <= dsp; i++) { printStringF("%s%ld", (i>1?" ":""), dstack[i]); }
     printString(")");
 }
 
-void dumpVars() {
+void dumpMemory() {
     int n = 0;
-    printStringF("\r\nMEMORY, size=%d", NUM_VARS);
-    for (int i = 0; i < NUM_VARS; i++) {
-        if (var[i] == 0) { continue; }
+    printStringF("\r\nMEMORY, size=%d", MEM_SZ);
+    for (int i = 0; i < MEM_SZ; i++) {
+        if (memory[i] == 0) { continue; }
         if ((0 < n) && (n % 5)) { printStringF("    "); }
         else { printString("\r\n"); }
-        printStringF("[%04d]: %-10ld", i, var[i]);
+        printStringF("[%04d]: %-10ld", i, memory[i]);
         ++n;
     }
     if (n == 0) { printString("\r\n(all memory empty)"); }
@@ -227,7 +227,7 @@ void dumpAll() {
     dumpStack(1);  printString("\r\n");
     dumpRegs();    printString("\r\n");
     dumpFuncs();   printString("\r\n");
-    dumpVars();    printString("\r\n");
+    dumpMemory();    printString("\r\n");
     dumpCode();    printString("\r\n");
 }
 
@@ -306,16 +306,16 @@ int run(int pc) {
             if (t1 == 'A') { dumpAll(); }
             if (t1 == 'C') { dumpCode(); }
             if (t1 == 'F') { dumpFuncs(); }
+            if (t1 == 'M') { dumpMemory(); }
             if (t1 == 'R') { dumpRegs(); }
             if (t1 == 'S') { dumpStack(1); }
-            if (t1 == 'V') { dumpVars(); }
             break;
         case 'J':  break;
         case 'K': T *= 1000; break;
         case 'L': break;
         case 'M': t1 = code[pc++];
-            if (t1 == '@') { if ((0 <= T) && (T < NUM_VARS)) { T = var[T]; } }
-            if (t1 == '!') { t2 = pop(); t1 = pop(); if ((0 <= t2) && (t2 < NUM_VARS)) { var[t2] = t1; } }
+            if (t1 == '@') { if ((0 <= T) && (T < MEM_SZ)) { T = memory[T]; } }
+            if (t1 == '!') { t2 = pop(); t1 = pop(); if ((0 <= t2) && (t2 < MEM_SZ)) { memory[t2] = t1; } }
             break;
         case 'N': break;
         case 'O': push(N); break;
