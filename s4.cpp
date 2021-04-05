@@ -265,9 +265,9 @@ int run(int pc) {
         case 'h': case 'i': case 'j': case 'k': case 'l': case 'm': case 'n':
         case 'o': case 'p': case 'q': case 'r': case 's': case 't': case 'u':
         case 'v': case 'w': case 'x': case 'y': case 'z':
-            curReg = ir - 'a';
-            if (code[pc] == '+') { ++pc; reg[curReg]++; }
-            if (code[pc] == '-') { ++pc; reg[curReg]--; }
+            curReg = ir - 'a'; t1 = code[pc];
+            if (t1 == '+') { ++pc; reg[curReg]++; }
+            if (t1 == '-') { ++pc; reg[curReg]--; }
             break;
         case '+': if (code[pc] == '+') { pc++; T++; }
                 else { if (dsp > 1) { t1 = pop(); T += t1; } } break;
@@ -302,7 +302,12 @@ int run(int pc) {
             if (t1 == 'R') { T = digitalRead(T); }
             if (t1 == 'W') { t2 = pop(); t1 = pop(); digitalWrite(t2, t1); }
           break;
-        case 'E': case 'F': case 'G': break;
+        case 'E': break;
+        case 'F': t1 = code[pc++];
+            if (t1 == '@') { t2 = T; T = 0; if ((0 < t2) && (t2 < NUM_FUNCS)) { T = func[t2]; } }
+            if (t1 == '!') { t2 = pop(); t1 = pop(); if ((0 < t2) && (t2 < NUM_FUNCS)) { func[t2] = (ushort)t1; } }
+            break;
+        case 'G': break;
         case 'H': t1 = code[pc++];
             if (t1 == '@') { push(here); }
             if (t1 == '!') { t2 = pop(); if ((0 < t2) && (t2 < CODE_SZ)) { here = (ushort)t2; } }
