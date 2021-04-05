@@ -1,22 +1,24 @@
-0( R"Bm: Benchmark decrement loop" )
-{BmTS[--#]\TS-#1K%S1K/.B.}
+0( R"Bm: Benchmark: simple decrement loop" )
+0( {BmTS[--#]\TS-#1K%S1K/.B.} )
 
-0( cs: Send <ESC>[ -- ANSI CSI code )
-{cs27,91,}
+0( cS: Send "<ESC>[" -- vt100 ANSI CSI code )
+1( {cS27,'[,} )
 
-0( CS: Clear Screen: fCS )
-{CS:cs"2J":cs";H"}
+0( sC: Set Color ... fb bg :sC )
+1( {sC:cS.';,.'m,} )
 
-0( XY: Set cursor pos: x y fXY )
-{XY:cs.59,.72,}
+0( cP: Save the cursor pos: :cP )
+1( {cP:cS's,} )
 
-0( R"SC: Set Color: fc bg fSC " )
-{SC:cs.59,.125,}
+0( cR: cursor pos restore :cR" )
+1( {cR:cS'u,} )
 
-0( R"save the cursor pos: :cs115," )
-0( R"go back to saved cursor pos: :cs117," )
+0( XY: Set cursor pos: x y :XY )
+1( {XY:cS.';,.'H,} )
 
-0( R"FN: given a code address, print the function name" )
-{FN2-#C@,++C@,}
+0( CS: Clear Screen: :CS )
+1( {CS:cS"2J"0#:XY}
 
-0( R"---System info---" IA )
+1( "S4 v0.0.1 - https://github.com/CCurl/S4" )
+1( R"Hello." )
+0( RR"---System info---"IA )

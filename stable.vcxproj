@@ -147,10 +147,13 @@
     <ClCompile Include="S4.ino" />
   </ItemGroup>
   <ItemGroup>
+    <None Include=".gitignore" />
+    <None Include="LICENSE" />
     <None Include="README.md" />
     <None Include="src.s4" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="examples.txt" />
     <Text Include="reference.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

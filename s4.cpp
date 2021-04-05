@@ -16,24 +16,24 @@ void printStringF(const char *fmt, ...);
     #define STK_SZ          63
     #define MEM_SZ        32
     #define TIB_SZ          96
-    #define NUM_FUNCS   (52*52)
+    #define NUM_FUNCS   (62*62)
 #else
     #include <windows.h>
     #include <conio.h>
     long millis() { return GetTickCount(); }
-    int analogRead(int pin) { printStringF("-AR(%d)-", pin); return 0; }
-    void analogWrite(int pin, int val) { printStringF("-AW(%d,%d)-", pin, val); }
-    int digitalRead(int pin) { printStringF("-DR(%d)-", pin); return 0;  }
+    int analogRead(int pin)             { printStringF("-AR(%d)-", pin); return 0; }
+    void analogWrite(int pin, int val)  { printStringF("-AW(%d,%d)-", pin, val); }
+    int digitalRead(int pin)            { printStringF("-DR(%d)-", pin); return 0;  }
     void digitalWrite(int pin, int val) { printStringF("-DW(%d,%d)-", pin, val); }
-    void pinMode(int pin, int mode) { printStringF("-pinMode(%d%d)-", pin, mode); }
+    void pinMode(int pin, int mode)     { printStringF("-pinMode(%d,%d)-", pin, mode); }
     void delay(DWORD ms) { Sleep(ms); }
     #define INPUT 0
-    #define OUTPUT 0
+    #define OUTPUT 1
     #define CODE_SZ   (1024*64)
     #define STK_SZ          63
     #define MEM_SZ  (32*1024)
     #define TIB_SZ         128
-    #define NUM_FUNCS   (52*52)
+    #define NUM_FUNCS   (62*62)
     HANDLE hStdOut = 0;
     char input_fn[24];
 #endif
@@ -87,7 +87,6 @@ void vmInit() {
     for (int i = 0; i < NUM_FUNCS; i++) { func[i] = 0; }
     for (int i = 0; i < NUM_REGS; i++) { reg[i] = 0; }
     for (int i = 0; i < MEM_SZ; i++) { memory[i] = 0; }
-    printString("S4 - v0.0.1 - Chris Curl\r\nHello.");
 }
 
 void printStringF(const char* fmt, ...) {
@@ -105,7 +104,13 @@ int alphaU(byte c) { return (('A' <= c) && (c <= 'Z')) ? (c - 'A') : -1; }
 
 int alpha(byte c) {
     int x = alphaU(c); if (0 <= x) return x;
-    x     = alphaL(c); if (0 <= x) return x + 26;
+    x = alphaL(c); if (0 <= x) return x + 26;
+    return -1;
+}
+
+int alphaNumeric(byte c) {
+    int x = alpha(c); if (0 <= x) return x;
+    x = digit(c);     if (0 <= x) return x + 52;
     return -1;
 }
 
@@ -120,10 +125,10 @@ int number(int pc) {
 }
 
 int getFN(int pc) {
-    int fL = alpha(code[pc]);
-    int fH = alpha(code[pc + 1]);
+    int fH = alphaNumeric(code[pc]);
+    int fL = alphaNumeric(code[pc+1]);
     if ((0 <= fL) && (0 <= fH)) {
-        int fn = ((fH * 52) + fL);
+        int fn = ((fH * 62) + fL);
         if ((0 <= fn) && (fn < NUM_FUNCS)) { return fn; }
     }
     return -1;
@@ -204,7 +209,7 @@ void dumpRegs() {
 }
 
 void dumpStack(int hdr) {
-    if (hdr) { printStringF("\r\nSTACK: size: %d", STK_SZ); }
+    if (hdr) { printStringF("\r\nSTACK: size: %d ", STK_SZ); }
     printString("(");
     for (int i = 1; i <= dsp; i++) { printStringF("%s%ld", (i>1?" ":""), dstack[i]); }
     printString(")");
@@ -212,7 +217,7 @@ void dumpStack(int hdr) {
 
 void dumpMemory() {
     int n = 0;
-    printStringF("\r\nMEMORY, size=%d", MEM_SZ);
+    printStringF("\r\nMEMORY: size: %d", MEM_SZ);
     for (int i = 0; i < MEM_SZ; i++) {
         if (memory[i] == 0) { continue; }
         if ((0 < n) && (n % 5)) { printStringF("    "); }
@@ -322,7 +327,6 @@ int run(int pc) {
         case 'P': t1 = code[pc++]; t2 = pop();
             if (t1 == 'I') { pinMode(t2, INPUT); }
             if (t1 == 'O') { pinMode(t2, OUTPUT); }
-            printStringF("-pinMode(%d, %c)-", t2, t1);
             break;
         case 'Q': break;
         case 'R': printString("\r\n"); break;

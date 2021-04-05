@@ -30,11 +30,12 @@ x+  (--)          Select register x and increment it by 1
 x-  (--)          Select register x and decrement it by 1
 
 functions
-{XX  (--)         Define function X (X: [A..Z]|[a..z]). MUST be exactly 2 characters.
+{XX  (--)         Define function X (X: [A..9]|[a..9]). MUST be exactly 2 characters.
+                  Example function names: AA, 35, Z4, F1, 4x, zz, z9
 }    (--)         End of definition, return
 :XX  (--)         Call function <X>
 ^    (--)         Return from function imediately (i.e. - before reaching '}')
-                  NOTE: do NOT use inside of []
+                  NOTE: do NOT use '^' inside of loops []
 
 input/output
 .    (n--)        print TOS as decimal number
