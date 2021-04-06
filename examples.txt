@@ -1,31 +1,40 @@
 S4 examples:
 
-- To enter a comment: 
+ - To enter a comment: 
     0( here is a comment )
 
-- To conditionally define a function: 
+ - To conditionally define a function: 
     1( {xx"xx is defined"} )
     0( {yy"yy is not defined"} )
 
+- To make sure N < T
+     S4 code:             OO>(S)
+     Forth equivalent:    OVER OVER > IF SWAP THEN
+     C equivalent:        if (f < t) { int x = f; f = t; t = x; }
+
+- To do something 41 times:
+    S4 code:             41   [    #  .  B    --  #    ]    \ 
+    Forth equivalent:    41 BEGIN DUP . SPACE 1- DUP WHILE DROP
+    C equivalent:        int i = 41; while (i) { printf("%d ", i); i--; }
+
+- A for loop (0 to 20)
+    S4 code:             0 20 S # i! - [ i@ .  B     i+ -- # ] \
+    Forth equivalent:    0 20         DO I  . SPACE    LOOP
+    C equivalent:        for (int i = 0; i < 20; i++) { printf("%d ", i); }
+
 - A simple benchmark for 100 million (1KK) empty loops:
-    100KKT$[--#]\T$-#1000%$1000/.B.
-      -- explained:
+    100KK T S [ -- # ] \ T S - # 1000 % S 1000 / .B.
+         -- explained --
     100KK       0( push 100KK [--100000000] )
     T           0( push current time MS [100KK--100KK t1] )
-    $           0( swap the top 2 stack items [100KK t1--t1 100KK] )
-    [--#]       0( an empty decrement loop [t1 100KK--t1 0] )
-    \T          0( drop TOS, push current time MS [t1 0-- t1 t2] )
-    $-          0( swap, subtract [t1 t2--et] )
+    S           0( swap the top 2 stack items [100KK t1--t1 100KK] )
+    [ -- # ]    0( an empty decrement loop [t1 100KK--t1 0] )
+    \ T         0( drop TOS, push current time MS [t1 0-- t1 t2] )
+    S -         0( swap, subtract [t1 t2--et] )
     # 1000 %    0( dup TOS, push 1000, modulo [et--et MS] )
-    $ 1000 /    0( dup TOS, push 1000, divide [et MS--MS S] )
-    .B.         0( print TOS, BLANK/SPACE, print TOS [MS S--] )
+    S 1000 /    0( swap, push 1000, divide [et MS--MS S] )
+    .B.         0( print TOS, print a SPACE, print TOS [MS S--] )
 
-- IF (x<100) "yes" ELSE "no":
-     71 100<#("yes")~("no")
-       -- explained:
-    71          0( [--71] )
-    100<        0( compare TOS < 100 [-1--] )
-    #           0( dup TOS [-1 -1--] )
-    ("yes")     0( since TOS != 0, output "yes" [-1--] )
-    ~           0( perform bitwise NOT operation [-1--0] )
-    ("no")      0( since TOS == 0, "no" is NOT executed [--] )
+- To display the currently defined code:
+    0 H@ S # i! - [ i@ C@ #, 125 = (13, 10,) i+ -- # ] \
+
