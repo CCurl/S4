@@ -1,12 +1,16 @@
 0(a user stack)
 0(NOTE: MEMORY 0:16 reserved for a user stack)
 0(NOTE: you can use :ps, :pp, :ts to work with it)
-{ps0M@++#0M!M!}                 0(push)
-{pp:ts0M@#0>(--)0M!}            0(pop)
-{ts0M@M@}                       0(top of stack)
+{sd0M@}                         0(stack depth)
+{ps:sd++#0M!M!}                 0(push)
+{pp:ts:sd#0>(--)0M!}            0(pop)
+{ts:sdM@}                       0(top of stack)
+{ds'(,' ,1 0M@++S#i!-[i@M@.Bi+--#]\'),} 0(dump user stack)
+
+{ftOO>(S)} 0(make sure N<T ... N T :ft)
 
 0(a word to dump all code currently defined)
-{dc0H@[S#C@#,125=(R)++S--#]\\}  0(dump code) 
+{dc0H@S#i!-[i@C@#,125=(13,10,)i+--#]\}  0(dump code) 
 
 0( R"Bm: Benchmark: simple decrement loop" )
 0( {BmTS[--#]\TS-#1K%S1K/.B.} )
@@ -27,7 +31,7 @@
 1( {XY:cs.';,.'H,} )
 
 0( CS: Clear Screen: :CS )
-1( {CS:cS"2J"0#:XY}
+1( {CS:cs"2J"0#:XY}
 
 1( "S4 v0.0.1 - https://github.com/CCurl/S4" )
 1( R"Hello." )
