@@ -2,6 +2,12 @@ S4 examples:
 
  - To enter a comment: 
     0( here is a comment )
+  
+  - if (f) { xxx } else { yyy } then:
+    f #(\ xxx 1_) ~ (yyy)
+
+ - x = (a == b ) ? c : d;
+    d@ a@ b@ = (\ c@) x!
 
  - To conditionally define a function: 
     1( {xx"xx is defined"} )
@@ -13,28 +19,27 @@ S4 examples:
      C equivalent:        if (f < t) { int x = f; f = t; t = x; }
 
 - To do something 41 times:
-    S4 code:             41   [    #  .  B    --  #    ]    \ 
+    S4 code:             41   [    #  .  B    --      ]
     Forth equivalent:    41 BEGIN DUP . SPACE 1- DUP WHILE DROP
     C equivalent:        int i = 41; while (i) { printf("%d ", i); i--; }
 
 - A for loop (0 to 20)
-    S4 code:             0 20 S # i! - [ i@ .  B     i+ -- # ] \
-    Forth equivalent:    0 20         DO I  . SPACE    LOOP
+    S4 code:             0 20 S # i! - [ i@ i+ .   B --   ]
+    Forth equivalent:    0 20         DO I     .  SPACE  LOOP
     C equivalent:        for (int i = 0; i < 20; i++) { printf("%d ", i); }
 
 - A simple benchmark for 100 million (1KK) empty loops:
-    100KK T S [ -- # ] \ T S - # 1000 % S 1000 / .B.
+    100KK T S [ -- ] T S - # 1000 % S 1000 / .B.
          -- explained --
     100KK       0( push 100KK [--100000000] )
     T           0( push current time MS [100KK--100KK t1] )
     S           0( swap the top 2 stack items [100KK t1--t1 100KK] )
-    [ -- # ]    0( an empty decrement loop [t1 100KK--t1 0] )
-    \ T         0( drop TOS, push current time MS [t1 0-- t1 t2] )
+    [ -- ]      0( an empty decrement loop [t1 100KK--t1] )
+    T           0( push current time MS [t1-- t1 t2] )
     S -         0( swap, subtract [t1 t2--et] )
     # 1000 %    0( dup TOS, push 1000, modulo [et--et MS] )
     S 1000 /    0( swap, push 1000, divide [et MS--MS S] )
     .B.         0( print TOS, print a SPACE, print TOS [MS S--] )
 
 - To display the currently defined code:
-    0 H@ S # i! - [ i@ C@ #, 125 = (13, 10,) i+ -- # ] \
-
+    0 i! H@ [ i@ C@ #, 125 = (13, 10,) i+ -- ]
