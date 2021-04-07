@@ -11,13 +11,14 @@ _  (n1--n2)       negate TOS (34 => -34)
 bit manipulation
 &  (a b--n)       32-bit and
 |  (a b--n)       32-bit or
+^  (a b--n)       32-bit xor
 ~  (n1-- n2)      not, all bits reversed (0110010 => 1001101)
 
 stack
-#  (a--a a)       Duplicate TOS (forth DUP)
-\  (a b--a)       Drop TOS (forth DROP)
-S  (a b--b a)     Swap top 2 stack items (forth SWAP)
-O  (a b--a b a)   Push next (forth OVER)
+#  (a--a a)       Duplicate TOS (Forth DUP)
+\  (a b--a)       Drop TOS (Forth DROP)
+S  (a b--b a)     Swap top 2 stack items (Forth SWAP)
+O  (a b--a b a)   Push next (Forth OVER)
 ++   (n1--n2)     Increment (TOS <- TOS+1)
 --   (n1--n2)     Decrement (TOS <- TOS-1)
 
@@ -34,12 +35,12 @@ functions
                   Example function names: AA, 35, Z4, F1, 4x, zz, z9
 }    (--)         End of definition, return
 :XX  (--)         Call function <X>
-^    (--)         Return from function imediately (i.e. - before reaching '}')
-                  NOTE: do NOT use '^' inside of loops []
+;    (--)         Return from function imediately (i.e. - before reaching '}')
+                      NOTE: if used inside of a loop, behavior will be undefined
 
 input/output
 .    (n--)        print TOS as decimal number
-,    (n--)        write TOS (27 is ESC, 10 is newline, etc) (emit)
+,    (n--)        write TOS (27 is ESC, 10 is newline, etc) (Forth emit)
 ?    ( --key)     read key, don't wait for newline.
 "    (--)         output bytes until next '"'
 0..9 (--n)        scan decimal number until non digit. 
