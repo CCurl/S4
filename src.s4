@@ -5,15 +5,15 @@
 {ps:sd++#0M!M!}                 0(push)
 {pp:ts:sd#0>(--)0M!}            0(pop)
 {ts:sdM@}                       0(top of stack)
-{ds'(,' ,1 0M@++S#i!-[i@M@.Bi+--#]\'),} 0(dump user stack)
+{ds'(,' ,1 0M@++S#i!-[i@M@.Bi+--]'),} 0(dump user stack)
 
 {ftOO>(S)} 0(make sure N<T ... N T :ft)
 
 0(a word to dump all code currently defined)
-{dc0H@S#i!-[i@C@#,125=(13,10,)i+--#]\}  0(dump code) 
+{dc0i!i-H@[i+@C@#,125=(R)--]}  0(dump code) 
 
 0( R"Bm: Benchmark: simple decrement loop" )
-0( {BmTS[--#]\TS-#1K%S1K/.B.} )
+0( {BmTS[--]TS-#1K%S1K/.B.} )
 
 0( cs: Send "<ESC>[" -- vt100 ANSI CSI code )
 1( {cs27,'[,} )
