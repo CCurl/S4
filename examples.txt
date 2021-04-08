@@ -3,8 +3,8 @@ S4 examples:
  - To enter a comment: 
     0( here is a comment )
   
-  - if (f) { xxx } else { yyy } then:
-    f #(\ xxx 1_) ~ (yyy)
+  - if (c) { xxx } else { yyy } then:
+    c #(\ xxx FT) ~ (yyy)
 
  - x = (a == b ) ? c : d;
     d@ a@ b@ = (\ c@) x!

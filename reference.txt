@@ -60,12 +60,21 @@ other
 AR   (p--n)       Arduino: read analog pin (v = analogRead(p))
 AW   (n p--)      Arduino: write to analog pin (analogWrite(p, v))
 B    (--)         Output a space
-C@   (a--n)       Fetch byte from code address a
-C!   (n a--)      Store n (8-bit) to code address a
+C@   (a--n)       Code: Fetch byte from address a
+C!   (n a--)      Code: Store n (8-bit) to address a
 DR   (p--n)       Arduino: read digital pin (n = digitalRead(p))
 DW   (v p--)      Arduino: write to digital pin (digitalWrite(p, n))
-H@   (--n)        Fetch value of HERE register.
-H!   (n--)        Store n HERE register.
+F@   (?--)        Function fetch addr
+F!   (?--)        Function: store addr
+FO   (n a--)      File: open for reading (block.n)
+FN   (n a--)      File: create new (block.n)
+FC   (a--)        File: close
+FR   (a--n)       File: read
+FW   (n a--)      File: write
+FF   (--f)        Flag: false
+FT   (--t)        Flag: true
+H@   (--n)        HERE: Fetch current value
+H!   (n--)        HERE: Set HERE address
 IA   (--)         Info: All (CFMRS)
 IC   (--)         Info: Code
 IF   (--)         Info: Functions
@@ -73,9 +82,11 @@ IM   (--)         Info: Memory
 IR   (--)         Info: Registers
 IS   (--)         Info: Stack
 K    (n--n1)      Multiply TOS by 1000
-M@   (a--n)       Fetch value from memory address a.
-M!   (n a--)      Store n to memory address a.
+M@   (a--n)       Memory: Fetch value from address a.
+M!   (n a--)      Memory: Store n to address a.
 PI   (p--)        Arduino: pinMode(p, INPUT)
+PD   (p--)        Arduino: pinMode(p, INPUT_PULLDOWN)
+PU   (p--)        Arduino: pinMode(p, INPUT_PULLUP)
 PO   (p--)        Arduino: pinMode(p, OUTPUT)
 R    (--)         Output a CR/LF
 T    (--n)        Time (Arduino: millis(), Windows: GetTickCount())

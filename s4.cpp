@@ -15,6 +15,10 @@
 #define MEM_SZ    (32*1024)
 #define TIB_SZ         150
 #define NUM_FUNCS   (62*62)
+int doFileOpen(int pc, const char *x) { return pc; }
+int doFileClose(int pc) { return pc; }
+int doFileRead(int pc) { return pc; }
+int doFileWrite(int pc) { return pc; }
 #else
 #include <windows.h>
 #include <conio.h>
@@ -162,6 +166,48 @@ int doDefineFunction(int pc) {
         pc++;
     }
     return pc + 1;
+}
+
+int doFileOpen(int pc, const char *mode) {
+    char buf[24];
+    long blk = pop();
+    long addr = pop();
+    FILE* fh = 0;
+    if ((addr < 0) || (MEM_SZ < addr)) { return pc; }
+    sprintf_s<24>(buf, "block.%d", blk);
+    fopen_s(&fh, buf, mode);
+    memory[addr] = (fh) ? (long)fh : 0;
+    return pc;
+}
+
+int doFileClose(int pc) {
+    long a = pop();
+    if ((a < 0) || (MEM_SZ < a)) { return pc; }
+    FILE* fh = (FILE*)memory[a];
+    if (fh) { fclose(fh); memory[a] = 0; }
+    return pc;
+}
+
+int doFileRead(int pc) {
+    char buf[2];
+    long addr = pop();
+    if ((addr < 0) || (MEM_SZ < addr)) { return pc; }
+    FILE* fh = (FILE*)memory[addr];
+    if (fh) { 
+        SIZE_T n = fread_s(buf, 2, 1, 1, fh);
+        push((n) ? buf[0] : 0); 
+    }
+    return pc;
+}
+
+int doFileWrite(int pc) {
+    char buf[2];
+    long addr = pop();
+    buf[0] = (byte)pop();
+    if ((addr < 0) || (MEM_SZ < addr)) { return pc; }
+    FILE* fh = (FILE*)memory[addr];
+    if (fh) { fwrite(buf, 1, 1, fh); }
+    return pc;
 }
 
 int doFunction(int pc) {
@@ -315,6 +361,13 @@ int step(int pc) {
     case 'F': t1 = code[pc++];
         if (t1 == '@') { t2 = T; T = 0; if ((0 < t2) && (t2 < NUM_FUNCS)) { T = func[t2]; } }
         if (t1 == '!') { t2 = pop(); t1 = pop(); if ((0 < t2) && (t2 < NUM_FUNCS)) { func[t2] = (ushort)t1; } }
+        if (t1 == 'O') { pc = doFileOpen(pc, "rb"); }
+        if (t1 == 'N') { pc = doFileOpen(pc, "wb"); }
+        if (t1 == 'C') { pc = doFileClose(pc); }
+        if (t1 == 'R') { pc = doFileRead(pc); }
+        if (t1 == 'W') { pc = doFileWrite(pc); }
+        if (t1 == 'F') { push(0); }
+        if (t1 == 'T') { push(-1); }
         break;
     case 'G': break;   /* *** FREE ***  */               
     case 'H': t1 = code[pc++];

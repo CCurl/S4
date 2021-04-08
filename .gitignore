@@ -38,3 +38,4 @@ stable.vcxproj.user
 *.ipch
 /.vs/S4/v16
 *.l
+/block.*
