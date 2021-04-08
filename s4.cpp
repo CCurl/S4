@@ -50,10 +50,17 @@ char input_fn[24];
 
 #define NUM_REGS     26
 #define TIB         (CODE_SZ-TIB_SZ-4)
+#define FN_LEN       2
+#define FN_LEN2       9
 
 typedef unsigned short ushort;
 typedef unsigned long ulong;
 typedef unsigned char byte;
+
+typedef struct {
+    char name[FN_LEN2+1];
+    ushort addr;
+} DICT_T;
 
 byte code[CODE_SZ + 1];
 long   dstack[STK_SZ + 1];
@@ -61,8 +68,11 @@ ushort rstack[STK_SZ + 1];
 ushort dsp, rsp;
 long reg[NUM_REGS];
 ushort func[NUM_FUNCS];
+DICT_T dict[NUM_FUNCS];
 long memory[MEM_SZ];
 ushort here = 0;
+ushort fhere = 0;
+ushort mhere = 0;
 ushort curReg = 0;
 byte isBye = 0;
 
@@ -120,6 +130,28 @@ int alphaNumeric(byte c) {
     return -1;
 }
 
+int doHexNumber(int pc) {
+    long num = 0;
+    char c = code[pc];
+    while (1) {
+        if (('0' <= c) && (c <= '9')) {
+            num = (num * 16) + (c - '0');
+        }
+        else if (('A' <= c) && (c <= 'Z')) {
+            num = (num * 16) + (code[pc] - 'A' + 10);
+        }
+        else if (('0' <= c) && (c <= '9')) {
+            num = (num * 16) + (code[pc] - 'a' + 10);
+        } else {
+            push(num);
+            return pc;
+        }
+        c = code[++pc];
+    }
+    push(num);
+    return pc;
+}
+
 int doNumber(int pc) {
     long num = 0;
     while (('0' <= code[pc]) && (code[pc] <= '9')) {
@@ -140,11 +172,36 @@ int getFN(int pc) {
     return -1;
 }
 
+DICT_T *lookUp(int pc) {
+    char fn[FN_LEN2+1];
+    for (int i = 0; i < FN_LEN2; i++) { fn[i] = code[pc++]; }
+    fn[FN_LEN2] = 0;
+    for (int i = fhere - 1; i >= 0; i--) {
+        DICT_T* dp = &dict[i];
+        if (strcmp(fn, dp->name) == 0) { return dp; }
+    }
+    return (DICT_T *)0;
+}
+
 int doIf(int pc) {
     if (pop() == 0) {
         while ((pc < CODE_SZ) && (code[pc] != ')')) { ++pc; }
         ++pc;
     }
+    return pc;
+}
+
+int doDefineFunction2(int pc, int *addr) {
+    DICT_T* dp = &dict[fhere++];
+    dp->addr = (pc+4);
+    int l = 0;
+    char c = code[pc];
+    while ((' ' < c) && (l < FN_LEN2)) {
+        dp->name[l++] = c;
+        c = code[++pc];
+    }
+    dp->name[l] = 0;
+    *addr = dp->addr;
     return pc;
 }
 
@@ -158,7 +215,7 @@ int doDefineFunction(int pc) {
         func[fn] = here;
     }
     else { printStringF("-invalid function '%c%c' (0:%d)-", code[pc], code[pc + 1], NUM_FUNCS); }
-    pc += 2;
+    pc += FN_LEN;
     v = (v && (here < pc)) ? 1 : 0;
     while ((pc < CODE_SZ) && code[pc]) {
         if (v) { code[here++] = code[pc]; }
