@@ -15,10 +15,6 @@
 #define MEM_SZ    (32*1024)
 #define TIB_SZ         150
 #define DICT_SZ        255
-int doFileOpen(int pc, const char* x) { return pc; }
-int doFileClose(int pc) { return pc; }
-int doFileRead(int pc) { return pc; }
-int doFileWrite(int pc) { return pc; }
 #else
 #include <windows.h>
 #include <conio.h>
@@ -100,7 +96,7 @@ void vmInit() {
     for (int i = 0; i < CODE_SZ; i++) { code[i] = 0; }
     for (int i = 0; i < NUM_REGS; i++) { reg[i] = 0; }
     for (int i = 0; i < MEM_SZ; i++) { memory[i] = 0; }
-    for (int i = 0; i < DICT_SZ; i++) { dict[i] = {"", 0}; }
+    for (int i = 0; i < DICT_SZ; i++) { dict[i].name[0] = 0; dict[i].addr = 0; }
 }
 
 void printStringF(const char* fmt, ...) {
@@ -110,22 +106,6 @@ void printStringF(const char* fmt, ...) {
     vsnprintf(buf, sizeof(buf), fmt, args);
     va_end(args);
     printString(buf);
-}
-
-int digit(byte c) { return (('0' <= c) && (c <= '9')) ? (c - '0') : -1; }
-int alphaL(byte c) { return (('a' <= c) && (c <= 'z')) ? (c - 'a') : -1; }
-int alphaU(byte c) { return (('A' <= c) && (c <= 'Z')) ? (c - 'A') : -1; }
-
-int alpha(byte c) {
-    int x = alphaU(c); if (0 <= x) return x;
-    x = alphaL(c); if (0 <= x) return x + 26;
-    return -1;
-}
-
-int alphaNumeric(byte c) {
-    int x = alpha(c); if (0 <= x) return x;
-    x = digit(c);     if (0 <= x) return x + 52;
-    return -1;
 }
 
 int doHexNumber(int pc) {
@@ -181,7 +161,7 @@ int doIf(int pc) {
     return pc;
 }
 
-int doDefineFunction2(int pc) {
+int doDefineFunction(int pc) {
     if (DICT_SZ <= dhere) {
         printString("-out of dictionary space-");
         return pc;
@@ -222,7 +202,7 @@ int doCallFunction(int pc) {
         nm[len++] = c;
         c = code[++pc];
     }
-    nm[len] = 0;
+    nm[len] = (char)0;
     DICT_T *dp = lookUp(nm);
     if (dp) {
         rpush(pc+1);
@@ -232,6 +212,12 @@ int doCallFunction(int pc) {
     return pc;
 }
 
+#ifdef __DEV_BOARD__
+int doFileOpen(int pc, const char* x) { return pc; }
+int doFileClose(int pc) { return pc; }
+int doFileRead(int pc) { return pc; }
+int doFileWrite(int pc) { return pc; }
+#else
 int doFileOpen(int pc, const char* mode) {
     char buf[24];
     long blk = pop();
@@ -273,6 +259,7 @@ int doFileWrite(int pc) {
     if (fh) { fwrite(buf, 1, 1, fh); }
     return pc;
 }
+#endif
 
 int doQuote(int pc, int isPush) {
     while ((code[pc] != '"') && (pc < CODE_SZ)) {
@@ -475,7 +462,7 @@ int step(int pc) {
         if (t1 == '+') { ++pc; ++reg[curReg]; }
         if (t1 == '-') { ++pc; --reg[curReg]; }
         break;
-    case '{': pc = doDefineFunction2(pc); break;        // 123
+    case '{': pc = doDefineFunction(pc); break;        // 123
     case '|': t1 = pop(); T |= t1; break;               // 124
     case '}': pc = rpop(); break;                       // 125
     case '~': T = ~T; break;                            // 126
@@ -484,7 +471,6 @@ int step(int pc) {
 }
 
 int run(int pc) {
-    long t1 = 0, t2 = 0;
     while (rsp >= 0) {
         if ((pc < 0) || (CODE_SZ <= pc)) { return pc; }
         pc = step(pc);
