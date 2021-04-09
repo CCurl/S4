@@ -6,13 +6,13 @@ arithmetic
 *  (a b--a*b)     multiplication
 /  (a b--a/b)     division
 %  (a b--a%b)     modulo (division remainder)
-_  (n1--n2)       negate TOS (34 => -34)
 
 bit manipulation
 &  (a b--n)       32-bit and
 |  (a b--n)       32-bit or
 ^  (a b--n)       32-bit xor
 ~  (n1-- n2)      not, all bits reversed (0110010 => 1001101)
+_  (n1--n2)       negate TOS (34 => -34)
 
 stack
 #  (a--a a)       Duplicate TOS (Forth DUP)
@@ -30,30 +30,34 @@ x   (--)          Select register x (x: [a..z]).
 x+  (--)          Select register x and increment it by 1
 x-  (--)          Select register x and decrement it by 1
 
-functions
-{XX  (--)         Define function X (X: [A..9]|[a..9]). MUST be exactly 2 characters.
-                  Example function names: AA, 35, Z4, F1, 4x, zz, z9
-}    (--)         End of definition, return
-:XX  (--)         Call function <X>
-;    (--)         Return from function imediately (i.e. - before reaching '}')
-                      NOTE: if used inside of a loop, behavior will be undefined
+words
+{XX  (--)         Define word X (X: [A..9]|[a..9]). MUST be exactly 2 characters.
+                  Word length can be up to 10 characters, any non-blank character except for '{' and '}'.
+                    Since words are variable length, the name must be ended with a space;
+                    both when defining it, and when calling it.
+}    (--)         End of word definition
+:XX  (--)         Execute word <X>
+;    (--)         Return from word immediately (i.e. - before reaching '}')
+                    NOTE: returning while inside of a loop is not supported; behavior will be undefined.
 
 input/output
-.    (n--)        print TOS as decimal number
-,    (n--)        write TOS (27 is ESC, 10 is newline, etc) (Forth emit)
-?    ( --key)     read key, don't wait for newline.
-"    (--)         output bytes until next '"'
-0..9 (--n)        scan decimal number until non digit. 
-                      to push multiple values, separate them by space (4711 3333)
-                      to enter a negative number use _ (negate) after the number
+.     (n--)       Output TOS as decimal number
+,     (n--)       Output TOS (27 is ESC, 10 is newline, 65 is A, etc) (Forth emit)
+?     ( --key)    Read one key, don't wait for newline.
+"     (--)        Output bytes until next '"'
+0..9  (--n)       Scan decimal number until non digit. 
+                     to speficy multiple values, separate them by space (4711 3333)
+                     to enter a negative number, use _ (negate) after the number (eg - '32_')
+$0..F (--n)      Scan hexadecimal decimal number until non digit. 
+                     to specify multiple values, separate them by space ($4711 $3333)
 
 conditions
-<   (a b--f)      if (a < b), f=-1, else f=0
->   (a b--f)      if (a > b), f=-1, else f=0
-=   (a b--f)      if (a = b), f=-1, else f=0
+<   (a b--f)      if (a < b), f=true, else f=fales
+>   (a b--f)      if (a > b), f=true, else f=false
+=   (a b--f)      if (a = b), f=true, else f=false
 (   (f--)         if (f != 0), execute until ')', if false skip until ')'
 [   (f--f)        if (f != 0), begin while loop. Leave f on stack. Else, skip code until ']'
-]   (f--)         if (f != 0), repeat the loop.
+]   (f--)         if (f != 0), repeat the loop. Else, drop f and continue.
 
 other
 'x   (--n)        Push the ascii value of x (x: [any char possible])
@@ -64,8 +68,6 @@ C@   (a--n)       Code: Fetch byte from address a
 C!   (n a--)      Code: Store n (8-bit) to address a
 DR   (p--n)       Arduino: read digital pin (n = digitalRead(p))
 DW   (v p--)      Arduino: write to digital pin (digitalWrite(p, n))
-F@   (?--)        Function fetch addr
-F!   (?--)        Function: store addr
 FO   (n a--)      File: open for reading (block.n)
 FN   (n a--)      File: create new (block.n)
 FC   (a--)        File: close
@@ -77,7 +79,7 @@ H@   (--n)        HERE: Fetch current value
 H!   (n--)        HERE: Set HERE address
 IA   (--)         Info: All (CFMRS)
 IC   (--)         Info: Code
-IF   (--)         Info: Functions
+ID   (--)         Info: Dictionary
 IM   (--)         Info: Memory
 IR   (--)         Info: Registers
 IS   (--)         Info: Stack

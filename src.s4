@@ -1,38 +1,42 @@
 0(a user stack)
 0(NOTE: MEMORY 0:16 reserved for a user stack)
 0(NOTE: you can use :ps, :pp, :ts to work with it)
-{sd0M@}                         0(stack depth)
-{ps:sd++#0M!M!}                 0(push)
-{pp:ts:sd#0>(--)0M!}            0(pop)
-{ts:sdM@}                       0(top of stack)
-{ds'(,' ,1 0M@++S#i!-[i@M@.Bi+--]'),} 0(dump user stack)
+{sd 0M@}                         0(stack depth)
+{ps :sd ++#0M!M!}                 0(push)
+{pp :ts :sd #0>(--)0M!}            0(pop)
+{ts :sd M@}                       0(top of stack)
+{ds '(,' ,1 0M@++S#i!-[i@M@.Bi+--]'),} 0(dump user stack)
 
-{ftOO>(S)} 0(make sure N<T ... N T :ft)
+{ft OO>(S)} 0(make sure N<T ... N T :ft)
 
 0(a word to dump all code currently defined)
-{dc0i!i-H@[i+@C@#,125=(R)--]}  0(dump code) 
+{dc 0i!i-H@[i+@C@#,125=(R)--]}  0(dump code) 
 
 0( R"Bm: Benchmark: simple decrement loop" )
-0( {BmTS[--]TS-#1K%S1K/.B.} )
+0( {Bm TS[--]TS-#1K%S1K/.B.} )
 
-0( cs: Send "<ESC>[" -- vt100 ANSI CSI code )
-1( {cs27,'[,} )
-
+0( csi: Send "<ESC>[" -- vt100 ANSI CSI code )
+1( {csi 27,'[,} )
+ 
 0( SC: Set Color ... fb bg :SC )
-1( {SC:cs.';,.'m,} )
+1( {SC :csi .';,.'m,} )
 
 0( CP: Save the cursor pos: :CP )
-1( {CP:cs's,} )
+1( {CP :csi 's,} )
 
 0( CR: cursor pos restore :CR" )
-1( {CR:cs'u,} )
+1( {CR :csi 'u,} )
 
 0( XY: Set cursor pos: x y :XY )
-1( {XY:cs.';,.'H,} )
+1( {XY :csi .';,.'H,} )
 
-0( CS: Clear Screen: :CS )
-1( {CS:cs"2J"0#:XY}
+0( CLS: Clear Screen: :csi )
+1( {CLS :csi "2J"0# :XY }
 
 1( "S4 v0.0.1 - https://github.com/CCurl/S4" )
 1( R"Hello." )
 0( RR"---System info---"IA )
+
+0(IA :dc ZZ)
+
+{test 1 2 3 + + .}

@@ -10,8 +10,8 @@ S4 examples:
     d@ a@ b@ = (\ c@) x!
 
  - To conditionally define a function: 
-    1( {xx"xx is defined"} )
-    0( {yy"yy is not defined"} )
+    1( {xx "xx is defined"} )
+    0( {yy "yy is not defined"} )
 
 - To make sure N < T
      S4 code:             OO>(S)

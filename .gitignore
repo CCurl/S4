@@ -39,3 +39,4 @@ stable.vcxproj.user
 /.vs/S4/v16
 *.l
 /block.*
+/.vs
