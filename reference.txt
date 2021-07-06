@@ -31,12 +31,11 @@ x+  (--)          Select register x and increment it by 1
 x-  (--)          Select register x and decrement it by 1
 
 words
-{XX  (--)         Define word X (X: [A..9]|[a..9]). MUST be exactly 2 characters.
-                  Word length can be up to 10 characters, any non-blank character except for '{' and '}'.
-                    Since words are variable length, the name must be ended with a space;
-                    both when defining it, and when calling it.
+{XX  (--)         Define word XX. Word length can be up to 10 characters, any non-blank character,
+                    except for '{' and '}'. Since words are variable length, the name must be ended 
+                    with a space, both when defining it, and when calling it.
 }    (--)         End of word definition
-:XX  (--)         Execute word <X>
+:XX  (--)         Execute word <XX>
 ;    (--)         Return from word immediately (i.e. - before reaching '}')
                     NOTE: returning while inside of a loop is not supported; behavior will be undefined.
 
