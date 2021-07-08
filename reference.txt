@@ -18,8 +18,8 @@ stack
 #  (a--a a)       Duplicate TOS (Forth DUP)
 \  (a b--a)       Drop TOS (Forth DROP)
 $  (a b--b a)     Swap top 2 stack items (Forth SWAP)
-:O  (a b--a b a)  Push next (Forth OVER)
-:N  (a b--b)      Drop next (Forth NIP)
+:O  (a b--a b a)  Push 2nd (Forth OVER)
+:N  (a b--b)      Drop 2nd (Forth NIP)
 
 registers
 x   (--)          Select register x (x: [a..z]). 
@@ -39,15 +39,15 @@ x    (--)         Call function x (x:A..Z)
 input/output
 .     (n--)       Output TOS as decimal number
 ,     (n--)       Output TOS (27 is ESC, 10 is newline, 65 is A, etc) (Forth emit)
-?     ( --key)    Read one key, don't wait for newline.
+?     ( --key)    Read one key, don't wait for ENTER.
 "     (--)        Output bytes until next '"'
 0..9  (--n)       Scan decimal number until non digit. 
-                     to speficy multiple values, separate them by space (4711 3333)
+                     to specify multiple values, separate them by space (4711 3333)
                      to enter a negative number, use _ (negate) after the number (eg - '32_')
 'x   (--n)        Push the ascii value of x (x: [any char possible])
 
-conditions
-<   (a b--f)      if (a < b), f=true, else f=fales
+conditions/flow control
+<   (a b--f)      if (a < b), f=true, else f=false
 >   (a b--f)      if (a > b), f=true, else f=false
 =   (a b--f)      if (a = b), f=true, else f=false
 (   (f--)         if (f != 0), execute code in '()', if false skip until ')'
@@ -55,34 +55,34 @@ conditions
 ]   (f--)         if (f != 0), repeat the loop. Else, drop f and continue.
 
 other
-:C@   (a--n)       Code: Fetch byte from address a
-:C!   (n a--)      Code: Store n (8-bit) to address a
+:C@   (a--n)       Fetch byte from address a
+:C!   (n a--)      Store byte n to address a
 :FO   (n a--)      File: open for reading (block.n)
 :FN   (n a--)      File: create new (block.n)
 :FC   (a--)        File: close
-:FR   (a--n)       File: read
-:FW   (n a--)      File: write
+:FR   (a--n)       File: read 1 char
+:FW   (n a--)      File: write 1 char
 :FF   (--f)        Flag: false
 :FT   (--t)        Flag: true
 :H@   (--n)        HERE: Fetch current value
 :H!   (n--)        HERE: Set HERE address
 :IA   (--)         Info: All (CFMRS)
 :IC   (--)         Info: Code
-:ID   (--)         Info: Dictionary
+:IF   (--)         Info: Functions
 :IM   (--)         Info: Memory
 :IR   (--)         Info: Registers
 :IS   (--)         Info: Stack
-:M@   (a--n)       Memory: Fetch value from address a.
-:M!   (n a--)      Memory: Store n to address a.
+:M@   (a--n)       Fetch 32-bit value from address a.
+:M!   (n a--)      Store n to address a (32-bit).
 :PI   (p--)        Arduino: pinMode(p, INPUT)
 :PU   (p--)        Arduino: pinMode(p, INPUT_PULLUP)
 :PO   (p--)        Arduino: pinMode(p, OUTPUT)
 :PRA  (p--n)       Arduino: read analog pin (v = analogRead(p))
 :PRD  (p--n)       Arduino: read digital pin (n = digitalRead(p))
-:PWA  (n p--)      Arduino: write to analog pin (analogWrite(p, v))
-:PWD  (v p--)      Arduino: write to digital pin (digitalWrite(p, n))
+:PWA  (v p--)      Arduino: write to analog pin (analogWrite(p, v))
+:PWD  (v p--)      Arduino: write to digital pin (digitalWrite(p, v))
 :T    (--n)        Time (Arduino: millis(), Windows: GetTickCount())
 :W    (n--)        Wait (Arduino: delay(),  Windows: Sleep())
-:XA   (a--)        Execute code at address A
+:XA   (a--)        Call code at address A
 :XX   (--)         Reset S4 to initial state
 :ZZ   (--)         Exit S4
