@@ -4,7 +4,7 @@ S4 examples:
     0( here is a comment )
   
   - if (c) { xxx } else { yyy } then:
-    c #(\ xxx FT) ~ (yyy)
+    c #(xxx #=) ~ (yyy)
 
  - x = (a == b ) ? c : d;
     d@ a@ b@ = (\ c@) x!
@@ -14,32 +14,34 @@ S4 examples:
     0( {yy "yy is not defined"} )
 
 - To make sure N < T
-     S4 code:             OO>(S)
+     S4 code:             :O:O>($)
      Forth equivalent:    OVER OVER > IF SWAP THEN
      C equivalent:        if (f < t) { int x = f; f = t; t = x; }
 
 - To do something 41 times:
-    S4 code:             41   [    #  .  B    --      ]
+    S4 code:             {B32,}41[#.B1-]
     Forth equivalent:    41 BEGIN DUP . SPACE 1- DUP WHILE DROP
     C equivalent:        int i = 41; while (i) { printf("%d ", i); i--; }
 
-- A for loop (0 to 20)
-    S4 code:             0 20 S # i! - [ i@ i+ .   B --   ]
-    Forth equivalent:    0 20         DO I     .  SPACE  LOOP
-    C equivalent:        for (int i = 0; i < 20; i++) { printf("%d ", i); }
+- A for loop (1 to 20)
+    S4 code:             0i!20[i+@.32,1-]
+    Forth equivalent:    1 20 FOR I . SPACE NEXT
+    C equivalent:        for (int i = 1; i <= 20; i++) { printf("%d ", i); }
 
-- A simple benchmark for 100 million (1KK) empty loops:
-    100KK T S [ -- ] T S - # 1000 % S 1000 / .B.
+- A simple benchmark for 10 million (1KK) empty loops:
+    {K1000*}    0(define function K)
+    {B32,}      0(define function B)
+    10KK T $ [ 1- ] T $ - # 1K % $ 1K / .B.
          -- explained --
-    100KK       0( push 100KK [--100000000] )
+    10KK        0( push 100KK [--100000000] )
     T           0( push current time MS [100KK--100KK t1] )
-    S           0( swap the top 2 stack items [100KK t1--t1 100KK] )
-    [ -- ]      0( an empty decrement loop [t1 100KK--t1] )
+    $           0( swap the top 2 stack items [100KK t1--t1 100KK] )
+    [ 1- ]      0( an empty decrement loop [t1 100KK--t1] )
     T           0( push current time MS [t1-- t1 t2] )
-    S -         0( swap, subtract [t1 t2--et] )
-    # 1000 %    0( dup TOS, push 1000, modulo [et--et MS] )
-    S 1000 /    0( swap, push 1000, divide [et MS--MS S] )
+    $ -         0( swap, subtract [t1 t2--et] )
+    # 1K %      0( dup TOS, push 1000, modulo [et--et MS] )
+    $ 1K /      0( swap, push 1000, divide [et MS--MS S] )
     .B.         0( print TOS, print a SPACE, print TOS [MS S--] )
 
 - To display the currently defined code:
-    0 i! H@ [ i@ C@ #, 125 = (13, 10,) i+ -- ]
+    1_ i! :H@ [ i+@ :C@ #, 125 = (13, 10,) 1- ]
