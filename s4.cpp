@@ -8,7 +8,7 @@
 #include <Arduino.h>
 #define mySerial SerialUSB
 #define STK_SZ          31
-#define LMEM_SZ    (1024*6)
+#define MEM_SZ     (1024*6)
 #define TIB_SZ         150
 int _getch() { return (mySerial.available()) ? mySerial.read() : 0; }
 void printString(const char* str) { mySerial.print(str); }
@@ -31,7 +31,7 @@ void delay(DWORD ms) { Sleep(ms); }
 #define INPUT_PULLUP     1
 #define OUTPUT           2
 #define STK_SZ          63
-#define LMEM_SZ   (1024*64)
+#define MEM_SZ    (1024*64)
 #define TIB_SZ         128
 HANDLE hStdOut = 0;
 char input_fn[24];
@@ -47,14 +47,12 @@ void printString(const char* str) {
 #include <string.h>
 #include <stdarg.h>
 
-#define MEM_SZ      (LMEM_SZ*4)
-#define CODE_SZ     (LMEM_SZ*4)
+#define CODE_SZ     (MEM_SZ*4)
 #define NUM_REGS     26
 #define TIB         (CODE_SZ-TIB_SZ-4)
 
 typedef unsigned char byte;
 
-//byte code[CODE_SZ + 1];
 long dstack[STK_SZ + 1];
 long rstack[STK_SZ + 1];
 long dsp, rsp;
@@ -65,8 +63,8 @@ long curReg = 0;
 byte isBye = 0;
 
 union {
-    byte code[MEM_SZ];
-    long lmem[LMEM_SZ];
+    byte code[CODE_SZ];
+    long mem[MEM_SZ];
 } memory;
 
 #define T   dstack[dsp]
@@ -81,10 +79,9 @@ long rpop() { return (rsp > 0) ? rstack[rsp--] : -1; }
 
 void vmInit() {
     dsp = rsp = here = curReg = 0;
-    for (int i = 0; i < CODE_SZ; i++) { memory.code[i] = 0; }
     for (int i = 0; i < NUM_REGS; i++) { reg[i] = 0; }
     for (int i = 0; i < NUM_REGS; i++) { func[i] = 0; }
-    for (int i = 0; i < LMEM_SZ; i++) { memory.lmem[i] = 0; }
+    for (int i = 0; i < MEM_SZ; i++) { memory.mem[i] = 0; }
 }
 
 void printStringF(const char* fmt, ...) {
@@ -118,7 +115,7 @@ int doIf(int pc) {
 int doDefineFunction(int pc) {
     if (pc < here) { return pc; }
     int fn = memory.code[pc] - 'A';
-    if (NUM_REGS <= fn) { return pc; }
+    if ((fn < 0) || (NUM_REGS <= fn)) { return pc; }
     memory.code[here++] = '{';
     memory.code[here++] = memory.code[pc++];
     func[fn] = here;
@@ -169,7 +166,7 @@ int doFileWrite(int pc) {
 int doQuote(int pc, int isPush) {
     char x[2];
     x[1] = 0;
-    while ((memory.code[pc] != '"') && (pc < CODE_SZ)) {
+    while ((pc < CODE_SZ) && (memory.code[pc] != '"')) {
         x[0] = memory.code[pc++];
         printString(x);
     }
@@ -185,7 +182,7 @@ int doLoop(int pc) {
 }
 
 void dumpCode() {
-    printStringF("\r\nCODE: size: %x (%d), HERE=%x (%d)", CODE_SZ, CODE_SZ, here, here);
+    printStringF("\r\nCODE: size: %d ($%x), HERE=%d ($%x)", CODE_SZ, CODE_SZ, here, here);
     if (here == 0) { printString("\r\n(no code defined)"); return; }
     int ti = 0, x = here, npl = 20;
     char* txt = (char*)&memory.code[here + 10];
@@ -208,9 +205,8 @@ void dumpRegs() {
     printString("\r\nREGISTERS:");
     for (int i = 0; i < NUM_REGS; i++) {
         byte fId = 'a' + i;
-        if ((0 < i) && (i % 5)) { printStringF("    "); }
-        else { printString("\r\n"); }
-        printStringF("%c: %-10ld", fId, reg[i]);
+        if ((i % 5) == 0) { printString("\r\n"); }
+        printStringF("%c: %-15ld", fId, reg[i]);
     }
 }
 
@@ -218,9 +214,8 @@ void dumpFuncs() {
     printString("\r\nFUNCTIONS:");
     for (int i = 0; i < NUM_REGS; i++) {
         byte fId = 'A' + i;
-        if ((0 < i) && (i % 7)) { printStringF("   "); }
-        else { printString("\r\n"); }
-        printStringF("%c: %-5ld", fId, func[i]);
+        if ((i % 7) == 0) { printString("\r\n"); }
+        printStringF("%c: %-5ld    ", fId, func[i]);
     }
 }
 
@@ -233,10 +228,10 @@ void dumpStack(int hdr) {
 
 void dumpMemory() {
     int n = 0;
-    printStringF("\r\nMEMORY: size: %d (%d bytes)\r\n", LMEM_SZ, CODE_SZ);
-    for (int i = 0; i < LMEM_SZ; i++) {
-        if (memory.lmem[i] == 0) { continue; }
-        long x = memory.lmem[i];
+    printStringF("\r\nMEMORY: size: %d (%d bytes)\r\n", MEM_SZ, CODE_SZ);
+    for (int i = 0; i < MEM_SZ; i++) {
+        if (memory.mem[i] == 0) { continue; }
+        long x = memory.mem[i];
         printStringF("[%04d]: %-10ld (", i, x);
         for (int j = 0; j < 4; j++) {
             if (0<j) { printString(","); }
@@ -252,7 +247,6 @@ void dumpMemory() {
 void dumpAll() {
     dumpStack(1);  printString("\r\n");
     dumpRegs();    printString("\r\n");
-    //dumpMemory();  printString("\r\n");
     dumpCode();    printString("\r\n");
     dumpFuncs();   printString("\r\n");
 }
@@ -312,11 +306,11 @@ int doExt(int pc) {
         break;
     case 'J': break;   /* *** FREE ***  */
     case 'K': T *= 1000; break;
-    case 'L': t1 = memory.code[pc++];
-        if (t1 == '@') { if ((0 <= T) && (T < LMEM_SZ)) { T = memory.lmem[T]; } }
-        if (t1 == '!') { t2 = pop(); t1 = pop(); if ((0 <= t2) && (t2 < LMEM_SZ)) { memory.lmem[t2] = t1; } }
+    case 'L': break;   /* *** FREE ***  */
+    case 'M': t1 = memory.code[pc++];
+        if (t1 == '@') { if ((0 <= T) && (T < MEM_SZ)) { T = memory.mem[T]; } }
+        if (t1 == '!') { t2 = pop(); t1 = pop(); if ((0 <= t2) && (t2 < MEM_SZ)) { memory.mem[t2] = t1; } }
         break;
-    case 'M': break;   /* *** FREE ***  */
     case 'N': N = T; pop(); break; // NIP
     case 'O': push(N);      break; // OVER
     case 'P': pc = doPin(pc); break;
@@ -350,7 +344,7 @@ int step(int pc) {
     case '$': t1 = N; N = T; T = t1; break;             // 36
     case '%': t1 = pop(); T %= t1;   break;             // 37
     case '&': t1 = pop(); T &= t1;   break;             // 38
-    case '\'': push(memory.code[pc++]);     break;             // 39
+    case '\'': push(memory.code[pc++]); break;          // 39
     case '(': pc = doIf(pc);         break;             // 40
     case ')': /*maybe ELSE?*/        break;             // 41
     case '*': t1 = pop(); T *= t1;   break;             // 42
