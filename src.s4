@@ -6,7 +6,7 @@
 1( {NN #100<("0")#10<("0").} )
 1( {KK 1000*}{ML KKKK}{EL :T$-#1KK/."."1KK%NN} )
 0( BM: Benchmark: simple decrement loop )
-1( {BM :T$[1-]EL} )
+1( {BM :T$[:-]EL} )
 
 0( CS: vt100 CSI code - '<ESC>[' )
 1( {CS 27,"["} )

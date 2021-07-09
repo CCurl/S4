@@ -18,7 +18,7 @@ stack
 #  (a--a a)       Duplicate TOS (Forth DUP)
 \  (a b--a)       Drop TOS (Forth DROP)
 $  (a b--b a)     Swap top 2 stack items (Forth SWAP)
-:O  (a b--a b a)  Push 2nd (Forth OVER)
+O  (a b--a b a)   Push 2nd (Forth OVER)
 :N  (a b--b)      Drop 2nd (Forth NIP)
 
 registers
@@ -31,6 +31,7 @@ x-  (--)          Select register x and decrement it by 1
 
 functions
 {x   (--)         Define function x (x:A..Z)
+                  NOTE: O is used for OVER, so O cannot be used as the first char of a function name
 }    (--)         End of function definition
 x    (--)         Call function x (x:A..Z)
 ;    (--)         Return from function immediately (i.e. - before reaching '}')

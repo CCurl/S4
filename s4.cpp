@@ -281,6 +281,8 @@ int doExt(int pc) {
     byte ir = memory.code[pc++];
     long t1, t2;
     switch (ir) {
+    case '+': T++;  break;
+    case '-': T--;  break;
     case 'A': break;   /* *** FREE ***  */
     case 'B': break;   /* *** FREE ***  */
     case 'C': t1 = memory.code[pc++];
@@ -319,7 +321,7 @@ int doExt(int pc) {
         if (t1 == '!') { t2 = pop(); t1 = pop(); if ((0 <= t2) && (t2 < MEM_SZ)) { memory.mem[t2] = t1; } }
         break;
     case 'N': N = T; pop(); break; // NIP
-    case 'O': push(N);      break; // OVER
+    case 'O': break;   /* *** FREE ***  */
     case 'P': pc = doPin(pc); break;
     case 'Q': break;   /* *** FREE ***  */
     case 'R': break;   /* *** FREE ***  */
@@ -370,11 +372,12 @@ int step(int pc) {
     case '>': t1 = pop(); T = T > t1 ? -1 : 0;  break;  // 62
     case '?': push(_getch());                   break;  // 63
     case '@': push(reg[curReg]);                break;  // 64
+    case 'O': push(N);                          break;  // 79
     case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': // 65-90
     case 'G': case 'H': case 'I': case 'J': case 'K': case 'L':
-    case 'M': case 'N': case 'O': case 'P': case 'Q': case 'R':
-    case 'S': case 'T': case 'U': case 'V': case 'W': case 'X':
-    case 'Y': case 'Z': 
+    case 'M': case 'N':   /* O is OVER */   case 'P': case 'Q': 
+    case 'R': case 'S': case 'T': case 'U': case 'V': case 'W': 
+    case 'X': case 'Y': case 'Z': 
         t1 = ((ir-'A')*26) + memory.code[pc++] - 'A';
         if ((0 <= t1) && (t1 <= NUM_FUNCS) && func[t1]) {
             rpush(pc);
