@@ -49,6 +49,7 @@ void printString(const char* str) {
 
 #define CODE_SZ     (MEM_SZ*4)
 #define NUM_REGS     26
+#define NUM_FUNCS   (26*26)
 #define TIB         (CODE_SZ-TIB_SZ-4)
 
 typedef unsigned char byte;
@@ -57,7 +58,7 @@ long dstack[STK_SZ + 1];
 long rstack[STK_SZ + 1];
 long dsp, rsp;
 long reg[NUM_REGS];
-long func[NUM_REGS];
+long func[NUM_FUNCS];
 long here  = 0;
 long curReg = 0;
 byte isBye = 0;
@@ -80,7 +81,7 @@ long rpop() { return (rsp > 0) ? rstack[rsp--] : -1; }
 void vmInit() {
     dsp = rsp = here = curReg = 0;
     for (int i = 0; i < NUM_REGS; i++) { reg[i] = 0; }
-    for (int i = 0; i < NUM_REGS; i++) { func[i] = 0; }
+    for (int i = 0; i < NUM_FUNCS; i++) { func[i] = 0; }
     for (int i = 0; i < MEM_SZ; i++) { memory.mem[i] = 0; }
 }
 
@@ -114,10 +115,13 @@ int doIf(int pc) {
 
 int doDefineFunction(int pc) {
     if (pc < here) { return pc; }
-    int fn = memory.code[pc] - 'A';
-    if ((fn < 0) || (NUM_REGS <= fn)) { return pc; }
+    int f1 = memory.code[pc++] - 'A';
+    int f2 = memory.code[pc++] - 'A';
+    int fn = (f1 * 26) + f2;
+    if ((fn < 0) || (NUM_FUNCS <= fn)) { return pc; }
     memory.code[here++] = '{';
-    memory.code[here++] = memory.code[pc++];
+    memory.code[here++] = f1 + 'A';
+    memory.code[here++] = f2 + 'A';
     func[fn] = here;
     while ((pc < CODE_SZ) && memory.code[pc]) {
         memory.code[here++] = memory.code[pc++];
@@ -212,10 +216,13 @@ void dumpRegs() {
 
 void dumpFuncs() {
     printString("\r\nFUNCTIONS:");
-    for (int i = 0; i < NUM_REGS; i++) {
-        byte fId = 'A' + i;
-        if ((i % 7) == 0) { printString("\r\n"); }
-        printStringF("%c: %-5ld    ", fId, func[i]);
+    int n = 0;
+    for (int i = 0; i < NUM_FUNCS; i++) {
+        if (!func[i]) { continue; }
+        byte f1 = 'A' + (i/26);
+        byte f2 = 'A' + (i%26);
+        if (((n++) % 7) == 0) { printString("\r\n"); }
+        printStringF("%c%c: %-5ld    ", f1, f2, func[i]);
     }
 }
 
@@ -368,8 +375,11 @@ int step(int pc) {
     case 'M': case 'N': case 'O': case 'P': case 'Q': case 'R':
     case 'S': case 'T': case 'U': case 'V': case 'W': case 'X':
     case 'Y': case 'Z': 
-        t1 = ir - 'A';
-        if (func[t1]) { rpush(pc); pc = func[t1]; }
+        t1 = ((ir-'A')*26) + memory.code[pc++] - 'A';
+        if ((0 <= t1) && (t1 <= NUM_FUNCS) && func[t1]) {
+            rpush(pc);
+            pc = func[t1];
+        }
         break;
     case '[': pc = doLoop(pc); break;                   // 91
     case '\\': pop(); break;                            // 92

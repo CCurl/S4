@@ -1,30 +1,31 @@
+1( {RT 10,13,}{BL " "})
+
 0( C: dump all code currently defined )
-1( {C 1_i!:H@[i+@:C@#,125=(R)1-]} )
+1( {CD 1_i!:H@[i+@:C@#,125=(RT)1-]} )
 
-1( {R 10,13,}{S " "})
-1( {N #100<("0")#10<("0").} )
-1( {K 1000*}{M KK}{E :T$-#1K/."."1K%N} )
-0( B: Benchmark: simple decrement loop )
-1( {B :T$[1-]E} )
+1( {NN #100<("0")#10<("0").} )
+1( {KK 1000*}{ML KKKK}{EL :T$-#1KK/."."1KK%NN} )
+0( BM: Benchmark: simple decrement loop )
+1( {BM :T$[1-]EL} )
 
-0( X: vt100 CSI code - '<ESC>[' )
-1( {X 27,"["} )
+0( CS: vt100 CSI code - '<ESC>[' )
+1( {CS 27,"["} )
 
-0( Y: Set Color: fb bg Y )
-0( {Y X.";"."m"} )
+0( SC: Set Color: fb bg Y )
+0( {SC CS.";"."m"} )
 
-0( Y: Save the cursor pos )
-0( {Z X"s"} )
+0( DD: Save the cursor pos )
+0( {CA CS"s"} )
 
-0( Y: cursor pos restore )
-0( {Y X"u""} )
+0( DD: cursor pos restore )
+0( {CB CS"u""} )
 
-0( P: Set cursor pos: x y P )
-1( {P X.";"."H"} )
+0( PP: Set cursor pos: x y P )
+1( {PP CS.";"."H"} )
 
-0( L: Clear Screen )
-1( {L X"2J"0#P} )
+0( CL: Clear Screen )
+1( {CL CS"2J"0#PP} )
 
 1( "S4 v0.0.1 - https://github.com/CCurl/S4" )
-1( R"Hello." )
-1( RR"---System info---":IA )
+1( RT"Hello." )
+1( RTRT"---System info---":IA )
