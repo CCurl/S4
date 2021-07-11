@@ -92,8 +92,7 @@ void printStringF(const char* fmt, ...) {
     printString(buf);
 }
 
-int doNumber(int pc) {
-    long num = 0;
+int doNumber(long num, int pc) {
     char c = CODE[pc];
     while (('0' <= c) && (c <= '9')) {
         num = (num * 10) + (c - '0');
@@ -335,7 +334,7 @@ int step(int pc) {
     case '$': t1 = N; N = T; T = t1; break;             // 36
     case '%': t1 = pop(); T %= t1;   break;             // 37
     case '&': t1 = pop(); T &= t1;   break;             // 38
-    case '\'': push(CODE[pc++]);     break;          // 39
+    case '\'': push(CODE[pc++]);     break;             // 39
     case '(': pc = doIf(pc);         break;             // 40
     case ')': /*maybe ELSE?*/        break;             // 41
     case '*': t1 = pop(); T *= t1;   break;             // 42
@@ -346,7 +345,7 @@ int step(int pc) {
     case '/': t1 = pop(); if (t1) { T /= t1; } break;   // 47
     case '0': case '1': case '2': case '3': case '4':   // 48-57
     case '5': case '6': case '7': case '8': case '9':
-        pc = doNumber(pc - 1); break;
+        pc = doNumber(ir-'0', pc); break;
     case ':': pc = doExt(pc); break;                    // 58
     case ';': pc = rpop(); break;                       // 59
     case '<': t1 = pop(); T = T < t1 ? -1 : 0;  break;  // 60
