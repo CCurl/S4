@@ -92,14 +92,6 @@ void printStringF(const char* fmt, ...) {
     printString(buf);
 }
 
-int doIf(int pc) {
-    if (pop() == 0) {
-        while ((pc < CODE_SZ) && (CODE[pc] != ')')) { ++pc; }
-        ++pc;
-    }
-    return pc;
-}
-
 int doDefineFunction(int pc) {
     if (pc < here) { return pc; }
     int f1 = CODE[pc++] - 'A';
@@ -153,16 +145,6 @@ int doFile(int pc) {
     return pc;
 }
 #endif
-
-int doQuote(int pc, int isPush) {
-    char x[2];
-    x[1] = 0;
-    while ((pc < CODE_SZ) && (CODE[pc] != '"')) {
-        x[0] = CODE[pc++];
-        printString(x);
-    }
-    return ++pc;
-}
 
 void dumpCode() {
     printStringF("\r\nCODE: size: %d ($%x), HERE=%d ($%x)", CODE_SZ, CODE_SZ, here, here);
@@ -319,13 +301,22 @@ int step(int pc) {
     case 0: return -1;                                  // 0
     case ' ': break;                                    // 32
     case '!': reg[curReg] = pop();   break;             // 33
-    case '"': pc = doQuote(pc, 0);   break;             // 34
+    case '"': input_fn[1] = 0;                          // 34
+        while ((pc < CODE_SZ) && (CODE[pc] != '"')) {
+            input_fn[0] = CODE[pc++];
+            printString(input_fn);
+        }
+        ++pc; break;
     case '#': push(T);               break;             // 35
     case '$': t1 = N; N = T; T = t1; break;             // 36
     case '%': t1 = pop(); T %= t1;   break;             // 37
     case '&': t1 = pop(); T &= t1;   break;             // 38
     case '\'': push(CODE[pc++]);     break;             // 39
-    case '(': pc = doIf(pc);         break;             // 40
+    case '(': if (pop() == 0) {                         // 40
+            while ((pc < CODE_SZ) && (CODE[pc] != ')')) { ++pc; }
+            ++pc;
+        }
+        break;
     case ')': /*maybe ELSE?*/        break;             // 41
     case '*': t1 = pop(); T *= t1;   break;             // 42
     case '+': N += T; pop();         break;             // 43
