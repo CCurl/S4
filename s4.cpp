@@ -264,7 +264,7 @@ int doExt(int pc) {
         if (t1 == 'F') { dumpFuncs(); }
         if (t1 == 'M') { dumpMemory(); }
         if (t1 == 'R') { dumpRegs(); }
-        if (t1 == 'S') { dumpStack(1); }
+        if (t1 == 'S') { dumpStack(0); }
         break;
     case 'J': break;   /* *** FREE ***  */
     case 'K': T *= 1000; break;
@@ -389,8 +389,7 @@ int run(int pc) {
 }
 
 void s4() {
-    printString("\r\ns4:"); dumpStack(0);
-    printString("> ");
+    printString("\r\nS4:"); dumpStack(0); printString(">");
 }
 
 void loadCode(const char* src) {
