@@ -67,13 +67,12 @@ conditions/flow control
 other
 :C@   (a--n)       Fetch byte from address a
 :C!   (n a--)      Store byte n to address a
-:FO   (n a--)      File: open for reading (block.n)
-:FN   (n a--)      File: create new (block.n)
-:FC   (a--)        File: close
-:FR   (a--n)       File: read 1 char
-:FW   (n a--)      File: write 1 char
-:FF   (--f)        Flag: false
-:FT   (--t)        Flag: true
+:FOA  (n--f)       File: open for appending (block.n)
+:FOR  (n--f)       File: open for reading (block.n)
+:FOW  (n--f)       File: open for writing (block.n)
+:FC   (f--)        File: close
+:FR   (f--c)       File: read 1 char
+:FW   (c f--)      File: write 1 char
 :IA   (--)         Info: All (CFMRS)
 :IC   (--)         Info: Code
 :IF   (--)         Info: Functions
