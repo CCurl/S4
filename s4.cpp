@@ -16,6 +16,7 @@ int doFile(int pc) { return pc; }
 #else
 #include <windows.h>
 #include <conio.h>
+#include <stdio.h>
 void printStringF(const char*, ...);
 long millis() { return GetTickCount(); }
 int analogRead(int pin) { printStringF("-AR(%d)-", pin); return 0; }
@@ -31,7 +32,10 @@ void delay(DWORD ms) { Sleep(ms); }
 #define MEM_SZ    (1024*64)
 #define TIB_SZ         128
 HANDLE hStdOut = 0;
-char input_fn[24];
+char input_fn[32];
+//typedef struct _iobuf FILE;
+FILE *input_fp = NULL;
+
 void printString(const char* str) {
     int l = strlen(str);
     DWORD n = 0;
@@ -46,7 +50,8 @@ void printString(const char* str) {
 
 #define CODE_SZ     (MEM_SZ*4)
 #define NUM_REGS     26
-#define NUM_FUNCS   (26*26)
+#define NUM_FUNCS   (36*36)
+// #define NUM_FUNCS   (1024)
 #define TIB         (CODE_SZ-TIB_SZ-4)
 
 typedef unsigned char byte;
@@ -100,22 +105,37 @@ int doIf(int pc) {
     return pc;
 }
 
+int err(const char* err, int pc) {
+    printString(err);
+    return pc;
+}
+
+int hexNum(char x, int alphaOnly) {
+    if ((!alphaOnly) && ('0' <= x) && (x <= '9')) { return x - '0'; }
+    if (('A' <= x) && (x <= 'Z')) { return x - 'A' + 10; }
+    return -1;
+}
+
 int doDefineFunction(int pc) {
     if (pc < here) { return pc; }
-    int f1 = CODE[pc++] - 'A';
-    int f2 = CODE[pc++] - 'A';
-    int fn = (f1 * 26) + f2;
-    if ((fn < 0) || (NUM_FUNCS <= fn)) { return pc; }
+    int fn = hexNum(CODE[pc], 0);
+    int f1 = hexNum(CODE[pc + 1], 0);
+    if ((fn < 0) || (f1 < 0)) {
+        char x[32]; sprintf_s(x, 32, "-{%c%c:bad-", CODE[pc], CODE[pc+1]);
+        return err(x, pc); 
+    }
+    fn = (fn * 36) + f1;
+    if ((fn < 0) || (NUM_FUNCS <= fn)) { return err("-{FN range-", pc); }
     CODE[here++] = '{';
-    CODE[here++] = f1 + 'A';
-    CODE[here++] = f2 + 'A';
+    CODE[here++] = CODE[pc];
+    CODE[here++] = CODE[pc+1];
+    pc += 2;
     func[fn] = here;
     while ((pc < CODE_SZ) && CODE[pc]) {
         CODE[here++] = CODE[pc++];
         if (CODE[here-1] == '}') { return pc; }
     }
-    printString("-code-overflow-");
-    return pc;
+    return err("-code-overflow-", pc);
 }
 
 #ifndef __DEV_BOARD__
@@ -132,7 +152,7 @@ int doFile(int pc) {
             if (ir == 'A') { m[0] = 'a'; }
             if (ir == 'R') { m[0] = 'r'; }
             if (ir == 'W') { m[0] = 'w'; }
-            sprintf_s<24>(input_fn, "block.%03d", T);
+            sprintf_s(input_fn, 24, "block.%03d", T);
             fopen_s((FILE **)&T, input_fn, m);
         }
         break;
@@ -153,6 +173,28 @@ int doFile(int pc) {
     return pc;
 }
 #endif
+
+int doFunction(int pc) {
+    int fn = hexNum(CODE[pc], 0);
+    int f1 = hexNum(CODE[pc + 1], 0);
+    if ((fn < 0)|| (f1 < 0)) {
+        char x[32]; sprintf_s(x, 32, "-~%c%c:bad-", CODE[pc], CODE[pc + 1]);
+        return err(x, pc);
+    }
+    fn = (fn * 36) + f1;
+    pc += 2;
+    if (NUM_FUNCS <= fn) { return err("-`FN range-", pc); }
+    if (!func[fn]) { return pc; }
+    rpush(pc);
+    return func[fn];
+}
+
+int doLoad(int pc) {
+    if (input_fp) { fclose(input_fp); }
+    sprintf_s(input_fn, sizeof(input_fn), "block.%03ld", pop());
+    fopen_s(&input_fp, input_fn, "rt");
+    return pc;
+}
 
 int doQuote(int pc, int isPush) {
     char x[2];
@@ -194,14 +236,17 @@ void dumpRegs() {
 }
 
 void dumpFuncs() {
-    printString("\r\nFUNCTIONS:");
+    printStringF("\r\nFUNCTIONS: (%d available)", NUM_FUNCS);
     int n = 0;
     for (int i = 0; i < NUM_FUNCS; i++) {
-        if (!func[i]) { continue; }
-        byte f1 = 'A' + (i/26);
-        byte f2 = 'A' + (i%26);
-        if (((n++) % 7) == 0) { printString("\r\n"); }
-        printStringF("%c%c: %-5ld    ", f1, f2, func[i]);
+        if (func[i]) {
+            byte f1 = '0' + (i / 36);
+            byte f2 = '0' + (i % 36);
+            if ('9' < f1) { f1 += 7; }
+            if ('9' < f2) { f2 += 7; }
+            if (((n++) % 7) == 0) { printString("\r\n"); }
+            printStringF("%c%c: %ld(%d)  ", f1, f2, func[i], i);
+        }
     }
 }
 
@@ -286,7 +331,7 @@ int doExt(int pc) {
         break;
     case 'J': break;   /* *** FREE ***  */
     case 'K': T *= 1000; break;
-    case 'L': break;   /* *** FREE ***  */
+    case 'L': pc = doLoad(pc);  break;   /* *** FREE ***  */
     case 'M': t1 = CODE[pc++];
         if (t1 == '@') { if ((0 <= T) && (T < MEM_SZ)) { T = memory.mem[T]; } }
         if (t1 == '!') { t2 = pop(); t1 = pop(); if ((0 <= t2) && (t2 < MEM_SZ)) { memory.mem[t2] = t1; } }
@@ -355,11 +400,7 @@ int step(int pc) {
     case 'M': case 'N':   /* O is OVER */   case 'P': case 'Q': 
     case 'R': case 'S': case 'T': case 'U': case 'V': case 'W': 
     case 'X': case 'Y': case 'Z': 
-        t1 = ((ir-'A')*26) + CODE[pc++] - 'A';
-        if ((0 <= t1) && (t1 <= NUM_FUNCS) && func[t1]) {
-            rpush(pc);
-            pc = func[t1];
-        }
+        pc = doFunction(pc-1);
         break;
     case '[': rpush(pc);                                // 91
         if (T == 0) {
@@ -372,7 +413,7 @@ int step(int pc) {
             break;
     case '^': t1 = pop(); T ^= t1;  break;              // 94
     case '_': T = -T;      break;                       // 95
-    case '`': break;  /* *** FREE ***  */               // 96
+    case '`':pc = doFunction(pc);                       // 96
     case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': // 97-122
     case 'g': case 'h': case 'i': case 'j': case 'k': case 'l':
     case 'm': case 'n': case 'o': case 'p': case 'q': case 'r':
@@ -412,9 +453,19 @@ void loadCode(const char* src) {
 #ifndef __DEV_BOARD__
 void loop() {
     char* tib = (char*)&CODE[TIB];
-    s4();
-    fgets(tib, TIB_SZ, stdin);
-    run(TIB);
+    if (input_fp) {
+        if (fgets(tib, TIB_SZ, input_fp) == tib) {
+            run(TIB);
+        } else {
+            fclose(input_fp);
+            input_fp = NULL;
+        } 
+    }
+    else {
+        s4();
+        fgets(tib, TIB_SZ, stdin);
+        run(TIB);
+    }
 }
 
 void process_arg(char* arg)
@@ -438,6 +489,7 @@ int main(int argc, char** argv) {
     SetConsoleMode(hStdOut, (m | ENABLE_VIRTUAL_TERMINAL_PROCESSING));
     vmInit();
     strcpy_s(input_fn, sizeof(input_fn), "");
+    input_fp = NULL;
 
     for (int i = 1; i < argc; i++)
     {
@@ -447,13 +499,7 @@ int main(int argc, char** argv) {
     }
 
     if (strlen(input_fn) > 0) {
-        FILE* fp = NULL;
-        fopen_s(&fp, input_fn, "rt");
-        if (fp) {
-            char* tib = (char*)&CODE[TIB];
-            while (fgets(tib, TIB_SZ, fp) == tib) { run(TIB); }
-            fclose(fp);
-        }
+        fopen_s(&input_fp, input_fn, "rt");
     }
 
     while (isBye == 0) { loop(); }
