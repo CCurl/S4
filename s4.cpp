@@ -45,7 +45,7 @@ void printString(const char* str) {
 
 #define CODE_SZ     (MEM_SZ*4)
 #define NUM_REGS     26
-#define NUM_FUNCS   (26*36)
+#define NUM_FUNCS   (36*36)
 #define TIB         (CODE_SZ-TIB_SZ-4)
 
 typedef unsigned char byte;
@@ -133,6 +133,14 @@ int doDefineFunction(int pc) {
     return pc;
 }
 
+int doCallFunction(int pc) {
+    int fn = GetFunctionNum(pc);
+    if (fn < 0) { return pc + 2; }
+    if (!func[fn]) { return pc + 2; }
+    rpush(pc + 2);
+    return func[fn];
+}
+
 #ifndef __DEV_BOARD__
 int doFile(int pc) {
     int ir = CODE[pc++];
@@ -168,13 +176,6 @@ int doFile(int pc) {
     return pc;
 }
 #endif
-
-int doFunction(int pc) {
-    int fn = GetFunctionNum(pc); 
-    if (!func[fn]) { return pc+2; }
-    rpush(pc+2);
-    return func[fn];
-}
 
 int doLoad(int pc) {
     if (input_fp) { fclose(input_fp); }
@@ -392,7 +393,7 @@ int step(int pc) {
     case 'G': case 'H': case 'I': case 'J': case 'K': case 'L':
     case 'M': case 'N':   /* O is OVER */   case 'P': case 'Q': 
     case 'R': case 'S': case 'T': case 'U': case 'V': case 'W': 
-    case 'X': case 'Y': case 'Z': pc = doFunction(pc-1);
+    case 'X': case 'Y': case 'Z': pc = doCallFunction(pc-1);
         break;
     case '[': rpush(pc);                                // 91
         if (T == 0) {
@@ -405,7 +406,7 @@ int step(int pc) {
             break;
     case '^': t1 = pop(); T ^= t1;  break;              // 94
     case '_': T = -T;      break;                       // 95
-    case '`': pc = doFunction(pc);                      // 96
+    case '`': pc = doCallFunction(pc);                      // 96
     case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': // 97-122
     case 'g': case 'h': case 'i': case 'j': case 'k': case 'l':
     case 'm': case 'n': case 'o': case 'p': case 'q': case 'r':
