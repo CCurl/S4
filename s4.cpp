@@ -97,14 +97,6 @@ void printStringF(const char* fmt, ...) {
     printString(buf);
 }
 
-int doIf(int pc) {
-    if (pop() == 0) {
-        while ((pc < CODE_SZ) && (CODE[pc] != ')')) { ++pc; }
-        ++pc;
-    }
-    return pc;
-}
-
 int err(const char* err, int pc) {
     printString(err);
     return pc;
@@ -327,7 +319,7 @@ int doExt(int pc) {
         if (t1 == 'F') { dumpFuncs(); }
         if (t1 == 'M') { dumpMemory(); }
         if (t1 == 'R') { dumpRegs(); }
-        if (t1 == 'S') { dumpStack(1); }
+        if (t1 == 'S') { dumpStack(0); }
         break;
     case 'J': break;   /* *** FREE ***  */
     case 'K': T *= 1000; break;
@@ -364,13 +356,22 @@ int step(int pc) {
     case 0: return -1;                                  // 0
     case ' ': break;                                    // 32
     case '!': reg[curReg] = pop();   break;             // 33
-    case '"': pc = doQuote(pc, 0);   break;             // 34
+    case '"': input_fn[1] = 0;                          // 34
+        while ((pc < CODE_SZ) && (CODE[pc] != '"')) {
+            input_fn[0] = CODE[pc++];
+            printString(input_fn);
+        }
+        ++pc; break;
     case '#': push(T);               break;             // 35
     case '$': t1 = N; N = T; T = t1; break;             // 36
     case '%': t1 = pop(); T %= t1;   break;             // 37
     case '&': t1 = pop(); T &= t1;   break;             // 38
     case '\'': push(CODE[pc++]);     break;             // 39
-    case '(': pc = doIf(pc);         break;             // 40
+    case '(': if (pop() == 0) {                         // 40
+            while ((pc < CODE_SZ) && (CODE[pc] != ')')) { ++pc; }
+            ++pc;
+        }
+        break;
     case ')': /*maybe ELSE?*/        break;             // 41
     case '*': t1 = pop(); T *= t1;   break;             // 42
     case '+': N += T; pop();         break;             // 43
@@ -399,7 +400,7 @@ int step(int pc) {
     case 'G': case 'H': case 'I': case 'J': case 'K': case 'L':
     case 'M': case 'N':   /* O is OVER */   case 'P': case 'Q': 
     case 'R': case 'S': case 'T': case 'U': case 'V': case 'W': 
-    case 'X': case 'Y': case 'Z': 
+    case 'X': case 'Y': case 'Z':  
         pc = doFunction(pc-1);
         break;
     case '[': rpush(pc);                                // 91
@@ -413,7 +414,7 @@ int step(int pc) {
             break;
     case '^': t1 = pop(); T ^= t1;  break;              // 94
     case '_': T = -T;      break;                       // 95
-    case '`':pc = doFunction(pc);                       // 96
+    case '`': pc = doFunction(pc);                      // 96
     case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': // 97-122
     case 'g': case 'h': case 'i': case 'j': case 'k': case 'l':
     case 'm': case 'n': case 'o': case 'p': case 'q': case 'r':
@@ -439,8 +440,7 @@ int run(int pc) {
 }
 
 void s4() {
-    printString("\r\ns4:"); dumpStack(0);
-    printString("> ");
+    printString("\r\nS4:"); dumpStack(0); printString(">");
 }
 
 void loadCode(const char* src) {
