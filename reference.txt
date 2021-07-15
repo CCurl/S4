@@ -19,7 +19,7 @@ stack
 \  (a b--a)       Drop TOS (Forth DROP)
 $  (a b--b a)     Swap top 2 stack items (Forth SWAP)
 O  (a b--a b a)   Push 2nd (Forth OVER)
-:N  (a b--b)      Drop 2nd (Forth NIP)
+:N (a b--b)       Drop 2nd (Forth NIP)
 
 registers
 x   (--)          Select register x (x: [a..z]). 
