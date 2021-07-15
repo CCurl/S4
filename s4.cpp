@@ -37,8 +37,7 @@ char input_fn[32];
 FILE *input_fp = NULL;
 
 void printString(const char* str) {
-    int l = strlen(str);
-    DWORD n = 0;
+    DWORD n = 0, l = strlen(str);
     if (l) { WriteConsoleA(hStdOut, str, l, &n, 0); }
 }
 #endif
@@ -50,8 +49,7 @@ void printString(const char* str) {
 
 #define CODE_SZ     (MEM_SZ*4)
 #define NUM_REGS     26
-#define NUM_FUNCS   (36*36)
-// #define NUM_FUNCS   (1024)
+#define NUM_FUNCS   (26*36)
 #define TIB         (CODE_SZ-TIB_SZ-4)
 
 typedef unsigned char byte;
@@ -103,21 +101,24 @@ int err(const char* err, int pc) {
 }
 
 int hexNum(char x, int alphaOnly) {
-    if ((!alphaOnly) && ('0' <= x) && (x <= '9')) { return x - '0'; }
-    if (('A' <= x) && (x <= 'Z')) { return x - 'A' + 10; }
+    if (('A' <= x) && (x <= 'Z')) { return x - 'A'; }
+    if ((!alphaOnly) && ('0' <= x) && (x <= '9')) { return x - '0' + 26; }
     return -1;
 }
 
 int doDefineFunction(int pc) {
     if (pc < here) { return pc; }
-    int fn = hexNum(CODE[pc], 0);
-    int f1 = hexNum(CODE[pc + 1], 0);
-    if ((fn < 0) || (f1 < 0)) {
-        char x[32]; sprintf_s(x, 32, "-{%c%c:bad-", CODE[pc], CODE[pc+1]);
-        return err(x, pc); 
+    int f1 = hexNum(CODE[pc], 0);
+    int f2 = hexNum(CODE[pc + 1], 0);
+    if ((f1 < 0) || (f2 < 0)) {
+        char x[32]; sprintf_s(x, 32, "-%c%c:FnBad-", CODE[pc], CODE[pc+1]);
+        return err(x, pc+2); 
     }
-    fn = (fn * 36) + f1;
-    if ((fn < 0) || (NUM_FUNCS <= fn)) { return err("-{FN range-", pc); }
+    int fn = (f1 * 36) + f2;
+    if ((fn < 0) || (NUM_FUNCS <= fn)) {
+        char x[32]; sprintf_s(x, 32, "-%c%c:FnOOR-", CODE[pc], CODE[pc + 1]);
+        return err(x, pc+2);
+    }
     CODE[here++] = '{';
     CODE[here++] = CODE[pc];
     CODE[here++] = CODE[pc+1];
@@ -167,17 +168,19 @@ int doFile(int pc) {
 #endif
 
 int doFunction(int pc) {
-    int fn = hexNum(CODE[pc], 0);
-    int f1 = hexNum(CODE[pc + 1], 0);
-    if ((fn < 0)|| (f1 < 0)) {
-        char x[32]; sprintf_s(x, 32, "-`%c%c:bad-", CODE[pc], CODE[pc + 1]);
-        return err(x, pc);
+    int f1 = hexNum(CODE[pc], 0);
+    int f2 = hexNum(CODE[pc + 1], 0);
+    if ((f1 < 0)|| (f2 < 0)) {
+        char x[32]; sprintf_s(x, 32, "-%c%c:Fnbad-", CODE[pc], CODE[pc + 1]);
+        return err(x, pc+2);
     }
-    fn = (fn * 36) + f1;
-    pc += 2;
-    if (NUM_FUNCS <= fn) { return err("-`FN range-", pc); }
-    if (!func[fn]) { return pc; }
-    rpush(pc);
+    int fn = (f1 * 36) + f2;
+    if (NUM_FUNCS <= fn) {
+        char x[32]; sprintf_s(x, 32, "-%c%c:FnOOR-", CODE[pc], CODE[pc + 1]);
+        return err(x, pc+2);
+    }
+    if (!func[fn]) { return pc+2; }
+    rpush(pc+2);
     return func[fn];
 }
 
@@ -232,12 +235,12 @@ void dumpFuncs() {
     int n = 0;
     for (int i = 0; i < NUM_FUNCS; i++) {
         if (func[i]) {
-            byte f1 = '0' + (i / 36);
-            byte f2 = '0' + (i % 36);
-            if ('9' < f1) { f1 += 7; }
-            if ('9' < f2) { f2 += 7; }
-            if (((n++) % 7) == 0) { printString("\r\n"); }
-            printStringF("%c%c: %ld(%d)  ", f1, f2, func[i], i);
+            byte f1 = 'A' + (i / 36);
+            byte f2 = 'A' + (i % 36);
+            if ('Z' < f1) { f1 -= 43; }
+            if ('Z' < f2) { f2 -= 43; }
+            if (((n++) % 5) == 0) { printString("\r\n"); }
+            printStringF("%c%c: %5d(%4d)  ", f1, f2, func[i], i);
         }
     }
 }

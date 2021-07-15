@@ -1,7 +1,6 @@
-1( {RT 10,13,}{BL ' ,})
-
 0( CD: dump all code currently defined )
-1( {CD 1_i!:H@[i+@:C@#,125=(RT)1-]} )
+1( {CR 10,13,})
+1( {CD 1_i!:H@[i+@:C@#,125=(CR)1-]} )
 
 0( : print TOS to 3 width )
 1( {N3 #100<(0.)#10<(0.).} )
@@ -23,12 +22,12 @@
 0( C3: cursor pos restore )
 0( {C3 CS"u""} )
 
-0( C4: Set cursor pos: x y CP )
-1( {C4 CS.";"."H"} )
+0( CP: Set cursor pos: x y CP )
+1( {CP CS.";"."H"} )
 
 0( CL: Clear Screen )
-1( {CL CS"2J"0#C4} )
+1( {CL CS"2J"0#CP} )
 
 1( "S4 v0.0.1 - https://github.com/CCurl/S4" )
-1( RT"Hello." )
-1( RTRT"---System info---":IA )
+1( CR"Hello." )
+1( CRCR"---System info---":IA )
