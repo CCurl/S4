@@ -31,8 +31,9 @@ x+  (--)          Select register x and increment it by 1
 x-  (--)          Select register x and decrement it by 1
 
 functions
-{xx  (--)         Define function xx (xx:AA..Z9)
-                    NOTE: '{}' cannot have '}' embedded in it (eg - {BD"TE}ST"} will not compile correctly)
+{xx  (--)         Define function xx (xx:AA..99)
+                    NOTE: Function names can start with a number [0..9], use ` to call such functions
+                    NOTE: A function cannot have '}' embedded in it (eg - {BD"TE}ST"} will not compile correctly)
                       Use {OK"TE"125,"ST"} instead
 }    (--)         End of function definition
 xx   (--)         Call function xx (xx:AA..Z9)
