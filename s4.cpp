@@ -443,11 +443,21 @@ void loadCode(const char* src) {
 }
 
 #ifndef __DEV_BOARD__
+void doHistory(const char *txt) {
+    FILE* fp = NULL;
+    fopen_s(&fp, "history.txt", "at");
+    if (fp) {
+        fprintf(fp, "%s", txt);
+        fclose(fp);
+    }
+}
+
 void loop() {
     char* tib = (char*)&CODE[TIB];
     FILE* fp = (input_fp) ? input_fp : stdin;
     if (fp == stdin) { s4(); }
     if (fgets(tib, TIB_SZ, fp) == tib) {
+        if (fp == stdin) { doHistory(tib); }
         run(TIB);
         return;
     }
