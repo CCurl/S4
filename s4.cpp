@@ -170,7 +170,7 @@ int doFunction(int pc) {
     int fn = hexNum(CODE[pc], 0);
     int f1 = hexNum(CODE[pc + 1], 0);
     if ((fn < 0)|| (f1 < 0)) {
-        char x[32]; sprintf_s(x, 32, "-~%c%c:bad-", CODE[pc], CODE[pc + 1]);
+        char x[32]; sprintf_s(x, 32, "-`%c%c:bad-", CODE[pc], CODE[pc + 1]);
         return err(x, pc);
     }
     fn = (fn * 36) + f1;
