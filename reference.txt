@@ -23,17 +23,21 @@ O  (a b--a b a)   Push 2nd (Forth OVER)
 
 registers
 x   (--)          Select register x (x: [a..z]). 
-                  NOTE: the register stays selected until another register is selected.
+                    NOTE: the register stays selected until another register is selected.
+                    NOTE: register 'h' is HERE
 @   (--n)         Fetch value from selected register
 !   (n--)         Store value to selected register
 x+  (--)          Select register x and increment it by 1
 x-  (--)          Select register x and decrement it by 1
 
 functions
-{x   (--)         Define function x (x:A..Z)
-                  NOTE: O is used for OVER, so O cannot be used as the first char of a function name
+{xx  (--)         Define function xx (xx:AA..Z9)
+                    NOTE: '{}' cannot have '}' embedded in it (eg - {BD"TE}ST"} will not compile correctly)
+                      Use {OK"TE"125,"ST"} instead
 }    (--)         End of function definition
-x    (--)         Call function x (x:A..Z)
+xx   (--)         Call function xx (xx:AA..Z9)
+`xx  (--)         Call function xx (xx:AA..Z9)
+                    NOTE: Use this to call functions with a 1st character of 'O' or [0..9]
 ;    (--)         Return from function immediately (i.e. - before reaching '}')
                     NOTE: returning while inside of a loop is not supported; behavior will be undefined.
 
@@ -52,8 +56,12 @@ conditions/flow control
 >   (a b--f)      if (a > b), f=true, else f=false
 =   (a b--f)      if (a = b), f=true, else f=false
 (   (f--)         if (f != 0), execute code in '()', if false skip until ')'
+                    NOTE: '()' cannot have ')' embedded in in (EG - a@("TE)ST"1-) fails when a=0)
+                      USE a@("TE"41,"ST") instead
 [   (f--f)        if (f != 0), begin while loop. Leave f on stack. Else, skip code until ']'
 ]   (f--)         if (f != 0), repeat the loop. Else, drop f and continue.
+                    NOTE: '[]' cannot have ']' embedded in it (EG - a@["TE]ST"1-] fails when a=0)
+                      USE a@("TE"93,"ST") instead
 
 other
 :C@   (a--n)       Fetch byte from address a
@@ -65,8 +73,6 @@ other
 :FW   (n a--)      File: write 1 char
 :FF   (--f)        Flag: false
 :FT   (--t)        Flag: true
-:H@   (--n)        HERE: Fetch current value
-:H!   (n--)        HERE: Set HERE address
 :IA   (--)         Info: All (CFMRS)
 :IC   (--)         Info: Code
 :IF   (--)         Info: Functions
