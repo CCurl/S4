@@ -1,6 +1,6 @@
 0( CD: dump all code currently defined )
 1( {CR 10,13,})
-1( {CD 1_i!:H@[i+@:C@#,125=(CR)1-]} )
+1( {CD 1_i!h@[i+@:C@#,125=(CR)1-]} )
 
 0( : print TOS to 3 width )
 1( {N3 #100<(0.)#10<(0.).} )

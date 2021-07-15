@@ -59,7 +59,6 @@ long rstack[STK_SZ + 1];
 long dsp, rsp;
 long reg[NUM_REGS];
 long func[NUM_FUNCS];
-long here  = 0;
 long curReg = 0;
 byte isBye = 0;
 
@@ -72,6 +71,7 @@ union {
 #define N   dstack[dsp-1]
 #define R   rstack[rsp]
 #define CODE memory.code
+#define HERE reg[7]
 
 void push(long v) { if (dsp < STK_SZ) { dstack[++dsp] = v; } }
 long pop() { return (dsp > 0) ? dstack[dsp--] : 0; }
@@ -80,7 +80,7 @@ void rpush(long v) { if (rsp < STK_SZ) { rstack[++rsp] = v; } }
 long rpop() { return (rsp > 0) ? rstack[rsp--] : -1; }
 
 void vmInit() {
-    dsp = rsp = here = curReg = 0;
+    dsp = rsp = HERE = curReg = 0;
     for (int i = 0; i < NUM_REGS; i++) { reg[i] = 0; }
     for (int i = 0; i < NUM_FUNCS; i++) { func[i] = 0; }
     for (int i = 0; i < MEM_SZ; i++) { memory.mem[i] = 0; }
@@ -107,7 +107,7 @@ int hexNum(char x, int alphaOnly) {
 }
 
 int doDefineFunction(int pc) {
-    if (pc < here) { return pc; }
+    if (pc < HERE) { return pc; }
     int f1 = hexNum(CODE[pc], 0);
     int f2 = hexNum(CODE[pc + 1], 0);
     if ((f1 < 0) || (f2 < 0)) {
@@ -119,14 +119,14 @@ int doDefineFunction(int pc) {
         char x[32]; sprintf_s(x, 32, "-%c%c:FnOOR-", CODE[pc], CODE[pc + 1]);
         return err(x, pc+2);
     }
-    CODE[here++] = '{';
-    CODE[here++] = CODE[pc];
-    CODE[here++] = CODE[pc+1];
+    CODE[HERE++] = '{';
+    CODE[HERE++] = CODE[pc];
+    CODE[HERE++] = CODE[pc+1];
     pc += 2;
-    func[fn] = here;
+    func[fn] = HERE;
     while ((pc < CODE_SZ) && CODE[pc]) {
-        CODE[here++] = CODE[pc++];
-        if (CODE[here-1] == '}') { return pc; }
+        CODE[HERE++] = CODE[pc++];
+        if (CODE[HERE-1] == '}') { return pc; }
     }
     return err("-code-overflow-", pc);
 }
@@ -202,11 +202,11 @@ int doQuote(int pc, int isPush) {
 }
 
 void dumpCode() {
-    printStringF("\r\nCODE: size: %d ($%x), HERE=%d ($%x)", CODE_SZ, CODE_SZ, here, here);
-    if (here == 0) { printString("\r\n(no code defined)"); return; }
-    int ti = 0, x = here, npl = 20;
-    char* txt = (char*)&CODE[here + 10];
-    for (int i = 0; i < here; i++) {
+    printStringF("\r\nCODE: size: %d ($%x), HERE=%d ($%x)", CODE_SZ, CODE_SZ, HERE, HERE);
+    if (HERE == 0) { printString("\r\n(no code defined)"); return; }
+    int ti = 0, x = HERE, npl = 20;
+    char* txt = (char*)&CODE[HERE + 10];
+    for (int i = 0; i < HERE; i++) {
         if ((i % npl) == 0) {
             if (ti) { txt[ti] = 0;  printStringF(" ; %s", txt); ti = 0; }
             printStringF("\n\r%05d: ", i);
@@ -240,7 +240,7 @@ void dumpFuncs() {
             if ('Z' < f1) { f1 -= 43; }
             if ('Z' < f2) { f2 -= 43; }
             if (((n++) % 5) == 0) { printString("\r\n"); }
-            printStringF("%c%c: %5d(%4d)  ", f1, f2, func[i], i);
+            printStringF("%c%c:%4d(%3d)  ", f1, f2, func[i], i);
         }
     }
 }
@@ -312,10 +312,7 @@ int doExt(int pc) {
     case 'E': break;   /* *** FREE ***  */
     case 'F': pc = doFile(pc); break;
     case 'G': break;   /* *** FREE ***  */
-    case 'H': t1 = CODE[pc++];
-        if (t1 == '@') { push(here); }
-        if (t1 == '!') { t2 = pop(); if ((0 < t2) && (t2 < CODE_SZ)) { here = (long)t2; } }
-        break;
+    case 'H': break;   /* *** FREE ***  */
     case 'I': t1 = CODE[pc++];
         if (t1 == 'A') { dumpAll(); }
         if (t1 == 'C') { dumpCode(); }
