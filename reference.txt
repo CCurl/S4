@@ -79,6 +79,7 @@ other
 :IM   (--)         Info: Memory
 :IR   (--)         Info: Registers
 :IS   (--)         Info: Stack
+:L    (n--)        Load code from block (block.n)
 :M@   (a--n)       Fetch 32-bit value from address a.
 :M!   (n a--)      Store n to address a (32-bit).
 :PI   (p--)        Arduino: pinMode(p, INPUT)
