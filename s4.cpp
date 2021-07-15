@@ -16,7 +16,6 @@ int doFile(int pc) { return pc; }
 #else
 #include <windows.h>
 #include <conio.h>
-#include <stdio.h>
 void printStringF(const char*, ...);
 long millis() { return GetTickCount(); }
 int analogRead(int pin) { printStringF("-AR(%d)-", pin); return 0; }
@@ -32,9 +31,6 @@ void delay(DWORD ms) { Sleep(ms); }
 #define MEM_SZ    (1024*64)
 #define TIB_SZ         128
 HANDLE hStdOut = 0;
-char input_fn[32];
-//typedef struct _iobuf FILE;
-FILE *input_fp = NULL;
 
 void printString(const char* str) {
     DWORD n = 0, l = strlen(str);
@@ -61,17 +57,19 @@ long reg[NUM_REGS];
 long func[NUM_FUNCS];
 long curReg = 0;
 byte isBye = 0;
+char input_fn[32];
+FILE* input_fp = NULL;
 
 union {
     byte code[CODE_SZ];
     long mem[MEM_SZ];
 } memory;
 
-#define T   dstack[dsp]
-#define N   dstack[dsp-1]
-#define R   rstack[rsp]
-#define CODE memory.code
-#define HERE reg[7]
+#define T     dstack[dsp]
+#define N     dstack[dsp-1]
+#define R     rstack[rsp]
+#define CODE  memory.code
+#define HERE  reg[7]
 
 void push(long v) { if (dsp < STK_SZ) { dstack[++dsp] = v; } }
 long pop() { return (dsp > 0) ? dstack[dsp--] : 0; }
@@ -95,30 +93,33 @@ void printStringF(const char* fmt, ...) {
     printString(buf);
 }
 
-int err(const char* err, int pc) {
-    printString(err);
-    return pc;
-}
-
 int hexNum(char x, int alphaOnly) {
     if (('A' <= x) && (x <= 'Z')) { return x - 'A'; }
     if ((!alphaOnly) && ('0' <= x) && (x <= '9')) { return x - '0' + 26; }
     return -1;
 }
 
-int doDefineFunction(int pc) {
-    if (pc < HERE) { return pc; }
+int GetFunctionNum(int pc) {
     int f1 = hexNum(CODE[pc], 0);
     int f2 = hexNum(CODE[pc + 1], 0);
     if ((f1 < 0) || (f2 < 0)) {
-        char x[32]; sprintf_s(x, 32, "-%c%c:FnBad-", CODE[pc], CODE[pc+1]);
-        return err(x, pc+2); 
+        char x[32]; sprintf_s(x, 32, "-%c%c:FN Bad-", CODE[pc], CODE[pc + 1]);
+        printString(x);
+        return -1;
     }
     int fn = (f1 * 36) + f2;
     if ((fn < 0) || (NUM_FUNCS <= fn)) {
-        char x[32]; sprintf_s(x, 32, "-%c%c:FnOOR-", CODE[pc], CODE[pc + 1]);
-        return err(x, pc+2);
+        char x[32]; sprintf_s(x, 32, "-%c%c:FN OOB-", CODE[pc], CODE[pc + 1]);
+        printString(x);
+        return -1;
     }
+    return fn;
+}
+
+int doDefineFunction(int pc) {
+    if (pc < HERE) { return pc; }
+    int fn = GetFunctionNum(pc);
+    if (fn < 0) { return pc + 2; }
     CODE[HERE++] = '{';
     CODE[HERE++] = CODE[pc];
     CODE[HERE++] = CODE[pc+1];
@@ -128,7 +129,8 @@ int doDefineFunction(int pc) {
         CODE[HERE++] = CODE[pc++];
         if (CODE[HERE-1] == '}') { return pc; }
     }
-    return err("-code-overflow-", pc);
+    printString("-overflow-");
+    return pc;
 }
 
 #ifndef __DEV_BOARD__
@@ -168,17 +170,7 @@ int doFile(int pc) {
 #endif
 
 int doFunction(int pc) {
-    int f1 = hexNum(CODE[pc], 0);
-    int f2 = hexNum(CODE[pc + 1], 0);
-    if ((f1 < 0)|| (f2 < 0)) {
-        char x[32]; sprintf_s(x, 32, "-%c%c:Fnbad-", CODE[pc], CODE[pc + 1]);
-        return err(x, pc+2);
-    }
-    int fn = (f1 * 36) + f2;
-    if (NUM_FUNCS <= fn) {
-        char x[32]; sprintf_s(x, 32, "-%c%c:FnOOR-", CODE[pc], CODE[pc + 1]);
-        return err(x, pc+2);
-    }
+    int fn = GetFunctionNum(pc); 
     if (!func[fn]) { return pc+2; }
     rpush(pc+2);
     return func[fn];
@@ -400,8 +392,7 @@ int step(int pc) {
     case 'G': case 'H': case 'I': case 'J': case 'K': case 'L':
     case 'M': case 'N':   /* O is OVER */   case 'P': case 'Q': 
     case 'R': case 'S': case 'T': case 'U': case 'V': case 'W': 
-    case 'X': case 'Y': case 'Z':  
-        pc = doFunction(pc-1);
+    case 'X': case 'Y': case 'Z': pc = doFunction(pc-1);
         break;
     case '[': rpush(pc);                                // 91
         if (T == 0) {
@@ -453,18 +444,15 @@ void loadCode(const char* src) {
 #ifndef __DEV_BOARD__
 void loop() {
     char* tib = (char*)&CODE[TIB];
-    if (input_fp) {
-        if (fgets(tib, TIB_SZ, input_fp) == tib) {
-            run(TIB);
-        } else {
-            fclose(input_fp);
-            input_fp = NULL;
-        } 
-    }
-    else {
-        s4();
-        fgets(tib, TIB_SZ, stdin);
+    FILE* fp = (input_fp) ? input_fp : stdin;
+    if (fp == stdin) { s4(); }
+    if (fgets(tib, TIB_SZ, fp) == tib) {
         run(TIB);
+        return;
+    }
+    if (input_fp) { 
+        fclose(input_fp); 
+        input_fp = NULL; 
     }
 }
 
