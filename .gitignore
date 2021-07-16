@@ -31,13 +31,11 @@
 *.out
 *.app
 
-/.vs/stable/v16
 Debug/
 Release/
-stable.vcxproj.user
 *.ipch
-/.vs/S4/v16
 *.l
 /block.*
 /.vs
 /history.txt
+/S4.vcxproj.user

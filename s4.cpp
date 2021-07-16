@@ -183,13 +183,6 @@ int doFile(int pc) {
 }
 #endif
 
-int doLoad(int pc) {
-    if (input_fp) { fclose(input_fp); }
-    sprintf_s(input_fn, sizeof(input_fn), "block.%03ld", pop());
-    fopen_s(&input_fp, input_fn, "rt");
-    return pc;
-}
-
 int doQuote(int pc, int isPush) {
     char x[2];
     x[1] = 0;
@@ -322,7 +315,11 @@ int doExt(int pc) {
         break;
     case 'J': break;   /* *** FREE ***  */
     case 'K': T *= 1000; break;
-    case 'L': pc = doLoad(pc);  break;   /* *** FREE ***  */
+    case 'L':
+        if (input_fp) { fclose(input_fp); }
+            sprintf_s(input_fn, sizeof(input_fn), "block.%03ld", pop());
+            fopen_s(&input_fp, input_fn, "rt");
+        break;   /* *** FREE ***  */
     case 'M': t1 = CODE[pc++];
         if (t1 == '@') { if ((0 <= T) && (T < MEM_SZ)) { T = memory.mem[T]; } }
         if (t1 == '!') { t2 = pop(); t1 = pop(); if ((0 <= t2) && (t2 < MEM_SZ)) { memory.mem[t2] = t1; } }
