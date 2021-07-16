@@ -172,6 +172,12 @@ int doFile(int pc) {
             fwrite(buf, 1, 1, fh);
         }
         break;
+    case 'N':
+        push(0);
+        ir = GetFunctionNum(pc);
+        if (0 <= ir) { T = func[ir]; }
+        pc += 2;
+        break;
     }
     return pc;
 }
