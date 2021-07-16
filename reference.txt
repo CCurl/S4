@@ -82,6 +82,10 @@ other
 :L    (n--)        Load code from block (block.n)
 :M@   (a--n)       Fetch 32-bit value from address a.
 :M!   (n a--)      Store n to address a (32-bit).
+                     NOTE 1: for :M@ and :M!, a is a 32 bit index.
+                     NOTE 2: This memory is shared with the CODE space.
+                             EG -  3 :M@ retrieves a LONG from adresses [12..15]
+                                - 12 :C@ retrieves BYTE from address 12
 :PI   (p--)        Arduino: pinMode(p, INPUT)
 :PU   (p--)        Arduino: pinMode(p, INPUT_PULLUP)
 :PO   (p--)        Arduino: pinMode(p, OUTPUT)
