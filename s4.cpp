@@ -204,7 +204,7 @@ void dumpCode() {
     printStringF("\r\nCODE: size: %d ($%x), HERE=%d ($%x)", CODE_SZ, CODE_SZ, HERE, HERE);
     if (HERE == 0) { printString("\r\n(no code defined)"); return; }
     int ti = 0, x = HERE, npl = 20;
-    char* txt = (char*)&CODE[HERE + 10];
+    char txt[32];
     for (int i = 0; i < HERE; i++) {
         if ((i % npl) == 0) {
             if (ti) { txt[ti] = 0;  printStringF(" ; %s", txt); ti = 0; }
