@@ -12,85 +12,89 @@ bit manipulation
 |  (a b--n)       32-bit or
 ^  (a b--n)       32-bit xor
 ~  (n1-- n2)      not, all bits reversed (0110010 => 1001101)
-_  (n1--n2)       negate TOS (34 => -34)
+_  (n1--n2)       negate TOS (17 => -17)
 
 stack
 #  (a--a a)       Duplicate TOS (Forth DUP)
 \  (a b--a)       Drop TOS (Forth DROP)
-S  (a b--b a)     Swap top 2 stack items (Forth SWAP)
-O  (a b--a b a)   Push next (Forth OVER)
-++   (n1--n2)     Increment (TOS <- TOS+1)
---   (n1--n2)     Decrement (TOS <- TOS-1)
+$  (a b--b a)     Swap top 2 stack items (Forth SWAP)
+O  (a b--a b a)   Push 2nd (Forth OVER)
+:N (a b--b)       Drop 2nd (Forth NIP)
 
 registers
 x   (--)          Select register x (x: [a..z]). 
-                  NOTE: Register stays selected until another register is selected.
+                    NOTE: the register stays selected until another register is selected.
+                    NOTE: register 'h' is HERE
 @   (--n)         Fetch value from selected register
 !   (n--)         Store value to selected register
 x+  (--)          Select register x and increment it by 1
 x-  (--)          Select register x and decrement it by 1
 
-words
-{XX  (--)         Define word XX. Word length can be up to 10 characters, any non-blank character,
-                    except for '{' and '}'. Since words are variable length, the name must be ended 
-                    with a space, both when defining it, and when calling it.
-}    (--)         End of word definition
-:XX  (--)         Execute word <XX>
-;    (--)         Return from word immediately (i.e. - before reaching '}')
+functions
+{xx  (--)         Define function xx (xx:AA..99)
+                    NOTE: Function names can start with a number [0..9], use ` to call such functions
+                    NOTE: A function cannot have '}' embedded in it (eg - {BD"TE}ST"} will not compile correctly)
+                      Use {OK"TE"125,"ST"} instead
+}    (--)         End of function definition
+xx   (--)         Call function xx (xx:AA..Z9)
+`xx  (--)         Call function xx (xx:AA..Z9)
+                    NOTE: Use this to call functions with a 1st character of 'O' or [0..9]
+;    (--)         Return from function immediately (i.e. - before reaching '}')
                     NOTE: returning while inside of a loop is not supported; behavior will be undefined.
 
 input/output
 .     (n--)       Output TOS as decimal number
 ,     (n--)       Output TOS (27 is ESC, 10 is newline, 65 is A, etc) (Forth emit)
-?     ( --key)    Read one key, don't wait for newline.
+?     ( --key)    Read one key, don't wait for ENTER.
 "     (--)        Output bytes until next '"'
 0..9  (--n)       Scan decimal number until non digit. 
-                     to speficy multiple values, separate them by space (4711 3333)
+                     to specify multiple values, separate them by space (4711 3333)
                      to enter a negative number, use _ (negate) after the number (eg - '32_')
-$0..F (--n)      Scan hexadecimal decimal number until non digit. 
-                     to specify multiple values, separate them by space ($4711 $3333)
+'x   (--n)        Push the ascii value of x (x: [any char possible])
 
-conditions
-<   (a b--f)      if (a < b), f=true, else f=fales
+conditions/flow control
+<   (a b--f)      if (a < b), f=true, else f=false
 >   (a b--f)      if (a > b), f=true, else f=false
 =   (a b--f)      if (a = b), f=true, else f=false
-(   (f--)         if (f != 0), execute until ')', if false skip until ')'
+(   (f--)         if (f != 0), execute code in '()', if false skip until ')'
+                    NOTE: '()' cannot have ')' embedded in in (EG - a@("TE)ST"1-) fails when a=0)
+                      USE a@("TE"41,"ST") instead
 [   (f--f)        if (f != 0), begin while loop. Leave f on stack. Else, skip code until ']'
 ]   (f--)         if (f != 0), repeat the loop. Else, drop f and continue.
+                    NOTE: '[]' cannot have ']' embedded in it (EG - a@["TE]ST"1-] fails when a=0)
+                      USE a@("TE"93,"ST") instead
 
 other
-'x   (--n)        Push the ascii value of x (x: [any char possible])
-AR   (p--n)       Arduino: read analog pin (v = analogRead(p))
-AW   (n p--)      Arduino: write to analog pin (analogWrite(p, v))
-B    (--)         Output a space
-C@   (a--n)       Code: Fetch byte from address a
-C!   (n a--)      Code: Store n (8-bit) to address a
-DR   (p--n)       Arduino: read digital pin (n = digitalRead(p))
-DW   (v p--)      Arduino: write to digital pin (digitalWrite(p, n))
-FO   (n a--)      File: open for reading (block.n)
-FN   (n a--)      File: create new (block.n)
-FC   (a--)        File: close
-FR   (a--n)       File: read
-FW   (n a--)      File: write
-FF   (--f)        Flag: false
-FT   (--t)        Flag: true
-H@   (--n)        HERE: Fetch current value
-H!   (n--)        HERE: Set HERE address
-IA   (--)         Info: All (CFMRS)
-IC   (--)         Info: Code
-ID   (--)         Info: Dictionary
-IM   (--)         Info: Memory
-IR   (--)         Info: Registers
-IS   (--)         Info: Stack
-K    (n--n1)      Multiply TOS by 1000
-M@   (a--n)       Memory: Fetch value from address a.
-M!   (n a--)      Memory: Store n to address a.
-PI   (p--)        Arduino: pinMode(p, INPUT)
-PD   (p--)        Arduino: pinMode(p, INPUT_PULLDOWN)
-PU   (p--)        Arduino: pinMode(p, INPUT_PULLUP)
-PO   (p--)        Arduino: pinMode(p, OUTPUT)
-R    (--)         Output a CR/LF
-T    (--n)        Time (Arduino: millis(), Windows: GetTickCount())
-W    (n--)        Wait (Arduino: delay(),  Windows: Sleep())
-XX   (--)         Reset S4 to initial state
-ZZ   (--)         Exit S4
+:C@   (a--n)       Fetch byte from address a
+:C!   (n a--)      Store byte n to address a
+:FOA  (n--f)       File: open for appending (block.n)
+:FOR  (n--f)       File: open for reading (block.n)
+:FOW  (n--f)       File: open for writing (block.n)
+:FC   (f--)        File: close
+:FR   (f--c)       File: read 1 char
+:FW   (c f--)      File: write 1 char
+:IA   (--)         Info: All (CFMRS)
+:IC   (--)         Info: Code
+:IF   (--)         Info: Functions
+:IM   (--)         Info: Memory
+:IR   (--)         Info: Registers
+:IS   (--)         Info: Stack
+:L    (n--)        Load code from block (block.n)
+:M@   (a--n)       Fetch 32-bit value from address a.
+:M!   (n a--)      Store n to address a (32-bit).
+                     NOTE 1: for :M@ and :M!, a is a 32 bit index.
+                     NOTE 2: This memory is shared with the CODE space.
+                             EG -  3 :M@ retrieves a LONG from adresses [12..15]
+                                - 12 :C@ retrieves BYTE from address 12
+:PI   (p--)        Arduino: pinMode(p, INPUT)
+:PU   (p--)        Arduino: pinMode(p, INPUT_PULLUP)
+:PO   (p--)        Arduino: pinMode(p, OUTPUT)
+:PRA  (p--n)       Arduino: read analog pin (v = analogRead(p))
+:PRD  (p--n)       Arduino: read digital pin (n = digitalRead(p))
+:PWA  (v p--)      Arduino: write to analog pin (analogWrite(p, v))
+:PWD  (v p--)      Arduino: write to digital pin (digitalWrite(p, v))
+:T    (--n)        Time (Arduino: millis(), Windows: GetTickCount())
+:W    (n--)        Wait (Arduino: delay(),  Windows: Sleep())
+:XA   (a--)        Call code at address A
+:XX   (--)         Reset S4 to initial state
+:ZZ   (--)         Exit S4

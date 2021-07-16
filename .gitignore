@@ -40,3 +40,4 @@ stable.vcxproj.user
 *.l
 /block.*
 /.vs
+/history.txt

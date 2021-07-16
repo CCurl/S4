@@ -1,5 +1,4 @@
-// S4 - a stack VM, inspired by Sandor Schneider's STABLE
-// see https://w3group.de/stable.html
+// S4 - a stack VM, inspired by Sandor Schneider's STABLE - https://w3group.de/stable.html
 
 #ifndef _WIN32
 #define __DEV_BOARD__
@@ -7,14 +6,13 @@
 
 #ifdef __DEV_BOARD__
 #include <Arduino.h>
-// **NOTE** tweak these for your target dev board
-// These would be for a board like the Teensy 4.0
 #define mySerial SerialUSB
-#define CODE_SZ   (1024*32)
-#define STK_SZ          63
-#define MEM_SZ    (32*1024)
+#define STK_SZ          31
+#define MEM_SZ     (1024*6)
 #define TIB_SZ         150
-#define DICT_SZ        255
+int _getch() { return (mySerial.available()) ? mySerial.read() : 0; }
+void printString(const char* str) { mySerial.print(str); }
+int doFile(int pc) { return pc; }
 #else
 #include <windows.h>
 #include <conio.h>
@@ -28,15 +26,16 @@ void pinMode(int pin, int mode) { printStringF("-pinMode(%d,%d)-", pin, mode); }
 void delay(DWORD ms) { Sleep(ms); }
 #define INPUT            0
 #define INPUT_PULLUP     1
-#define INPUT_PULLDOWN   2
-#define OUTPUT           3
-#define CODE_SZ   (1024*64)
+#define OUTPUT           2
 #define STK_SZ          63
-#define MEM_SZ    (32*1024)
+#define MEM_SZ    (1024*64)
 #define TIB_SZ         128
-#define DICT_SZ        255
 HANDLE hStdOut = 0;
-char input_fn[24];
+
+void printString(const char* str) {
+    DWORD n = 0, l = strlen(str);
+    if (l) { WriteConsoleA(hStdOut, str, l, &n, 0); }
+}
 #endif
 
 #include <stdio.h>
@@ -44,59 +43,45 @@ char input_fn[24];
 #include <string.h>
 #include <stdarg.h>
 
+#define CODE_SZ     (MEM_SZ*4)
 #define NUM_REGS     26
+#define NUM_FUNCS   (36*36)
 #define TIB         (CODE_SZ-TIB_SZ-4)
-#define FN_LEN       9
 
-typedef unsigned short ushort;
-typedef unsigned long ulong;
 typedef unsigned char byte;
 
-typedef struct {
-    char name[FN_LEN + 1];
-    ushort addr;
-} DICT_T;
-
-byte code[CODE_SZ + 1];
-long   dstack[STK_SZ + 1];
-ushort rstack[STK_SZ + 1];
-ushort dsp, rsp;
+long dstack[STK_SZ + 1];
+long rstack[STK_SZ + 1];
+long dsp, rsp;
 long reg[NUM_REGS];
-DICT_T dict[DICT_SZ];
-long memory[MEM_SZ];
-ushort here  = 0;
-ushort dhere = 0;
-ushort mhere = 0;
-ushort curReg = 0;
+long func[NUM_FUNCS];
+long curReg = 0;
 byte isBye = 0;
+char input_fn[32];
+FILE* input_fp = NULL;
 
-#define T dstack[dsp]
-#define N dstack[dsp-1]
-#define R rstack[rsp]
+union {
+    byte code[CODE_SZ];
+    long mem[MEM_SZ];
+} memory;
+
+#define T     dstack[dsp]
+#define N     dstack[dsp-1]
+#define R     rstack[rsp]
+#define CODE  memory.code
+#define HERE  reg[7]
 
 void push(long v) { if (dsp < STK_SZ) { dstack[++dsp] = v; } }
 long pop() { return (dsp > 0) ? dstack[dsp--] : 0; }
 
-void rpush(ushort v) { if (rsp < STK_SZ) { rstack[++rsp] = v; } }
-ushort rpop() { return (rsp > 0) ? rstack[rsp--] : -1; }
-
-#ifdef __DEV_BOARD__
-int _getch() { return (mySerial.available()) ? mySerial.read() : 0; }
-void printString(const char* str) { mySerial.print(str); }
-#else
-void printString(const char* str) {
-    int l = strlen(str);
-    DWORD n = 0;
-    if (l) { WriteConsoleA(hStdOut, str, l, &n, 0); }
-}
-#endif
+void rpush(long v) { if (rsp < STK_SZ) { rstack[++rsp] = v; } }
+long rpop() { return (rsp > 0) ? rstack[rsp--] : -1; }
 
 void vmInit() {
-    dsp = rsp = here = curReg = 0;
-    for (int i = 0; i < CODE_SZ; i++) { code[i] = 0; }
+    dsp = rsp = HERE = curReg = 0;
     for (int i = 0; i < NUM_REGS; i++) { reg[i] = 0; }
-    for (int i = 0; i < MEM_SZ; i++) { memory[i] = 0; }
-    for (int i = 0; i < DICT_SZ; i++) { dict[i].name[0] = 0; dict[i].addr = 0; }
+    for (int i = 0; i < NUM_FUNCS; i++) { func[i] = 0; }
+    for (int i = 0; i < MEM_SZ; i++) { memory.mem[i] = 0; }
 }
 
 void printStringF(const char* fmt, ...) {
@@ -108,215 +93,154 @@ void printStringF(const char* fmt, ...) {
     printString(buf);
 }
 
-int doHexNumber(int pc) {
-    long num = 0;
-    char c = code[pc];
-    while (1) {
-        if (('0' <= c) && (c <= '9')) {
-            num = (num<<4) + (c - '0');
-        }
-        else if (('A' <= c) && (c <= 'Z')) {
-            num = (num<<4) + (code[pc] - 'A' + 10);
-        }
-        else if (('a' <= c) && (c <= 'z')) {
-            num = (num<<4) + (code[pc] - 'a' + 10);
-        }
-        else {
-            push(num);
-            return pc;
-        }
-        c = code[++pc];
-    }
-    push(num);
-    return pc;
+int hexNum(char x, int alphaOnly) {
+    if (('A' <= x) && (x <= 'Z')) { return x - 'A'; }
+    if ((!alphaOnly) && ('0' <= x) && (x <= '9')) { return x - '0' + 26; }
+    return -1;
 }
 
-int doNumber(int pc) {
-    long num = 0;
-    char c = code[pc];
-    if (c == '$') {
-        return doHexNumber(pc+1);
+int GetFunctionNum(int pc) {
+    int f1 = hexNum(CODE[pc], 0);
+    int f2 = hexNum(CODE[pc + 1], 0);
+    if ((f1 < 0) || (f2 < 0)) {
+        char x[32]; sprintf_s(x, 32, "-%c%c:FN Bad-", CODE[pc], CODE[pc + 1]);
+        printString(x);
+        return -1;
     }
-    while (('0' <= c) && (c <= '9')) {
-        num = (num * 10) + (c - '0');
-        c = code[++pc];
+    int fn = (f1 * 36) + f2;
+    if ((fn < 0) || (NUM_FUNCS <= fn)) {
+        char x[32]; sprintf_s(x, 32, "-%c%c:FN OOB-", CODE[pc], CODE[pc + 1]);
+        printString(x);
+        return -1;
     }
-    push(num);
-    return pc;
-}
-
-DICT_T* lookUp(const char *name) {
-    for (int i = dhere - 1; i >= 0; i--) {
-        DICT_T* dp = &dict[i];
-        if (strcmp(name, dp->name) == 0) { return dp; }
-    }
-    return (DICT_T*)0;
-}
-
-int doIf(int pc) {
-    if (pop() == 0) {
-        while ((pc < CODE_SZ) && (code[pc] != ')')) { ++pc; }
-        ++pc;
-    }
-    return pc;
+    return fn;
 }
 
 int doDefineFunction(int pc) {
-    if (DICT_SZ <= dhere) {
-        printString("-out of dictionary space-");
-        return pc;
-        return pc;
+    if (pc < HERE) { return pc; }
+    int fn = GetFunctionNum(pc);
+    if (fn < 0) { return pc + 2; }
+    CODE[HERE++] = '{';
+    CODE[HERE++] = CODE[pc];
+    CODE[HERE++] = CODE[pc+1];
+    pc += 2;
+    func[fn] = HERE;
+    while ((pc < CODE_SZ) && CODE[pc]) {
+        CODE[HERE++] = CODE[pc++];
+        if (CODE[HERE-1] == '}') { return pc; }
     }
-    if (pc < here) {
-        printString("-word already defined-");
-        return pc;
-    }
-    int t1 = pc;
-    DICT_T* dp = &dict[dhere];
-    char c = code[t1], len = 0;
-    while ((' ' < c) && (len < FN_LEN)) {
-        dp->name[len++] = c;
-        c = code[++t1];
-    }
-    if (!len) {
-        printString("-word cannot be empty-");
-        return pc;
-    }
-    ++dhere;
-    dp->name[len] = 0;
-    dp->addr = here + len + 2;
-    code[here++] = '{';
-    while ((pc < CODE_SZ) && code[pc]) {
-        code[here++] = code[pc];
-        if (code[pc] == '}') { return pc + 1; }
-        pc++;
-    }
-    printString("-out of code space-");
+    printString("-overflow-");
     return pc;
 }
 
 int doCallFunction(int pc) {
-    char nm[FN_LEN];
-    char c = code[pc], len = 0;
-    while ((' ' < c) && (len < FN_LEN)) {
-        nm[len++] = c;
-        c = code[++pc];
+    int fn = GetFunctionNum(pc);
+    if (fn < 0) { return pc + 2; }
+    if (!func[fn]) { return pc + 2; }
+    rpush(pc + 2);
+    return func[fn];
+}
+
+#ifndef __DEV_BOARD__
+int doFile(int pc) {
+    int ir = CODE[pc++];
+    switch (ir) {
+    case 'C':
+        if (T) { fclose((FILE *)T); }
+        pop();
+        break;
+    case 'O': ir = CODE[pc++]; 
+        if (T) {
+            char m[3] = {'r','b',0};
+            if (ir == 'A') { m[0] = 'a'; }
+            if (ir == 'R') { m[0] = 'r'; }
+            if (ir == 'W') { m[0] = 'w'; }
+            sprintf_s(input_fn, 24, "block.%03d", T);
+            fopen_s((FILE **)&T, input_fn, m);
+        }
+        break;
+    case 'R': if (T) {
+            char buf[2];
+            SIZE_T n = fread_s(buf, 2, 1, 1, (FILE *)T);
+            T = ((n) ? buf[0] : 0);
+        }
+        break;
+    case 'W': if (T) {
+            FILE *fh = (FILE*)pop();
+            char buf[2] = {0,0};
+            buf[0] = (byte)pop();
+            fwrite(buf, 1, 1, fh);
+        }
+        break;
+    case 'N':
+        push(0);
+        ir = GetFunctionNum(pc);
+        if (0 <= ir) { T = func[ir]; }
+        pc += 2;
+        break;
     }
-    nm[len] = (char)0;
-    DICT_T *dp = lookUp(nm);
-    if (dp) {
-        rpush(pc+1);
-        pc = dp->addr;
-    }
-
-    return pc;
-}
-
-#ifdef __DEV_BOARD__
-int doFileOpen(int pc, const char* x) { return pc; }
-int doFileClose(int pc) { return pc; }
-int doFileRead(int pc) { return pc; }
-int doFileWrite(int pc) { return pc; }
-#else
-int doFileOpen(int pc, const char* mode) {
-    char buf[24];
-    long blk = pop();
-    long addr = pop();
-    FILE* fh = 0;
-    if ((addr < 0) || (MEM_SZ < addr)) { return pc; }
-    sprintf_s<24>(buf, "block.%d", blk);
-    fopen_s(&fh, buf, mode);
-    memory[addr] = (fh) ? (long)fh : 0;
-    return pc;
-}
-
-int doFileClose(int pc) {
-    long a = pop();
-    if ((a < 0) || (MEM_SZ < a)) { return pc; }
-    FILE* fh = (FILE*)memory[a];
-    if (fh) { fclose(fh); memory[a] = 0; }
-    return pc;
-}
-
-int doFileRead(int pc) {
-    char buf[2];
-    long addr = pop();
-    if ((addr < 0) || (MEM_SZ < addr)) { return pc; }
-    FILE* fh = (FILE*)memory[addr];
-    if (fh) {
-        SIZE_T n = fread_s(buf, 2, 1, 1, fh);
-        push((n) ? buf[0] : 0);
-    }
-    return pc;
-}
-
-int doFileWrite(int pc) {
-    char buf[2];
-    long addr = pop();
-    buf[0] = (byte)pop();
-    if ((addr < 0) || (MEM_SZ < addr)) { return pc; }
-    FILE* fh = (FILE*)memory[addr];
-    if (fh) { fwrite(buf, 1, 1, fh); }
     return pc;
 }
 #endif
 
+int doLoad(int pc) {
+    if (input_fp) { fclose(input_fp); }
+    sprintf_s(input_fn, sizeof(input_fn), "block.%03ld", pop());
+    fopen_s(&input_fp, input_fn, "rt");
+    return pc;
+}
+
 int doQuote(int pc, int isPush) {
-    while ((code[pc] != '"') && (pc < CODE_SZ)) {
-        printStringF("%c", code[pc]); pc++;
+    char x[2];
+    x[1] = 0;
+    while ((pc < CODE_SZ) && (CODE[pc] != '"')) {
+        x[0] = CODE[pc++];
+        printString(x);
     }
     return ++pc;
 }
 
-int doLoop(int pc) {
-    rpush(pc);
-    if (T == 0) {
-        while ((pc < CODE_SZ) && (code[pc] != ']')) { pc++; }
-    }
-    return pc;
-}
-
 void dumpCode() {
-    printStringF("\r\nCODE: size: %x (%d), HERE=%x (%d)", CODE_SZ, CODE_SZ, here, here);
-    if (here == 0) { printString("\r\n(no code defined)"); return; }
-    int ti = 0, x = here, npl = 16;
-    char* txt = (char*)&code[here + 10];
-    for (int i = 0; i < here; i++) {
+    printStringF("\r\nCODE: size: %d ($%x), HERE=%d ($%x)", CODE_SZ, CODE_SZ, HERE, HERE);
+    if (HERE == 0) { printString("\r\n(no code defined)"); return; }
+    int ti = 0, x = HERE, npl = 20;
+    char txt[32];
+    for (int i = 0; i < HERE; i++) {
         if ((i % npl) == 0) {
             if (ti) { txt[ti] = 0;  printStringF(" ; %s", txt); ti = 0; }
-            printStringF("\n\r%04x: ", i);
+            printStringF("\n\r%05d: ", i);
         }
-        txt[ti++] = (code[i] < 32) ? '.' : code[i];
-        printStringF(" %02x", code[i]);
+        txt[ti++] = (CODE[i] < 32) ? '.' : CODE[i];
+        printStringF(" %3d", CODE[i]);
     }
     while (x % npl) {
-        printString("   ");
+        printString("    ");
         x++;
     }
     if (ti) { txt[ti] = 0;  printStringF(" ; %s", txt); }
-}
-
-void dumpDict() {
-    printStringF("\r\nDICTIONARY: size: %d, used: %d", DICT_SZ, dhere);
-    if (dhere == 0) {
-        printString("\r\n(dictionary empty)"); 
-        return;
-    }
-    int n = 0;
-    for (int i = dhere-1; 0 <= i; i--) {
-        if ((n%4) == 0) { printString("\r\n"); }
-        printStringF("%04x: %-20s", dict[i].addr, dict[i].name);
-        ++n;
-    }
 }
 
 void dumpRegs() {
     printString("\r\nREGISTERS:");
     for (int i = 0; i < NUM_REGS; i++) {
         byte fId = 'a' + i;
-        if ((0 < i) && (i % 5)) { printStringF("    "); }
-        else { printString("\r\n"); }
-        printStringF("%c: %-10ld", fId, reg[i]);
+        if ((i % 5) == 0) { printString("\r\n"); }
+        printStringF("%c: %-15ld", fId, reg[i]);
+    }
+}
+
+void dumpFuncs() {
+    printStringF("\r\nFUNCTIONS: (%d available)", NUM_FUNCS);
+    int n = 0;
+    for (int i = 0; i < NUM_FUNCS; i++) {
+        if (func[i]) {
+            byte f1 = 'A' + (i / 36);
+            byte f2 = 'A' + (i % 36);
+            if ('Z' < f1) { f1 -= 43; }
+            if ('Z' < f2) { f2 -= 43; }
+            if (((n++) % 5) == 0) { printString("\r\n"); }
+            printStringF("%c%c:%4d(%3d)  ", f1, f2, func[i], i);
+        }
     }
 }
 
@@ -329,140 +253,175 @@ void dumpStack(int hdr) {
 
 void dumpMemory() {
     int n = 0;
-    printStringF("\r\nMEMORY: size: %d", MEM_SZ);
+    printStringF("\r\nMEMORY: size: %d (%d bytes)\r\n", MEM_SZ, CODE_SZ);
     for (int i = 0; i < MEM_SZ; i++) {
-        if (memory[i] == 0) { continue; }
-        if ((0 < n) && (n % 5)) { printStringF("    "); }
-        else { printString("\r\n"); }
-        printStringF("[%04d]: %-10ld", i, memory[i]);
+        if (memory.mem[i] == 0) { continue; }
+        long x = memory.mem[i];
+        printStringF("[%04d]: %-10ld (", i, x);
+        for (int j = 0; j < 4; j++) {
+            if (0<j) { printString(","); }
+            printStringF("%d", x&255);
+            x /= 256;
+        }
+        printStringF(")\r\n");
         ++n;
     }
-    if (n == 0) { printString("\r\n(all memory empty)"); }
+    if (n == 0) { printString("(all memory empty)"); }
 }
 
 void dumpAll() {
     dumpStack(1);  printString("\r\n");
     dumpRegs();    printString("\r\n");
-    dumpMemory();  printString("\r\n");
     dumpCode();    printString("\r\n");
-    dumpDict();    printString("\r\n");
+    dumpFuncs();   printString("\r\n");
+}
+
+int doPin(int pc) {
+    int ir = CODE[pc++];
+    long pin = pop(), val = 0;
+    switch (ir) {
+    case 'I': pinMode(pin, INPUT); break;
+    case 'U': pinMode(pin, INPUT_PULLUP); break;
+    case 'O': pinMode(pin, OUTPUT); break;
+    case 'R': ir = CODE[pc++];
+        if (ir == 'D') { push(digitalRead(pin)); }
+        if (ir == 'A') { push(analogRead(pin)); }
+        break;
+    case 'W': ir = CODE[pc++]; val = pop();
+        if (ir == 'D') { digitalWrite(pin, val); }
+        if (ir == 'A') { analogWrite(pin, val); }
+        break;
+    }
+    return pc;
+}
+
+int doExt(int pc) {
+    byte ir = CODE[pc++];
+    long t1, t2;
+    switch (ir) {
+    case '+': T++;  break;
+    case '-': T--;  break;
+    case 'A': break;   /* *** FREE ***  */
+    case 'B': break;   /* *** FREE ***  */
+    case 'C': t1 = CODE[pc++];
+        if (t1 == '@') { if ((0 <= T) && (T < CODE_SZ)) { T = CODE[T]; } }
+        if (t1 == '!') { t1 = pop(); t2 = pop(); if ((0 <= t1) && (t1 < CODE_SZ)) { CODE[t1] = (byte)t2; } }
+        break;
+    case 'D': break;   /* *** FREE ***  */
+    case 'E': break;   /* *** FREE ***  */
+    case 'F': pc = doFile(pc); break;
+    case 'G': break;   /* *** FREE ***  */
+    case 'H': break;   /* *** FREE ***  */
+    case 'I': t1 = CODE[pc++];
+        if (t1 == 'A') { dumpAll(); }
+        if (t1 == 'C') { dumpCode(); }
+        if (t1 == 'F') { dumpFuncs(); }
+        if (t1 == 'M') { dumpMemory(); }
+        if (t1 == 'R') { dumpRegs(); }
+        if (t1 == 'S') { dumpStack(0); }
+        break;
+    case 'J': break;   /* *** FREE ***  */
+    case 'K': T *= 1000; break;
+    case 'L': pc = doLoad(pc);  break;   /* *** FREE ***  */
+    case 'M': t1 = CODE[pc++];
+        if (t1 == '@') { if ((0 <= T) && (T < MEM_SZ)) { T = memory.mem[T]; } }
+        if (t1 == '!') { t2 = pop(); t1 = pop(); if ((0 <= t2) && (t2 < MEM_SZ)) { memory.mem[t2] = t1; } }
+        break;
+    case 'N': N = T; pop(); break; // NIP
+    case 'O': break;   /* *** FREE ***  */
+    case 'P': pc = doPin(pc); break;
+    case 'Q': break;   /* *** FREE ***  */
+    case 'R': break;   /* *** FREE ***  */
+    case 'S': break;   /* *** FREE ***  */
+    case 'T': push(millis()); break;
+    case 'U': break;   /* *** FREE ***  */
+    case 'V': break;   /* *** FREE ***  */
+    case 'W': delay(pop()); break;
+    case 'X': t1 = CODE[pc++];
+        if (t1 == 'A') { rpush(pc); pc = pop(); }
+        if (t1 == 'X') { vmInit(); }
+        break;
+    case 'Y': break;   /* *** FREE ***  */
+    case 'Z': isBye = (CODE[pc++] == 'Z'); break;
+    default: break;
+    }
+    return pc;
 }
 
 int step(int pc) {
-    byte ir = code[pc++];
-    long t1, t2;
+    byte ir = CODE[pc++];
+    long t1;
     switch (ir) {
     case 0: return -1;                                  // 0
     case ' ': break;                                    // 32
-    case '!': reg[curReg] = pop();  break;              // 33
-    case '"': pc = doQuote(pc, 0);  break;              // 34
-    case '#': push(T);              break;              // 35
-    case '$': pc = doHexNumber(pc); break;              // 36
-    case '%': t1 = pop(); T %= t1;  break;              // 37
-    case '&': t1 = pop(); T &= t1;  break;              // 38
-    case '\'': push(code[pc++]);    break;              // 39
-    case '(': pc = doIf(pc);        break;              // 40
-    case ')': /*maybe ELSE?*/       break;              // 41
-    case '*': t1 = pop(); T *= t1;  break;              // 42
-    case '+': t1 = code[pc];                            // 43
-        if (t1 == '+') { ++pc;  ++T; }
-        else { t1 = pop(); T += t1; }
+    case '!': reg[curReg] = pop();   break;             // 33
+    case '"': input_fn[1] = 0;                          // 34
+        while ((pc < CODE_SZ) && (CODE[pc] != '"')) {
+            input_fn[0] = CODE[pc++];
+            printString(input_fn);
+        }
+        ++pc; break;
+    case '#': push(T);               break;             // 35
+    case '$': t1 = N; N = T; T = t1; break;             // 36
+    case '%': t1 = pop(); T %= t1;   break;             // 37
+    case '&': t1 = pop(); T &= t1;   break;             // 38
+    case '\'': push(CODE[pc++]);     break;             // 39
+    case '(': if (pop() == 0) {                         // 40
+            while ((pc < CODE_SZ) && (CODE[pc] != ')')) { ++pc; }
+            ++pc;
+        }
         break;
+    case ')': /*maybe ELSE?*/        break;             // 41
+    case '*': t1 = pop(); T *= t1;   break;             // 42
+    case '+': N += T; pop();         break;             // 43
     case ',': printStringF("%c", (char)pop());  break;  // 44
-    case '-': t1 = code[pc];                            // 45
-        if (t1 == '-') { ++pc; --T; }
-        else { t1 = pop(); T -= t1; }
-        break;
+    case '-': N -= T; pop();         break;             // 45
     case '.': printStringF("%ld", pop());      break;   // 46
-    case '/': t1 = pop(); if (t1) { T /= t1; } break;   // 47-57
-    case '0': case '1': case '2': case '3': case '4':
+    case '/': t1 = pop(); if (t1) { T /= t1; } break;   // 47
+    case '0': case '1': case '2': case '3': case '4':   // 48-57
     case '5': case '6': case '7': case '8': case '9':
-        pc = doNumber(pc - 1); break;
-    case ':': pc = doCallFunction(pc); break;           // 58
+        push(ir - '0');
+        t1 = CODE[pc] - '0';
+        while ((0 <= t1) && (t1 <= 9)) {
+            T = (T * 10) + t1;
+            t1 = CODE[++pc] - '0';
+        }
+        break;
+    case ':': pc = doExt(pc); break;                    // 58
     case ';': pc = rpop(); break;                       // 59
     case '<': t1 = pop(); T = T < t1 ? -1 : 0;  break;  // 60
     case '=': t1 = pop(); T = T == t1 ? -1 : 0; break;  // 61
     case '>': t1 = pop(); T = T > t1 ? -1 : 0;  break;  // 62
     case '?': push(_getch());                   break;  // 63
     case '@': push(reg[curReg]);                break;  // 64
-    case 'A': t1 = code[pc++];
-        if (t1 == 'R') { T = analogRead(T); }
-        if (t1 == 'W') { t2 = pop(); t1 = pop(); analogWrite(t2, t1); }
+    case 'O': push(N);                          break;  // 79
+    case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': // 65-90
+    case 'G': case 'H': case 'I': case 'J': case 'K': case 'L':
+    case 'M': case 'N':   /* O is OVER */   case 'P': case 'Q': 
+    case 'R': case 'S': case 'T': case 'U': case 'V': case 'W': 
+    case 'X': case 'Y': case 'Z': pc = doCallFunction(pc-1);
         break;
-    case 'B': printString(" "); break;
-    case 'C': t1 = code[pc++];
-        if (t1 == '@') { if ((0 <= T) && (T < CODE_SZ)) { T = code[T]; } }
-        if (t1 == '!') { t1 = pop(); t2 = pop(); if ((0 <= t1) && (t1 < CODE_SZ)) { code[t1] = (byte)t2; } }
+    case '[': rpush(pc);                                // 91
+        if (T == 0) {
+            while ((pc < CODE_SZ) && (CODE[pc] != ']')) { pc++; }
+        }
         break;
-    case 'D': t1 = code[pc++];
-        if (t1 == 'R') { T = digitalRead(T); }
-        if (t1 == 'W') { t2 = pop(); t1 = pop(); digitalWrite(t2, t1); }
-        break;
-    case 'E': break;   /* *** FREE ***  */
-    case 'F': t1 = code[pc++];
-        if (t1 == 'O') { pc = doFileOpen(pc, "rb"); }
-        if (t1 == 'N') { pc = doFileOpen(pc, "wb"); }
-        if (t1 == 'C') { pc = doFileClose(pc); }
-        if (t1 == 'R') { pc = doFileRead(pc); }
-        if (t1 == 'W') { pc = doFileWrite(pc); }
-        if (t1 == 'F') { push(0); }
-        if (t1 == 'T') { push(-1); }
-        break;
-    case 'G': break;   /* *** FREE ***  */
-    case 'H': t1 = code[pc++];
-        if (t1 == '@') { push(here); }
-        if (t1 == '!') { t2 = pop(); if ((0 < t2) && (t2 < CODE_SZ)) { here = (ushort)t2; } }
-        break;
-    case 'I': t1 = code[pc++];
-        if (t1 == 'A') { dumpAll(); }
-        if (t1 == 'C') { dumpCode(); }
-        if (t1 == 'D') { dumpDict(); }
-        if (t1 == 'M') { dumpMemory(); }
-        if (t1 == 'R') { dumpRegs(); }
-        if (t1 == 'S') { dumpStack(1); }
-        break;
-    case 'J':  break;   /* *** FREE ***  */
-    case 'K': T *= 1000; break;
-    case 'L': break;   /* *** FREE ***  */
-    case 'M': t1 = code[pc++];
-        if (t1 == '@') { if ((0 <= T) && (T < MEM_SZ)) { T = memory[T]; } }
-        if (t1 == '!') { t2 = pop(); t1 = pop(); if ((0 <= t2) && (t2 < MEM_SZ)) { memory[t2] = t1; } }
-        break;
-    case 'N': break;
-    case 'O': push(N); break;
-    case 'P': t1 = code[pc++]; t2 = pop();
-        if (t1 == 'I') { pinMode(t2, INPUT); }
-        if (t1 == 'U') { pinMode(t2, INPUT_PULLUP); }
-        if (t1 == 'D') { pinMode(t2, INPUT_PULLDOWN); }
-        if (t1 == 'O') { pinMode(t2, OUTPUT); }
-        break;
-    case 'Q': break;   /* *** FREE ***  */
-    case 'R': { char x[] = { 13,10,0 };  printString(x); }    break;
-    case 'S': t1 = pop(); t2 = pop(); push(t1); push(t2);   break;
-    case 'T': push(millis()); break;
-    case 'U': break;   /* *** FREE ***  */
-    case 'V': break;   /* *** FREE ***  */
-    case 'W': delay(pop()); break;
-    case 'X': t1 = code[pc++]; if (t1 == 'X') { vmInit(); } break;
-    case 'Y': break;
-    case 'Z': isBye = (code[pc++] == 'Z'); break;
-    case '[': pc = doLoop(pc); break;                   // 91
     case '\\': pop(); break;                            // 92
     case ']': if (T) { pc = R; }                        // 93
             else { pop();  rpop(); }
             break;
     case '^': t1 = pop(); T ^= t1;  break;              // 94
     case '_': T = -T;      break;                       // 95
-    case '`': break;  /* *** FREE ***  */               // 96
+    case '`': pc = doCallFunction(pc);                      // 96
     case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': // 97-122
     case 'g': case 'h': case 'i': case 'j': case 'k': case 'l':
     case 'm': case 'n': case 'o': case 'p': case 'q': case 'r':
     case 's': case 't': case 'u': case 'v': case 'w': case 'x':
-    case 'y': case 'z': curReg = ir - 'a'; t1 = code[pc];
+    case 'y': case 'z': curReg = ir - 'a'; t1 = CODE[pc];
         if (t1 == '+') { ++pc; ++reg[curReg]; }
         if (t1 == '-') { ++pc; --reg[curReg]; }
         break;
-    case '{': pc = doDefineFunction(pc); break;        // 123
+    case '{': pc = doDefineFunction(pc); break;         // 123
     case '|': t1 = pop(); T |= t1; break;               // 124
     case '}': pc = rpop(); break;                       // 125
     case '~': T = ~T; break;                            // 126
@@ -479,70 +438,39 @@ int run(int pc) {
 }
 
 void s4() {
-    printString("\r\ns4:"); dumpStack(0);
-    printString("> ");
+    printString("\r\nS4:"); dumpStack(0); printString(">");
 }
 
 void loadCode(const char* src) {
-    char* tgt = (char*)&code[TIB];
+    char* tgt = (char*)&CODE[TIB];
     while (*src) { *(tgt++) = *(src++); }
     *tgt = 0;
     run(TIB);
 }
 
-#ifdef __DEV_BOARD__
-#define iLed 13
-ushort ihere = 0;
-ulong nextBlink = 0;
-int ledState = 0;
-
-extern void loadBaseSystem();
-
-void setup() {
-    mySerial.begin(19200);
-    // while (!mySerial) {}
-    // while (mySerial.available()) {}
-    vmInit();
-    ihere = TIB;
-    pinMode(iLed, OUTPUT);
-    loadBaseSystem();
-    s4();
+#ifndef __DEV_BOARD__
+void doHistory(const char *txt) {
+    FILE* fp = NULL;
+    fopen_s(&fp, "history.txt", "at");
+    if (fp) {
+        fprintf(fp, "%s", txt);
+        fclose(fp);
+    }
 }
 
 void loop() {
-    ulong curTm = millis();
-    if (nextBlink < curTm) {
-        ledState = (ledState == LOW) ? HIGH : LOW;
-        digitalWrite(iLed, ledState);
-        nextBlink = curTm + 777;
+    char* tib = (char*)&CODE[TIB];
+    FILE* fp = (input_fp) ? input_fp : stdin;
+    if (fp == stdin) { s4(); }
+    if (fgets(tib, TIB_SZ, fp) == tib) {
+        if (fp == stdin) { doHistory(tib); }
+        run(TIB);
+        return;
     }
-
-    while (mySerial.available()) {
-        char c = mySerial.read();
-        if (c == 13) {
-            code[ihere] = (char)0;
-            printString(" ");
-            run(TIB);
-            s4();
-            ihere = TIB;
-        }
-        else {
-            if (ihere < CODE_SZ) {
-                code[ihere++] = c;
-                char b[2]; b[0] = c; b[1] = 0;
-                printString(b);
-            }
-        }
+    if (input_fp) { 
+        fclose(input_fp); 
+        input_fp = NULL; 
     }
-    if (reg[25]) { run(reg[25]); }    // autorun
-}
-
-#else
-void loop() {
-    char* tib = (char*)&code[TIB];
-    s4();
-    fgets(tib, TIB_SZ, stdin);
-    run(TIB);
 }
 
 void process_arg(char* arg)
@@ -566,6 +494,7 @@ int main(int argc, char** argv) {
     SetConsoleMode(hStdOut, (m | ENABLE_VIRTUAL_TERMINAL_PROCESSING));
     vmInit();
     strcpy_s(input_fn, sizeof(input_fn), "");
+    input_fp = NULL;
 
     for (int i = 1; i < argc; i++)
     {
@@ -575,13 +504,7 @@ int main(int argc, char** argv) {
     }
 
     if (strlen(input_fn) > 0) {
-        FILE* fp = NULL;
-        fopen_s(&fp, input_fn, "rt");
-        if (fp) {
-            char* tib = (char*)&code[TIB];
-            while (fgets(tib, TIB_SZ, fp) == tib) { run(TIB); }
-            fclose(fp);
-        }
+        fopen_s(&input_fp, input_fn, "rt");
     }
 
     while (isBye == 0) { loop(); }
