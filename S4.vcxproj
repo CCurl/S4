@@ -160,6 +160,9 @@
     <Text Include="examples.txt" />
     <Text Include="reference.txt" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="s4.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

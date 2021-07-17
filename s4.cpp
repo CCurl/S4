@@ -1,54 +1,6 @@
 // S4 - a stack VM, inspired by Sandor Schneider's STABLE - https://w3group.de/stable.html
 
-#ifndef _WIN32
-#define __DEV_BOARD__
-#endif
-
-#ifdef __DEV_BOARD__
-#include <Arduino.h>
-#define mySerial SerialUSB
-#define STK_SZ          31
-#define MEM_SZ     (1024*6)
-#define TIB_SZ         150
-int _getch() { return (mySerial.available()) ? mySerial.read() : 0; }
-void printString(const char* str) { mySerial.print(str); }
-int doFile(int pc) { return pc; }
-#else
-#include <windows.h>
-#include <conio.h>
-void printStringF(const char*, ...);
-long millis() { return GetTickCount(); }
-int analogRead(int pin) { printStringF("-AR(%d)-", pin); return 0; }
-void analogWrite(int pin, int val) { printStringF("-AW(%d,%d)-", pin, val); }
-int digitalRead(int pin) { printStringF("-DR(%d)-", pin); return 0; }
-void digitalWrite(int pin, int val) { printStringF("-DW(%d,%d)-", pin, val); }
-void pinMode(int pin, int mode) { printStringF("-pinMode(%d,%d)-", pin, mode); }
-void delay(DWORD ms) { Sleep(ms); }
-#define INPUT            0
-#define INPUT_PULLUP     1
-#define OUTPUT           2
-#define STK_SZ          63
-#define MEM_SZ    (1024*64)
-#define TIB_SZ         128
-HANDLE hStdOut = 0;
-
-void printString(const char* str) {
-    DWORD n = 0, l = strlen(str);
-    if (l) { WriteConsoleA(hStdOut, str, l, &n, 0); }
-}
-#endif
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdarg.h>
-
-#define CODE_SZ     (MEM_SZ*4)
-#define NUM_REGS     26
-#define NUM_FUNCS   (36*36)
-#define TIB         (CODE_SZ-TIB_SZ-4)
-
-typedef unsigned char byte;
+#include "s4.h"
 
 long dstack[STK_SZ + 1];
 long rstack[STK_SZ + 1];
@@ -60,16 +12,27 @@ byte isBye = 0;
 char input_fn[32];
 FILE* input_fp = NULL;
 
-union {
-    byte code[CODE_SZ];
-    long mem[MEM_SZ];
-} memory;
+MEMORY_T memory;
 
 #define T     dstack[dsp]
 #define N     dstack[dsp-1]
 #define R     rstack[rsp]
-#define CODE  memory.code
 #define HERE  reg[7]
+
+#ifdef __PC__
+    long millis() { return GetTickCount(); }
+    int analogRead(int pin) { printStringF("-AR(%d)-", pin); return 0; }
+    void analogWrite(int pin, int val) { printStringF("-AW(%d,%d)-", pin, val); }
+    int digitalRead(int pin) { printStringF("-DR(%d)-", pin); return 0; }
+    void digitalWrite(int pin, int val) { printStringF("-DW(%d,%d)-", pin, val); }
+    void pinMode(int pin, int mode) { printStringF("-pinMode(%d,%d)-", pin, mode); }
+    void delay(DWORD ms) { Sleep(ms); }
+    HANDLE hStdOut = 0;
+    void printString(const char* str) {
+        DWORD n = 0, l = strlen(str);
+        if (l) { WriteConsoleA(hStdOut, str, l, &n, 0); }
+    }
+#endif
 
 void push(long v) { if (dsp < STK_SZ) { dstack[++dsp] = v; } }
 long pop() { return (dsp > 0) ? dstack[dsp--] : 0; }
@@ -103,14 +66,12 @@ int GetFunctionNum(int pc) {
     int f1 = hexNum(CODE[pc], 0);
     int f2 = hexNum(CODE[pc + 1], 0);
     if ((f1 < 0) || (f2 < 0)) {
-        char x[32]; sprintf_s(x, 32, "-%c%c:FN Bad-", CODE[pc], CODE[pc + 1]);
-        printString(x);
+        printStringF("-%c%c:FN Bad-", CODE[pc], CODE[pc + 1]);
         return -1;
     }
     int fn = (f1 * 36) + f2;
     if ((fn < 0) || (NUM_FUNCS <= fn)) {
-        char x[32]; sprintf_s(x, 32, "-%c%c:FN OOB-", CODE[pc], CODE[pc + 1]);
-        printString(x);
+        printStringF("-%c%c:FN OOB-", CODE[pc], CODE[pc + 1]);
         return -1;
     }
     return fn;
@@ -141,7 +102,7 @@ int doCallFunction(int pc) {
     return func[fn];
 }
 
-#ifndef __DEV_BOARD__
+#ifdef __PC__
 int doFile(int pc) {
     int ir = CODE[pc++];
     switch (ir) {
@@ -316,9 +277,11 @@ int doExt(int pc) {
     case 'J': break;   /* *** FREE ***  */
     case 'K': T *= 1000; break;
     case 'L':
+        #ifdef __PC__
         if (input_fp) { fclose(input_fp); }
             sprintf_s(input_fn, sizeof(input_fn), "block.%03ld", pop());
             fopen_s(&input_fp, input_fn, "rt");
+        #endif
         break;   /* *** FREE ***  */
     case 'M': t1 = CODE[pc++];
         if (t1 == '@') { if ((0 <= T) && (T < MEM_SZ)) { T = memory.mem[T]; } }
@@ -438,14 +401,7 @@ void s4() {
     printString("\r\nS4:"); dumpStack(0); printString(">");
 }
 
-void loadCode(const char* src) {
-    char* tgt = (char*)&CODE[TIB];
-    while (*src) { *(tgt++) = *(src++); }
-    *tgt = 0;
-    run(TIB);
-}
-
-#ifndef __DEV_BOARD__
+#ifdef __PC__
 void doHistory(const char *txt) {
     FILE* fp = NULL;
     fopen_s(&fp, "history.txt", "at");
