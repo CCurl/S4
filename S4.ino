@@ -27,10 +27,15 @@ void loadCode(const char* src) {
 }
 
 void loadBaseSystem() {
+    // MB: ManageButton
     loadCode("{MB 0(p--) SC RD CQ (RV RA)}");
+    // SC: SetContext
     loadCode("{SC 0(p--) p! p@ 100+ m! m@ M@ s! 0(todo xxx r!)}");
+    // RD: Read pin, put val in to reg v
     loadCode("{RD 0(--)  p@ :PRD v!}");
+    // CQ: Changed?
     loadCode("{CQ 0(--f) m@ :M@ v@ =}");
+    // RV: RememberValue
     loadCode("{RV 0(--)  v@ m@ :M!}");
     loadCode("{RA 0(--)  todo}");
 }
