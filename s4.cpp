@@ -287,8 +287,8 @@ int doExt(int pc) {
         if (t1 == '@') { if ((0 <= T) && (T < MEM_SZ)) { T = memory.mem[T]; } }
         if (t1 == '!') { t2 = pop(); t1 = pop(); if ((0 <= t2) && (t2 < MEM_SZ)) { memory.mem[t2] = t1; } }
         break;
-    case 'N': N = T; pop(); break; // NIP
-    case 'O': break;   /* *** FREE ***  */
+    case 'N': N = T; pop(); break;   // NIP
+    case 'O': push(N);      break;   // OVER
     case 'P': pc = doPin(pc); break;
     case 'Q': break;   /* *** FREE ***  */
     case 'R': break;   /* *** FREE ***  */
@@ -354,12 +354,11 @@ int step(int pc) {
     case '>': t1 = pop(); T = T > t1 ? -1 : 0;  break;  // 62
     case '?': push(_getch());                   break;  // 63
     case '@': push(reg[curReg]);                break;  // 64
-    case 'O': push(N);                          break;  // 79
     case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': // 65-90
     case 'G': case 'H': case 'I': case 'J': case 'K': case 'L':
-    case 'M': case 'N':   /* O is OVER */   case 'P': case 'Q': 
-    case 'R': case 'S': case 'T': case 'U': case 'V': case 'W': 
-    case 'X': case 'Y': case 'Z': pc = doCallFunction(pc-1);
+    case 'M': case 'N': case 'O': case 'P': case 'Q': case 'R': 
+    case 'S': case 'T': case 'U': case 'V': case 'W': case 'X': 
+    case 'Y': case 'Z': pc = doCallFunction(pc-1);
         break;
     case '[': rpush(pc);                                // 91
         if (T == 0) {

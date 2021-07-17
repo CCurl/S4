@@ -12,16 +12,6 @@ extern void s4();
 extern byte code[];
 extern long reg[];
 
-#define CODE_SZ     (MEM_SZ*4)
-#define NUM_REGS     26
-#define NUM_FUNCS   (26*36)
-#define TIB         (CODE_SZ-TIB_SZ-4)
-
-typedef union {
-    byte code[CODE_SZ];
-    long mem[MEM_SZ];
-} MEMORY_T;
-
 extern MEMORY_T memory;
 #define CODE memory.code
 
@@ -37,11 +27,11 @@ void loadCode(const char* src) {
 }
 
 void loadBaseSystem() {
-    loadCode("{MB 0(p--) :SC :RD :CQ (:RV :RA)}");
+    loadCode("{MB 0(p--) SC RD CQ (RV RA)}");
     loadCode("{SC 0(p--) p! p@ 100+ m! m@ M@ s! 0(todo xxx r!)}");
-    loadCode("{RD 0(--)  p@ DR v!}");
-    loadCode("{CQ 0(--f) m@ M@ v@ =}");
-    loadCode("{RV 0(--)  v@ m@ M!}");
+    loadCode("{RD 0(--)  p@ :PRD v!}");
+    loadCode("{CQ 0(--f) m@ :M@ v@ =}");
+    loadCode("{RV 0(--)  v@ m@ :M!}");
     loadCode("{RA 0(--)  todo}");
 }
 
