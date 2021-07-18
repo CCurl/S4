@@ -18,17 +18,17 @@ stack
 #  (a--a a)       Duplicate TOS (Forth DUP)
 \  (a b--a)       Drop TOS (Forth DROP)
 $  (a b--b a)     Swap top 2 stack items (Forth SWAP)
-:O (a b--a b a)   Push 2nd (Forth OVER)
-:N (a b--b)       Drop 2nd (Forth NIP)
+o  (a b--a b a)   Push 2nd (Forth OVER)
+n  (a b--b)       Drop 2nd (Forth NIP)
 
 registers
-x   (--)          Select register x (x: [a..z]). 
+rX   (--)         Select register X (X: [a..z]). 
                     NOTE: the register stays selected until another register is selected.
                     NOTE: register 'h' is HERE
-@   (--n)         Fetch value from selected register
-!   (n--)         Store value to selected register
-x+  (--)          Select register x and increment it by 1
-x-  (--)          Select register x and decrement it by 1
+r@   (--n)        Fetch value from selected register
+r!   (n--)        Store value to selected register
+r+   (--)         Increment selected by 1
+r-   (--)         Decrement selected by 1
 
 functions
 {xx  (--)         Define function xx (xx:AA..99)
@@ -36,8 +36,7 @@ functions
                     NOTE: A function cannot have '}' embedded in it (eg - {BD"TE}ST"} will not compile correctly)
                       Use {OK"TE"125,"ST"} instead
 }    (--)         End of function definition
-xx   (--)         Call function xx (xx:AA..Z9)
-`xx  (--)         Call function xx (xx:AA..Z9)
+:xx  (--)         Call function xx (xx:AA..Z9)
                     NOTE: Use this to call functions with a 1st character of [0..9]
 ;    (--)         Return from function immediately (i.e. - before reaching '}')
                     NOTE: returning while inside of a loop is not supported; behavior will be undefined.

@@ -11,7 +11,7 @@
 1( {bm XT$[X-]:el} )
 
 0( C0: vt100 CSI code - '<ESC>[' )
-1( {c0 :27,"["} )
+1( {c0 27,"["} )
 
 0( C1: Set Color: fb bg Y )
 0( {c1 :c0.";"."m"} )

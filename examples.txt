@@ -7,41 +7,36 @@ S4 examples:
     c #(xxx #=) ~ (yyy)
 
  - x = (a == b ) ? c : d;
-    d@ a@ b@ = (\ c@) x!
+    rD@ rA@ rB@ = (\ rC@) rX!
 
  - To conditionally define a function: 
     1( {xx "xx is defined"} )
     0( {yy "yy is not defined"} )
 
 - To make sure N < T
-     S4 code:             :O:O>($)
+     S4 code:             oo>($)
      Forth equivalent:    OVER OVER > IF SWAP THEN
      C equivalent:        if (f < t) { int x = f; f = t; t = x; }
 
 - To do something 41 times:
-    S4 code:             {BL32,}41[#.BL1-]
-    Forth equivalent:    41 BEGIN DUP . SPACE 1- DUP WHILE DROP
-    C equivalent:        int i = 41; while (i) { printf("%d ", i); i--; }
-
-- A for loop (1 to 20)
-    S4 code:             0i!20[i+@.32,1-]
-    Forth equivalent:    1 20 FOR I . SPACE NEXT
-    C equivalent:        for (int i = 1; i <= 20; i++) { printf("%d ", i); }
+    S4 code:             1 41 oo>($)o-1+[$   #.32,   1+$1-]\
+    Forth equivalent:    41 BEGIN DUP . 1- DUP WHILE DROP
+    C equivalent:        for (int i = 1; i <= 41; i)) { printf("%d ", i); }
 
 - A simple benchmark for 100 million (100ml) empty loops:
-    {KK1000*}   0(define function KK)
-    {BL32,}     0(define function BL)
-    100KKKK :T $ [ 1- ] :T $ - # 1KK % $ 1KK / .BK.
+    {kk1000*}   0(define function kk)
+    {bl32,}     0(define function bl)
+    100:kk:kk XT $ [ 1- ] XT $ - # 1:kk % $ 1:kk / .:bl.
          -- explained --
-    100KKKK     0( push push 100, mult by 1K twice [--100ml] )
-    :T          0( push current time MS [100ml--100ml t1] )
+    100:kk:kk   0( push push 100, mult by 1K twice [--100ml] )
+    XT          0( push current time MS [100ml--100ml t1] )
     $           0( swap the top 2 stack items [100ml t1--t1 100ml] )
     [ 1- ]      0( an empty decrement loop [t1 100ml--t1] )
-    :T          0( push current time MS [t1-- t1 t2] )
+    XT          0( push current time MS [t1-- t1 t2] )
     $ -         0( swap, subtract [t1 t2--et] )
-    # 1KK %     0( dup TOS, push 1000, modulo [et--et MS] )
-    $ 1KK /     0( swap, push 1000, divide [et MS--MS S] )
-    .BL.        0( print TOS, print a SPACE, print TOS [S--] )
+    # 1:kk %    0( dup TOS, push 1000, modulo [et--et MS] )
+    $ 1:kk /    0( swap, push 1000, divide [et MS--MS S] )
+    .:bl.       0( print TOS, print a SPACE, print TOS [S--] )
 
 - To display the currently defined code:
-    1_ i! h@ [ i+@ :C@ # , 125=(13,10,) 1- ]
+    0 rH@ o-[$   #c@#,125=(:cr)   1+$1-]\
