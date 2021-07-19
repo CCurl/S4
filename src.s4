@@ -1,14 +1,20 @@
+1( {si "---System info---"xIA} )
+
 0( cd: dump all code currently defined )
 1( {cr 10,13,})
-1( {cd 1_rIr!rHr@[rI+r@c@#,125=(:cr)1-]} )
+1( {cd 0rH@o-[$ #c@#,125=(:cr) 1+$1-]\} )
 
 0( : print TOS to 3 width )
 1( {n3 #100<(0.)#10<(0.).} )
+
 0( EL: Elapsed )
-1( {kk 1000*}{ml :kk:kk}{el XT$-#1:kk/."."1:kk%:n3} )
+1( {el xT$-#1000/."."1000%:n3} )
+
+0( ml: TOS *= 1 million )
+1( {ml 1000#**} )
 
 0( bm: Benchmark: simple decrement loop )
-1( {bm XT$[X-]:el} )
+1( {bm xT$[x-]:el} )
 
 0( C0: vt100 CSI code - '<ESC>[' )
 1( {c0 27,"["} )
@@ -30,4 +36,3 @@
 
 1( "S4 v0.0.1 - https://github.com/CCurl/S4" )
 1( :cr"Hello." )
-1( :cr:cr"---System info---"XIA )

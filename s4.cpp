@@ -44,7 +44,7 @@ void vmInit() {
     dsp = rsp = HERE = curReg = 0;
     for (int i = 0; i < NUM_REGS; i++) { reg[i] = 0; }
     for (int i = 0; i < NUM_FUNCS; i++) { func[i] = 0; }
-    for (int i = 0; i < MEM_SZ; i++) { memory.mem[i] = 0; }
+    for (int i = 0; i < MEM_SZ; i++) { MEM[i] = 0; }
 }
 
 void printStringF(const char* fmt, ...) {
@@ -192,8 +192,8 @@ void dumpFuncs() {
             byte f2 = 'a' + (i % 36);
             if ('z' < f1) { f1 -= 75; }
             if ('z' < f2) { f2 -= 75; }
-            if (((n++) % 5) == 0) { printString("\r\n"); }
-            printStringF("%c%c:%4d(%3d)  ", f1, f2, func[i], i);
+            if (((n++) % 6) == 0) { printString("\r\n"); }
+            printStringF("%c%c:%4d    ", f1, f2, func[i]);
         }
     }
 }
@@ -209,8 +209,8 @@ void dumpMemory() {
     int n = 0;
     printStringF("\r\nMEMORY: size: %d (%d bytes)\r\n", MEM_SZ, CODE_SZ);
     for (int i = 0; i < MEM_SZ; i++) {
-        if (memory.mem[i] == 0) { continue; }
-        long x = memory.mem[i];
+        if (MEM[i] == 0) { continue; }
+        long x = MEM[i];
         printStringF("[%04d]: %-10ld (", i, x);
         for (int j = 0; j < 4; j++) {
             if (0<j) { printString(","); }
@@ -304,13 +304,13 @@ int doExt(int pc) {
 
 int step(int pc) {
     byte ir = CODE[pc++];
-    long t1;
+    long t1, t2;
     switch (ir) {
     case 0: return -1;                                  // 0
     case ' ': break;                                    // 32
-    case '!': if ((0 <= T) && (T < MEM_SZ)) { memory.mem[T] = N; }
-        pop(); pop();
-        break;       // 33
+    case '!': t2 = pop(); t1 = pop();                   // 33
+        if ((0 <= t2) && (t2 < MEM_SZ)) { MEM[t2] = t1; }
+        break;
     case '"': input_fn[1] = 0;                          // 34
         while ((pc < CODE_SZ) && (CODE[pc] != '"')) {
             input_fn[0] = CODE[pc++];
@@ -349,15 +349,13 @@ int step(int pc) {
     case '=': t1 = pop(); T = T == t1 ? -1 : 0; break;  // 61
     case '>': t1 = pop(); T = T > t1 ? -1 : 0;  break;  // 62
     case '?': push(_getch());                   break;  // 63
-    case '@': if ((0 <= T) && (T < MEM_SZ)) { T = memory.mem[T]; }
+    case '@': if ((0 <= T) && (T < MEM_SZ)) { T = MEM[T]; }
         break;
-    // case 'F': pc = doCallFunction(pc); break;
     case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': // 65-90
     case 'G': case 'H': case 'I': case 'J': case 'K': case 'L':
     case 'M': case 'N': case 'O': case 'P': case 'Q': case 'R':
-    case 'S': case 'T': case 'U': case 'V': case 'W': // case 'X':
-    case 'Y': case 'Z': break; 
-    case 'X': pc = doExt(pc); break;
+    case 'S': case 'T': case 'U': case 'V': case 'W': case 'X':
+    case 'Y': case 'Z': break;
     case '[': rpush(pc);                                // 91
         if (T == 0) {
             while ((pc < CODE_SZ) && (CODE[pc] != ']')) { pc++; }
@@ -374,24 +372,25 @@ int step(int pc) {
     case 'g': case 'h': case 'i': case 'j': case 'k': case 'l':
     case 'm': /* case 'n': case 'o': */ case 'p': case 'q': // case 'R':
     case 's': case 't': case 'u': case 'v': case 'w': // case 'x':
-    case 'x': case 'y': case 'z': // pc = doCallFunction(pc - 1);
+    case 'y': case 'z': // pc = doCallFunction(pc - 1);
         break;
     case 'c': ir = CODE[pc++];
         if (ir == '@') { if ((0 <= T) && (T < CODE_SZ)) { T = CODE[T]; } }
         if (ir == '!') { 
-            long t2 = pop(); t1 = pop(); 
+            t2 = pop(); t1 = pop(); 
             if ((0 <= t2) && (t2 < CODE_SZ)) { CODE[t2] = (byte)t1; } 
         }
         break;
     case 'o': push(N);        break;
     case 'n': N = T; pop();   break;
-    case 'r': ir = CODE[pc++];
+    case 'r': ir = CODE[pc++]; t1 = CODE[pc++];
         if (('A' <= ir) && (ir <= 'Z')) { curReg = ir - 'A'; }
-        if (ir == '+') { ++reg[curReg]; }
-        if (ir == '-') { --reg[curReg]; }
-        if (ir == '@') { push(reg[curReg]); }
-        if (ir == '!') { reg[curReg] = pop(); }
+        if (t1 == '+') { ++reg[curReg]; }
+        if (t1 == '-') { --reg[curReg]; }
+        if (t1 == '@') { push(reg[curReg]); }
+        if (t1 == '!') { reg[curReg] = pop(); }
         break;
+    case 'x': pc = doExt(pc); break;
     case '{': pc = doDefineFunction(pc); break;         // 123
     case '|': t1 = pop(); T |= t1; break;               // 124
     case '}': pc = rpop(); break;                       // 125

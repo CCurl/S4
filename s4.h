@@ -33,6 +33,7 @@
 #define TIB         (CODE_SZ-TIB_SZ-4)
 
 #define CODE  memory.code
+#define MEM   memory.mem
 
 typedef unsigned char byte;
 typedef union {
