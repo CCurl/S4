@@ -4,9 +4,9 @@ S4 is an simple, interpreted system where there is no difference between the exe
 
 Why S4? There are multiple reasons:
 
-1. Many interactive programming environments use tokens and a large SWITCH statement in a loop to run the program. In those systems, the tokens (the cases in the SWITCH) are often arbitrarily assigned and are not human-readable, so they have no meaning to the programmer when reading the machine code. Additionally there is a compiler, often something similar to Forth, to work in that environment. In these enviromnents, there is a steep learning curve, as the programmer needs to learn the user environment and the hundreds or thousands of user functions in the libraries (or "words" in Forth). In S4, there is only one thing to learn; the machine code is human readable, and there is no a compiler, nor are there thousands of functions/words to learn.
+1. Many interactive programming environments use tokens and a large SWITCH statement in a loop to run the program. In those systems, the tokens (the cases in the SWITCH) are often arbitrarily assigned and are not human-readable, so they have no meaning to the programmer when reading the machine code. Additionally there is a compiler, often something similar to Forth, to work in that environment. In these enviromnents, there is a steep learning curve. The programmer needs to learn the user environment and the hundreds or thousands of user functions in the libraries (or "words" in Forth). In S4, there is only one thing to learn; the source code is the machine code, there is no a compiler, and there aren't thousands of functions/words to learn.
 
-2. I wanted a simple interactive programming environment that could be easily understood and modified. My mantra is that a program should be "intuitively obvious upon casual inspection".
+2. I wanted an extremely simple interactive programming environment that could be easily understood and modified. My mantra is that a program should be "intuitively obvious upon casual inspection".
 
 3. I wanted to avoid the need for using a multiple gigabyte tool chain and the edit/compile/run paradigm for developing programs.
 
