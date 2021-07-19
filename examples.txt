@@ -6,42 +6,37 @@ S4 examples:
   - if (c) { xxx } else { yyy } then:
     c #(xxx #=) ~ (yyy)
 
- - x = (a == b ) ? c : d;
-    d@ a@ b@ = (\ c@) x!
+ - x = (a == b) ? c : d;
+    rA@ rB@ = #(rC@$#=)~(rD@) rX!
 
  - To conditionally define a function: 
     1( {xx "xx is defined"} )
     0( {yy "yy is not defined"} )
 
 - To make sure N < T
-     S4 code:             :O:O>($)
+     S4 code:             oo>($)
      Forth equivalent:    OVER OVER > IF SWAP THEN
      C equivalent:        if (f < t) { int x = f; f = t; t = x; }
 
 - To do something 41 times:
-    S4 code:             {BL32,}41[#.BL1-]
-    Forth equivalent:    41 BEGIN DUP . SPACE 1- DUP WHILE DROP
-    C equivalent:        int i = 41; while (i) { printf("%d ", i); i--; }
+    S4 code:             1 41 o-1+[$   #.32,   1+$1-]\
+    Forth equivalent:    41 BEGIN DUP . 1- DUP WHILE DROP
+    C equivalent:        for (int i = 1; i <= 41; i)) { printf("%d ", i); }
 
-- A for loop (1 to 20)
-    S4 code:             0i!20[i+@.32,1-]
-    Forth equivalent:    1 20 FOR I . SPACE NEXT
-    C equivalent:        for (int i = 1; i <= 20; i++) { printf("%d ", i); }
-
-- A simple benchmark for 100 million (100ml) empty loops:
-    {KK1000*}   0(define function KK)
-    {BL32,}     0(define function BL)
-    100KKKK :T $ [ 1- ] :T $ - # 1KK % $ 1KK / .BK.
-         -- explained --
-    100KKKK     0( push push 100, mult by 1K twice [--100ml] )
-    :T          0( push current time MS [100ml--100ml t1] )
-    $           0( swap the top 2 stack items [100ml t1--t1 100ml] )
-    [ 1- ]      0( an empty decrement loop [t1 100ml--t1] )
-    :T          0( push current time MS [t1-- t1 t2] )
-    $ -         0( swap, subtract [t1 t2--et] )
-    # 1KK %     0( dup TOS, push 1000, modulo [et--et MS] )
-    $ 1KK /     0( swap, push 1000, divide [et MS--MS S] )
-    .BL.        0( print TOS, print a SPACE, print TOS [S--] )
+- A simple benchmark for a 100 million (100ml) decrement loop:
+    {ml 1000#**}                0(define function ml)
+    {bl 32,}                    0(define function bl)
+    {n3 #100<(0.)#10<(0.).}     0(define function n3)
+    100:ml xT $ [ x- ] xT $ - # 1000 / . "." 1000 % :n3
+         0(-- explained --)
+    100:ml      0( push 100, call ml                [--100ml] )
+    xT $        0( push current time MS, swap       [100ml--t1 100ml] )
+    [ x- ]      0( a decrement loop                 [t1 100ml--t1] )
+    xT $        0( push current time MS, swap       [t1--t2 t1] )
+    -           0( subtract                         [t2 t1--et] )
+    # 1000 /    0( dup, push 1000, divide           [et--et S] )
+    . "."       0( print TOS, print "."             [et S--et] )
+    1000 % :n3  0( push 1000, modulo call n3        [et--] )
 
 - To display the currently defined code:
-    1_ i! h@ [ i+@ :C@ # , 125=(13,10,) 1- ]
+    0 rH@ o-[$   #c@#,125=(:cr)   1+$1-]\

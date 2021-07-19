@@ -1,48 +1,45 @@
 S4 Reference
 
-arithmetic
+ARITHMETIC
 +  (a b--a+b)     addition
 -  (a b--a-b)     subtraction
 *  (a b--a*b)     multiplication
 /  (a b--a/b)     division
 %  (a b--a%b)     modulo (division remainder)
 
-bit manipulation
+BIT MANIPULATION
 &  (a b--n)       32-bit and
 |  (a b--n)       32-bit or
 ^  (a b--n)       32-bit xor
-~  (n1-- n2)      not, all bits reversed (0110010 => 1001101)
-_  (n1--n2)       negate TOS (17 => -17)
+~  (n1--n2)       not, all bits reversed (0110010 => 1001101)
+_  (n1--n2)       negate TOS (17 => -17) (same as ~1+)
 
-stack
+STACK
 #  (a--a a)       Duplicate TOS (Forth DUP)
 \  (a b--a)       Drop TOS (Forth DROP)
 $  (a b--b a)     Swap top 2 stack items (Forth SWAP)
-:O (a b--a b a)   Push 2nd (Forth OVER)
-:N (a b--b)       Drop 2nd (Forth NIP)
+o  (a b--a b a)   Push 2nd (Forth OVER)
+n  (a b--b)       Drop 2nd (Forth NIP)
 
-registers
-x   (--)          Select register x (x: [a..z]). 
-                    NOTE: the register stays selected until another register is selected.
-                    NOTE: register 'h' is HERE
-@   (--n)         Fetch value from selected register
-!   (n--)         Store value to selected register
-x+  (--)          Select register x and increment it by 1
-x-  (--)          Select register x and decrement it by 1
+REGISTERS
+    NOTE: register 'H' is HERE
+rX@  (--n)        Fetch value from register X [A..Z]
+rX!  (n--)        Store value to register X
+rX+  (--)         Increment register X by 1
+rX-  (--)         Decrement register X by 1
 
-functions
+FUNCTIONS
+    NOTES: 1) Function names can start with a number [0..9]
+           2) A function cannot have '}' embedded in it (eg - {BD"TE}ST"} will not compile correctly)
+              Use {OK"TE"125,"ST"} instead
 {xx  (--)         Define function xx (xx:AA..99)
-                    NOTE: Function names can start with a number [0..9], use ` to call such functions
-                    NOTE: A function cannot have '}' embedded in it (eg - {BD"TE}ST"} will not compile correctly)
-                      Use {OK"TE"125,"ST"} instead
 }    (--)         End of function definition
-xx   (--)         Call function xx (xx:AA..Z9)
-`xx  (--)         Call function xx (xx:AA..Z9)
+:xx  (--)         Call function xx (xx:AA..Z9)
                     NOTE: Use this to call functions with a 1st character of [0..9]
 ;    (--)         Return from function immediately (i.e. - before reaching '}')
                     NOTE: returning while inside of a loop is not supported; behavior will be undefined.
 
-input/output
+INPUT/OUTPUT
 .     (n--)       Output TOS as decimal number
 ,     (n--)       Output TOS (27 is ESC, 10 is newline, 65 is A, etc) (Forth emit)
 ?     ( --key)    Read one key, don't wait for ENTER.
@@ -52,7 +49,7 @@ input/output
                      to enter a negative number, use _ (negate) after the number (eg - '32_')
 'x   (--n)        Push the ascii value of x (x: [any char possible])
 
-conditions/flow control
+CONDITIONS/FLOW CONTROL
 <   (a b--f)      if (a < b), f=true, else f=false
 >   (a b--f)      if (a > b), f=true, else f=false
 =   (a b--f)      if (a = b), f=true, else f=false
@@ -64,37 +61,38 @@ conditions/flow control
                     NOTE: '[]' cannot have ']' embedded in it (EG - a@["TE]ST"1-] fails when a=0)
                       USE a@("TE"93,"ST") instead
 
-other
-:C@   (a--n)       Fetch byte from address a
-:C!   (n a--)      Store byte n to address a
-:FOA  (n--f)       File: open for appending (block.n)
-:FOR  (n--f)       File: open for reading (block.n)
-:FOW  (n--f)       File: open for writing (block.n)
-:FC   (f--)        File: close
-:FR   (f--c)       File: read 1 char
-:FW   (c f--)      File: write 1 char
-:IA   (--)         Info: All (CFMRS)
-:IC   (--)         Info: Code
-:IF   (--)         Info: Functions
-:IM   (--)         Info: Memory
-:IR   (--)         Info: Registers
-:IS   (--)         Info: Stack
-:L    (n--)        Load code from block (block.n)
-:M@   (a--n)       Fetch 32-bit value from address a.
-:M!   (n a--)      Store n to address a (32-bit).
-                     NOTE 1: for :M@ and :M!, a is a 32 bit index.
-                     NOTE 2: This memory is shared with the CODE space.
-                             EG -  3 :M@ retrieves a LONG from adresses [12..15]
-                                - 12 :C@ retrieves BYTE from address 12
-:PI   (p--)        Arduino: pinMode(p, INPUT)
-:PU   (p--)        Arduino: pinMode(p, INPUT_PULLUP)
-:PO   (p--)        Arduino: pinMode(p, OUTPUT)
-:PRA  (p--n)       Arduino: read analog pin (v = analogRead(p))
-:PRD  (p--n)       Arduino: read digital pin (n = digitalRead(p))
-:PWA  (v p--)      Arduino: write to analog pin (analogWrite(p, v))
-:PWD  (v p--)      Arduino: write to digital pin (digitalWrite(p, v))
-:T    (--n)        Time (Arduino: millis(), Windows: GetTickCount())
-:W    (n--)        Wait (Arduino: delay(),  Windows: Sleep())
-:XA   (a--)        Call code at address A
-:XX   (--)         Reset S4 to initial state
-:ZZ   (--)         Exit S4
+MEMORY
+  NOTE: The 32-bit address space is the same as the 8-bit address space
+     E.G. -  3  @ retrieves the 32-bit value from adresses [12..15]
+          - 12 c@ retrieves the  8-bit value from address  [12..12]
+c@    (a--n)       Fetch byte from 8-bit address a
+c!    (n a--)      Store byte n to 8-bit address a
+@     (a--n)       Fetch long from 32-bit address a
+!     (n a--)      Store long n to 32-bit address a
+
+OTHER
+xFOA  (n--f)       File: open for appending (block.n)
+xFOR  (n--f)       File: open for reading (block.n)
+xFOW  (n--f)       File: open for writing (block.n)
+xFC   (f--)        File: close
+xFR   (f--c)       File: read 1 char
+xFW   (c f--)      File: write 1 char
+xIA   (--)         Info: All (CFMRS)
+xIC   (--)         Info: Code
+xIF   (--)         Info: Functions
+xIM   (--)         Info: Memory
+xIR   (--)         Info: Registers
+xIS   (--)         Info: Stack
+xL    (n--)        Load code from block (block.n)
+xPI   (p--)        Arduino: pinMode(p, INPUT)
+xPU   (p--)        Arduino: pinMode(p, INPUT_PULLUP)
+xPO   (p--)        Arduino: pinMode(p, OUTPUT)
+xPRA  (p--n)       Arduino: read analog pin (v = analogRead(p))
+xPRD  (p--n)       Arduino: read digital pin (n = digitalRead(p))
+xPWA  (v p--)      Arduino: write to analog pin (analogWrite(p, v))
+xPWD  (v p--)      Arduino: write to digital pin (digitalWrite(p, v))
+xT    (--n)        Time (Arduino: millis(), Windows: GetTickCount())
+xW    (n--)        Wait (Arduino: delay(),  Windows: Sleep())
+xXA   (a--)        Call code at address A
+xXX   (--)         Reset S4 to initial state
+xZZ   (--)         Exit S4

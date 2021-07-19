@@ -44,7 +44,7 @@ void vmInit() {
     dsp = rsp = HERE = curReg = 0;
     for (int i = 0; i < NUM_REGS; i++) { reg[i] = 0; }
     for (int i = 0; i < NUM_FUNCS; i++) { func[i] = 0; }
-    for (int i = 0; i < MEM_SZ; i++) { memory.mem[i] = 0; }
+    for (int i = 0; i < MEM_SZ; i++) { MEM[i] = 0; }
 }
 
 void printStringF(const char* fmt, ...) {
@@ -57,7 +57,7 @@ void printStringF(const char* fmt, ...) {
 }
 
 int hexNum(char x, int alphaOnly) {
-    if (('A' <= x) && (x <= 'Z')) { return x - 'A'; }
+    if (('a' <= x) && (x <= 'z')) { return x - 'a'; }
     if ((!alphaOnly) && ('0' <= x) && (x <= '9')) { return x - '0' + 26; }
     return -1;
 }
@@ -177,7 +177,7 @@ void dumpCode() {
 void dumpRegs() {
     printString("\r\nREGISTERS:");
     for (int i = 0; i < NUM_REGS; i++) {
-        byte fId = 'a' + i;
+        byte fId = 'A' + i;
         if ((i % 5) == 0) { printString("\r\n"); }
         printStringF("%c: %-15ld", fId, reg[i]);
     }
@@ -188,12 +188,12 @@ void dumpFuncs() {
     int n = 0;
     for (int i = 0; i < NUM_FUNCS; i++) {
         if (func[i]) {
-            byte f1 = 'A' + (i / 36);
-            byte f2 = 'A' + (i % 36);
-            if ('Z' < f1) { f1 -= 43; }
-            if ('Z' < f2) { f2 -= 43; }
-            if (((n++) % 5) == 0) { printString("\r\n"); }
-            printStringF("%c%c:%4d(%3d)  ", f1, f2, func[i], i);
+            byte f1 = 'a' + (i / 36);
+            byte f2 = 'a' + (i % 36);
+            if ('z' < f1) { f1 -= 75; }
+            if ('z' < f2) { f2 -= 75; }
+            if (((n++) % 6) == 0) { printString("\r\n"); }
+            printStringF("%c%c:%4d    ", f1, f2, func[i]);
         }
     }
 }
@@ -209,8 +209,8 @@ void dumpMemory() {
     int n = 0;
     printStringF("\r\nMEMORY: size: %d (%d bytes)\r\n", MEM_SZ, CODE_SZ);
     for (int i = 0; i < MEM_SZ; i++) {
-        if (memory.mem[i] == 0) { continue; }
-        long x = memory.mem[i];
+        if (MEM[i] == 0) { continue; }
+        long x = MEM[i];
         printStringF("[%04d]: %-10ld (", i, x);
         for (int j = 0; j < 4; j++) {
             if (0<j) { printString(","); }
@@ -251,16 +251,13 @@ int doPin(int pc) {
 
 int doExt(int pc) {
     byte ir = CODE[pc++];
-    long t1, t2;
+    long t1;
     switch (ir) {
     case '+': T++;  break;
     case '-': T--;  break;
     case 'A': break;   /* *** FREE ***  */
     case 'B': break;   /* *** FREE ***  */
-    case 'C': t1 = CODE[pc++];
-        if (t1 == '@') { if ((0 <= T) && (T < CODE_SZ)) { T = CODE[T]; } }
-        if (t1 == '!') { t1 = pop(); t2 = pop(); if ((0 <= t1) && (t1 < CODE_SZ)) { CODE[t1] = (byte)t2; } }
-        break;
+    case 'C': break;   /* *** FREE ***  */
     case 'D': break;   /* *** FREE ***  */
     case 'E': break;   /* *** FREE ***  */
     case 'F': pc = doFile(pc); break;
@@ -283,10 +280,7 @@ int doExt(int pc) {
             fopen_s(&input_fp, input_fn, "rt");
         #endif
         break;   /* *** FREE ***  */
-    case 'M': t1 = CODE[pc++];
-        if (t1 == '@') { if ((0 <= T) && (T < MEM_SZ)) { T = memory.mem[T]; } }
-        if (t1 == '!') { t2 = pop(); t1 = pop(); if ((0 <= t2) && (t2 < MEM_SZ)) { memory.mem[t2] = t1; } }
-        break;
+    case 'M': break;   /* *** FREE ***  */
     case 'N': N = T; pop(); break;   // NIP
     case 'O': push(N);      break;   // OVER
     case 'P': pc = doPin(pc); break;
@@ -310,11 +304,13 @@ int doExt(int pc) {
 
 int step(int pc) {
     byte ir = CODE[pc++];
-    long t1;
+    long t1, t2;
     switch (ir) {
     case 0: return -1;                                  // 0
     case ' ': break;                                    // 32
-    case '!': reg[curReg] = pop();   break;             // 33
+    case '!': t2 = pop(); t1 = pop();                   // 33
+        if ((0 <= t2) && (t2 < MEM_SZ)) { MEM[t2] = t1; }
+        break;
     case '"': input_fn[1] = 0;                          // 34
         while ((pc < CODE_SZ) && (CODE[pc] != '"')) {
             input_fn[0] = CODE[pc++];
@@ -347,19 +343,19 @@ int step(int pc) {
             t1 = CODE[++pc] - '0';
         }
         break;
-    case ':': pc = doExt(pc); break;                    // 58
+    case ':': pc = doCallFunction(pc); break;                    // 58
     case ';': pc = rpop(); break;                       // 59
     case '<': t1 = pop(); T = T < t1 ? -1 : 0;  break;  // 60
     case '=': t1 = pop(); T = T == t1 ? -1 : 0; break;  // 61
     case '>': t1 = pop(); T = T > t1 ? -1 : 0;  break;  // 62
     case '?': push(_getch());                   break;  // 63
-    case '@': push(reg[curReg]);                break;  // 64
+    case '@': if ((0 <= T) && (T < MEM_SZ)) { T = MEM[T]; }
+        break;
     case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': // 65-90
     case 'G': case 'H': case 'I': case 'J': case 'K': case 'L':
-    case 'M': case 'N': case 'O': case 'P': case 'Q': case 'R': 
-    case 'S': case 'T': case 'U': case 'V': case 'W': case 'X': 
-    case 'Y': case 'Z': pc = doCallFunction(pc-1);
-        break;
+    case 'M': case 'N': case 'O': case 'P': case 'Q': case 'R':
+    case 'S': case 'T': case 'U': case 'V': case 'W': case 'X':
+    case 'Y': case 'Z': break;
     case '[': rpush(pc);                                // 91
         if (T == 0) {
             while ((pc < CODE_SZ) && (CODE[pc] != ']')) { pc++; }
@@ -369,17 +365,32 @@ int step(int pc) {
     case ']': if (T) { pc = R; }                        // 93
             else { pop();  rpop(); }
             break;
-    case '^': t1 = pop(); T ^= t1;  break;              // 94
-    case '_': T = -T;      break;                       // 95
-    case '`': pc = doCallFunction(pc);                      // 96
-    case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': // 97-122
+    case '^': t1 = pop(); T ^= t1;      break;          // 94
+    case '_': T = -T;                   break;          // 95
+    //case '`': pc = doCallFunction(pc);  break;          // 96
+    case 'a': case 'b': /* case 'c': */ case 'd': case 'e': case 'f': // 97-122
     case 'g': case 'h': case 'i': case 'j': case 'k': case 'l':
-    case 'm': case 'n': case 'o': case 'p': case 'q': case 'r':
-    case 's': case 't': case 'u': case 'v': case 'w': case 'x':
-    case 'y': case 'z': curReg = ir - 'a'; t1 = CODE[pc];
-        if (t1 == '+') { ++pc; ++reg[curReg]; }
-        if (t1 == '-') { ++pc; --reg[curReg]; }
+    case 'm': /* case 'n': case 'o': */ case 'p': case 'q': // case 'R':
+    case 's': case 't': case 'u': case 'v': case 'w': // case 'x':
+    case 'y': case 'z': // pc = doCallFunction(pc - 1);
         break;
+    case 'c': ir = CODE[pc++];
+        if (ir == '@') { if ((0 <= T) && (T < CODE_SZ)) { T = CODE[T]; } }
+        if (ir == '!') { 
+            t2 = pop(); t1 = pop(); 
+            if ((0 <= t2) && (t2 < CODE_SZ)) { CODE[t2] = (byte)t1; } 
+        }
+        break;
+    case 'o': push(N);        break;
+    case 'n': N = T; pop();   break;
+    case 'r': ir = CODE[pc++]; t1 = CODE[pc++];
+        if (('A' <= ir) && (ir <= 'Z')) { curReg = ir - 'A'; }
+        if (t1 == '+') { ++reg[curReg]; }
+        if (t1 == '-') { --reg[curReg]; }
+        if (t1 == '@') { push(reg[curReg]); }
+        if (t1 == '!') { reg[curReg] = pop(); }
+        break;
+    case 'x': pc = doExt(pc); break;
     case '{': pc = doDefineFunction(pc); break;         // 123
     case '|': t1 = pop(); T |= t1; break;               // 124
     case '}': pc = rpop(); break;                       // 125
