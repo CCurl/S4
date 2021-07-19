@@ -1,10 +1,30 @@
 # S4 - A small and fast stack machine VM
 
-S4 is a system where the code is both human readable source code and the VM's machine code.
+S4 is an simple, interpreted system where there is no difference between the executable machine code and the source code. There is no compilation needed.
 
-The entire system is inplemented one file. The same code runs on both a Windows PC or development board via the Arduino IDE. Since the Ardiono IDE requires a .INO file, there is one additional for for the Arduino IDE.
+Why S4? There are multiple reasons:
+
+1. Many interactive programming environments use tokens and a large SWITCH statement in a loop to run the program. In those systems, the tokens (the cases in the SWITCH) are often arbitrarily assigned and are not human-readable, so they have no meaning to the programmer when reading the machine code. Additionally there is a compiler, often something similar to Forth, to work in that environment. In these enviromnents, there is a steep learning curve, as the programmer needs to learn the user environment and the hundreds or thousands of user functions in the libraries (or "words" in Forth). In S4, there is only one thing to learn; the machine code is human readable, and there is no a compiler, nor are there thousands of functions/words to learn.
+
+2. I wanted a simple interactive programming environment that could be easily understood and modified. My mantra is that a program should be "intuitively obvious upon casual inspection".
+
+3. I wanted to avoid the need for using a multiple gigabyte tool chain and the edit/compile/run paradigm for developing programs.
+
+4. I wanted a minimal program with a small footprint that could be easily deployed to different development boards via the Ardiuino IDE.
+
+S4 is the result of my work towards those goals.
+
+- The entire system is implemented 3 files: S4.h, S4.cpp, and S4.ino.
+- The same code runs on both a Windows PC or development board via the Arduino IDE. 
 
 The reference for S4 is here: https://github.com/CCurl/S4/blob/main/reference.txt
 
+# Building S4
+
+- On the PC, I use Microsoft's Visual Studio (Community edition). 
+- For Development boards, I use the Arduino IDE. 
+- I do not have an Apple or Linux system, so I haven't tried to compile the program for those environments
+- However, being such a simple C program, it should not be difficult to port S4 to those environments.
+
 S4 was inspired by STABLE. See https://w3group.de/stable.html for details on STABLE.
-A big thanks to Sandor Schneider for the inspiration for this.
+A big thanks to Sandor Schneider for the inspiration for this project.
