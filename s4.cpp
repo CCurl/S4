@@ -11,13 +11,12 @@ long curReg = 0;
 byte isBye = 0;
 char input_fn[32];
 FILE* input_fp = NULL;
-
+long here = 0;
 MEMORY_T memory;
 
 #define T     dstack[dsp]
 #define N     dstack[dsp-1]
 #define R     rstack[rsp]
-#define HERE  reg[7]
 
 #ifdef __PC__
     long millis() { return GetTickCount(); }
@@ -41,7 +40,7 @@ void rpush(long v) { if (rsp < STK_SZ) { rstack[++rsp] = v; } }
 long rpop() { return (rsp > 0) ? rstack[rsp--] : -1; }
 
 void vmInit() {
-    dsp = rsp = HERE = curReg = 0;
+    dsp = rsp = here = curReg = 0;
     for (int i = 0; i < NUM_REGS; i++) { reg[i] = 0; }
     for (int i = 0; i < NUM_FUNCS; i++) { func[i] = 0; }
     for (int i = 0; i < MEM_SZ; i++) { MEM[i] = 0; }
@@ -56,15 +55,21 @@ void printStringF(const char* fmt, ...) {
     printString(buf);
 }
 
-int hexNum(char x, int alphaOnly) {
+int hexNum(char x) {
+    if (('0' <= x) && (x <= '9')) { return x - '0'; }
+    if (('A' <= x) && (x <= 'F')) { return x - 'A' + 10; }
+    return -1;
+}
+
+int funcNum(char x, int alphaOnly) {
     if (('a' <= x) && (x <= 'z')) { return x - 'a'; }
     if ((!alphaOnly) && ('0' <= x) && (x <= '9')) { return x - '0' + 26; }
     return -1;
 }
 
 int GetFunctionNum(int pc) {
-    int f1 = hexNum(CODE[pc], 0);
-    int f2 = hexNum(CODE[pc + 1], 0);
+    int f1 = funcNum(CODE[pc], 0);
+    int f2 = funcNum(CODE[pc + 1], 0);
     if ((f1 < 0) || (f2 < 0)) {
         printStringF("-%c%c:FN Bad-", CODE[pc], CODE[pc + 1]);
         return -1;
@@ -78,17 +83,17 @@ int GetFunctionNum(int pc) {
 }
 
 int doDefineFunction(int pc) {
-    if (pc < HERE) { return pc; }
+    if (pc < here) { return pc; }
     int fn = GetFunctionNum(pc);
     if (fn < 0) { return pc + 2; }
-    CODE[HERE++] = '{';
-    CODE[HERE++] = CODE[pc];
-    CODE[HERE++] = CODE[pc+1];
+    CODE[here++] = '{';
+    CODE[here++] = CODE[pc];
+    CODE[here++] = CODE[pc+1];
     pc += 2;
-    func[fn] = HERE;
+    func[fn] = here;
     while ((pc < CODE_SZ) && CODE[pc]) {
-        CODE[HERE++] = CODE[pc++];
-        if (CODE[HERE-1] == '}') { return pc; }
+        CODE[here++] = CODE[pc++];
+        if (CODE[here-1] == '}') { return pc; }
     }
     printString("-overflow-");
     return pc;
@@ -155,11 +160,11 @@ int doQuote(int pc, int isPush) {
 }
 
 void dumpCode() {
-    printStringF("\r\nCODE: size: %d ($%x), HERE=%d ($%x)", CODE_SZ, CODE_SZ, HERE, HERE);
-    if (HERE == 0) { printString("\r\n(no code defined)"); return; }
-    int ti = 0, x = HERE, npl = 20;
+    printStringF("\r\nCODE: size: %d ($%x), HERE=%d ($%x)", CODE_SZ, CODE_SZ, here, here);
+    if (here == 0) { printString("\r\n(no code defined)"); return; }
+    int ti = 0, x = here, npl = 20;
     char txt[32];
-    for (int i = 0; i < HERE; i++) {
+    for (int i = 0; i < here; i++) {
         if ((i % npl) == 0) {
             if (ti) { txt[ti] = 0;  printStringF(" ; %s", txt); ti = 0; }
             printStringF("\n\r%05d: ", i);
@@ -281,8 +286,8 @@ int doExt(int pc) {
         #endif
         break;   /* *** FREE ***  */
     case 'M': break;   /* *** FREE ***  */
-    case 'N': N = T; pop(); break;   // NIP
-    case 'O': push(N);      break;   // OVER
+    case 'N': break;   /* *** FREE ***  */
+    case 'O': break;   /* *** FREE ***  */
     case 'P': pc = doPin(pc); break;
     case 'Q': break;   /* *** FREE ***  */
     case 'R': break;   /* *** FREE ***  */
@@ -318,7 +323,13 @@ int step(int pc) {
         }
         ++pc; break;
     case '#': push(T);               break;             // 35
-    case '$': t1 = N; N = T; T = t1; break;             // 36
+    case '$': push(0); 
+        t1 = hexNum(CODE[pc]);
+        while (0 <= t1) {
+            T = (T * 0x10) + t1;
+            t1 = hexNum(CODE[++pc]);
+        }
+        break;
     case '%': t1 = pop(); T %= t1;   break;             // 37
     case '&': t1 = pop(); T &= t1;   break;             // 38
     case '\'': push(CODE[pc++]);     break;             // 39
@@ -351,11 +362,17 @@ int step(int pc) {
     case '?': push(_getch());                   break;  // 63
     case '@': if ((0 <= T) && (T < MEM_SZ)) { T = MEM[T]; }
         break;
+    case 'H': ir = CODE[pc++];
+        if (ir == '@') { push(here); }
+        if (ir == '!') { here = pop(); }
+        break;
+    case 'T': push(GetTickCount());  break;
+    case 'W': delay(pop()); break;
     case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': // 65-90
-    case 'G': case 'H': case 'I': case 'J': case 'K': case 'L':
+    case 'G': /* case 'H': */     case 'I': case 'J': case 'K': case 'L':
     case 'M': case 'N': case 'O': case 'P': case 'Q': case 'R':
-    case 'S': case 'T': case 'U': case 'V': case 'W': case 'X':
-    case 'Y': case 'Z': break;
+    case 'S': /* case 'T': */     case 'U': case 'V': /*case 'W': */
+    case 'X': case 'Y': case 'Z': break;
     case '[': rpush(pc);                                // 91
         if (T == 0) {
             while ((pc < CODE_SZ) && (CODE[pc] != ']')) { pc++; }
@@ -371,7 +388,7 @@ int step(int pc) {
     case 'a': case 'b': /* case 'c': */ case 'd': case 'e': case 'f': // 97-122
     case 'g': case 'h': case 'i': case 'j': case 'k': case 'l':
     case 'm': /* case 'n': case 'o': */ case 'p': case 'q': // case 'R':
-    case 's': case 't': case 'u': case 'v': case 'w': // case 'x':
+    /* case 's': */ case 't': case 'u': case 'v': case 'w': // case 'x':
     case 'y': case 'z': // pc = doCallFunction(pc - 1);
         break;
     case 'c': ir = CODE[pc++];
@@ -390,6 +407,7 @@ int step(int pc) {
         if (t1 == '@') { push(reg[curReg]); }
         if (t1 == '!') { reg[curReg] = pop(); }
         break;
+    case 's': t1 = N; N = T; T = t1; break;
     case 'x': pc = doExt(pc); break;
     case '{': pc = doDefineFunction(pc); break;         // 123
     case '|': t1 = pop(); T |= t1; break;               // 124
