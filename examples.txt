@@ -19,19 +19,19 @@ S4 examples:
      C equivalent:        if (f < t) { int x = f; f = t; t = x; }
 
 - The general form for a FOR loop is:
-    %%<($)%-1+[$    0(code)    1+$1-]
+    0(f t--)   %%>($)%-1+[$    0(code)    1+$1-]\
 
 - To do something 41 times:
-    S4 code:             1 41 o-1+[S   0(code here-->)#.32,0(<--code here)   1+S1-]\
-    Forth equivalent:    41 BEGIN DUP . 1- DUP WHILE DROP
+    S4 code:             1 41 %-1+[$   0(code here-->)#.32,0(<--code here)   1+$1-]\
+    Forth equivalent:    1 41 FOR I . NEXT
     C equivalent:        for (int i = 1; i <= 41; i)) { printf("%d ", i); }
 
-- A simple benchmark for a 100 million (100ml) decrement loop:
-    {ml 1000#**}                 0(define function ml)
-    {n3 #100<(0.)#10<(0.).}      0(define function n3)
+- A simple benchmark for a 100 million decrement loop:
     {md %%/*-}                   0(define function md - MODULO)
+    {n3 #100<(0.)#10<(0.).}      0(define function n3)
     {el T$-1000%%/.".":md:n3}    0(define function el - ELAPSED)
-    {bm T$[1-]:el
+    {bm T$[1-]:el}
+    1000#* 100* :bm
 
 - To display the currently defined code:
-    0 H@[$   #c@#,h7d=(:cr)   1+$1-]\
+    0 H@[$   #c@#,h7d=(13,10,)   1+$1-]\
