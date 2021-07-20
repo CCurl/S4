@@ -1,4 +1,4 @@
-1( {si "---System info---"IA} )
+1( {si "---System info---"iA} )
 
 0(  cd: dump all code currently defined )
 1( {cr 10,13,})
@@ -9,13 +9,13 @@
 
 0(  md: Modulo, el: Elapsed )
 1( {md %%/*-} )
-1( {el T$-1000%%/.".":md:n3} )
+1( {el t$-1000%%/.".":md:n3} )
 
 0(  ml: TOS *= 1 million )
 1( {ml 1000#**} )
 
 0(  bm: Benchmark: a simple decrement loop )
-1( {bm T$[1-]:el} )
+1( {bm t$[1-]:el} )
 
 0(  C0: vt100 CSI code - '<ESC>[' )
 1( {c0 27,"["} )

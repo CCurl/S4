@@ -22,10 +22,12 @@ $  (a b--b a)     Swap top 2 stack items (Forth SWAP)
 %  (a b--a b a)   Push 2nd (Forth OVER)
 
 *** REGISTERS ***
-rX@  (--n)        Fetch value from register X [A..Z]
-rX!  (n--)        Store value to register X
-rX+  (--)         Increment register X by 1
-rX-  (--)         Decrement register X by 1
+  NOTE: the registers are shortcuts for 32-bit addresses [0..25]
+        register A is [0], M is [12], Z is [25]
+        register H is special: it is the HERE address
+X   (--a)         Push address of register X (X:[A..Z])
+X+  (--)          Push address of X and increment X by 1
+X-  (--)          Push address of X and decrement X by 1
 
 *** FUNCTIONS ***
   NOTES: 1) Function names can start with a number [0..9]
@@ -71,13 +73,12 @@ c@    (a--n)       Fetch byte from CODE address a
 c!    (n a--)      Store byte n to CODE address a
 
 *** OTHER ***
-H     (--a)        Push HERE address (NB: HERE is stored at memory[0])
-IA   (--)         Info: All (CFMRS)
-IC   (--)         Info: Code
-IF   (--)         Info: Functions
-IM   (--)         Info: Memory
-IR   (--)         Info: Registers
-IS   (--)         Info: Stack
+IA    (--)         Info: All (CFMRS)
+IC    (--)         Info: Code
+IF    (--)         Info: Functions
+IM    (--)         Info: Memory
+IR    (--)         Info: Registers
+IS    (--)         Info: Stack
 L     (n--)        Load code from block (block.nnn)
 T     (--n)        Time (Arduino: millis(), Windows: GetTickCount())
 W     (n--)        Wait (Arduino: delay(),  Windows: Sleep())

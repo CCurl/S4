@@ -5,9 +5,7 @@
 long dstack[STK_SZ + 1];
 long rstack[STK_SZ + 1];
 long dsp, rsp;
-long reg[NUM_REGS];
 long func[NUM_FUNCS];
-long curReg = 0;
 byte isBye = 0;
 char input_fn[32];
 FILE* input_fp = NULL;
@@ -16,7 +14,7 @@ MEMORY_T memory;
 #define T     dstack[dsp]
 #define N     dstack[dsp-1]
 #define R     rstack[rsp]
-#define HERE  MEM[0]
+#define HERE  MEM[7]
 
 #ifdef __PC__
     long millis() { return GetTickCount(); }
@@ -40,8 +38,7 @@ void rpush(long v) { if (rsp < STK_SZ) { rstack[++rsp] = v; } }
 long rpop() { return (rsp > 0) ? rstack[rsp--] : -1; }
 
 void vmInit() {
-    dsp = rsp = HERE = curReg = 0;
-    for (int i = 0; i < NUM_REGS; i++) { reg[i] = 0; }
+    dsp = rsp = HERE = 0;
     for (int i = 0; i < NUM_FUNCS; i++) { func[i] = 0; }
     for (int i = 0; i < MEM_SZ; i++) { MEM[i] = 0; }
 }
@@ -180,15 +177,6 @@ void dumpCode() {
     if (ti) { txt[ti] = 0;  printStringF(" ; %s", txt); }
 }
 
-void dumpRegs() {
-    printString("\r\nREGISTERS:");
-    for (int i = 0; i < NUM_REGS; i++) {
-        byte fId = 'A' + i;
-        if ((i % 5) == 0) { printString("\r\n"); }
-        printStringF("%c: %-15ld", fId, reg[i]);
-    }
-}
-
 void dumpFuncs() {
     printStringF("\r\nFUNCTIONS: (%d available)", NUM_FUNCS);
     int n = 0;
@@ -226,7 +214,6 @@ void dumpMemory() {
 
 void dumpAll() {
     dumpStack(1);  printString("\r\n");
-    dumpRegs();    printString("\r\n");
     dumpCode();    printString("\r\n");
     dumpMemory();  printString("\r\n");
     dumpFuncs();   printString("\r\n");
@@ -253,7 +240,6 @@ int doPin(int pc) {
 
 int doExt(int pc) {
     byte ir = CODE[pc++];
-    long t1;
     switch (ir) {
     case 'F': pc = doFile(pc); break;
     case 'P': pc = doPin(pc); break;
@@ -312,29 +298,18 @@ int step(int pc) {
     case '?': push(_getch());                   break;  // 63
     case '@': if ((0 <= T) && (T < MEM_SZ)) { T = MEM[T]; }
         break;
-    case 'H': push(0); break;
+    case 'A': case 'B': case 'C': case 'D': case 'E':
+    case 'F': case 'G': case 'H': case 'I': case 'J':
+    case 'K': case 'L': case 'M': case 'N': case 'O':
+    case 'P': case 'Q': case 'R': case 'S': case 'T':
+    case 'U': case 'V': case 'W': case 'X': case 'Y':
+    case 'Z': ir = ir - 'A'; t1 = CODE[pc];
+        push(ir);
+        if (t1 == '+') { ++pc; ++MEM[ir]; }
+        if (t1 == '-') { ++pc; --MEM[ir]; }
+        break;
+
 #ifdef __PC__
-    case 'I': t1 = CODE[pc++];
-        if (t1 == 'A') { dumpAll(); }
-        if (t1 == 'C') { dumpCode(); }
-        if (t1 == 'F') { dumpFuncs(); }
-        if (t1 == 'M') { dumpMemory(); }
-        if (t1 == 'R') { dumpRegs(); }
-        if (t1 == 'S') { dumpStack(0); }
-        break;
-    case 'L':
-        if (input_fp) { fclose(input_fp); }
-            sprintf_s(input_fn, sizeof(input_fn), "block.%03ld", pop());
-            fopen_s(&input_fp, input_fn, "rt");
-        break;
-#endif
-    case 'T': push(GetTickCount());  break;
-    case 'W': delay(pop()); break;
-    case 'X': t1 = CODE[pc++];
-        if (t1 == 'A') { rpush(pc); pc = pop(); }
-        if (t1 == 'X') { vmInit(); }
-        if (t1 == 'Z') { isBye = 1; }
-        break;
     case '[': rpush(pc);                                // 91
         if (T == 0) {
             while ((pc < CODE_SZ) && (CODE[pc] != ']')) { pc++; }
@@ -345,6 +320,7 @@ int step(int pc) {
             break;
     case '^': t1 = pop(); T ^= t1;      break;          // 94
     case '_': T = -T;                   break;          // 95
+    case '`': pc = doExt(pc);           break;          // 96
     case 'c': ir = CODE[pc++];
         if (ir == '@') { if ((0 <= T) && (T < CODE_SZ)) { T = CODE[T]; } }
         if (ir == '!') { 
@@ -359,14 +335,26 @@ int step(int pc) {
             t1 = hexNum(CODE[++pc]);
         }
         break;
-    case 'r': ir = CODE[pc++]; t1 = CODE[pc++];
-        if (('A' <= ir) && (ir <= 'Z')) { curReg = ir - 'A'; }
-        if (t1 == '+') { ++reg[curReg]; }
-        if (t1 == '-') { --reg[curReg]; }
-        if (t1 == '@') { push(reg[curReg]); }
-        if (t1 == '!') { reg[curReg] = pop(); }
+    case 'i': t1 = CODE[pc++];
+        if (t1 == 'A') { dumpAll(); }
+        if (t1 == 'C') { dumpCode(); }
+        if (t1 == 'F') { dumpFuncs(); }
+        if (t1 == 'M') { dumpMemory(); }
+        if (t1 == 'S') { dumpStack(0); }
         break;
-    case 'x': pc = doExt(pc); break;
+    case 'l':
+        if (input_fp) { fclose(input_fp); }
+        sprintf_s(input_fn, sizeof(input_fn), "block.%03ld", pop());
+        fopen_s(&input_fp, input_fn, "rt");
+        break;
+#endif
+    case 't': push(GetTickCount());  break;
+    case 'w': delay(pop()); break;
+    case 'x': t1 = CODE[pc++];
+        if (t1 == 'A') { rpush(pc); pc = pop(); }
+        if (t1 == 'X') { vmInit(); }
+        if (t1 == 'Z') { isBye = 1; }
+        break;
     case '{': pc = doDefineFunction(pc); break;         // 123
     case '|': t1 = pop(); T |= t1; break;               // 124
     case '}': pc = rpop(); break;                       // 125

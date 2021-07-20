@@ -7,7 +7,7 @@ S4 examples:
     c #(xxx #=) ~ (yyy)
 
  - x = (a == b) ? c : d;
-    rA@ rB@ = #(rC@$#=)~(rD@) rX!
+    A@ B@ = #(C@$#=)~(D@) X!
 
  - To conditionally define a function: 
     1( {xx "xx is defined"} )
