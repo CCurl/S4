@@ -152,7 +152,7 @@
     <None Include=".gitignore" />
     <None Include="LICENSE" />
     <None Include="README.md" />
-    <Text Include="src.s4">
+    <Text Include="block.999">
       <FileType>Document</FileType>
     </Text>
   </ItemGroup>

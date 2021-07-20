@@ -14,28 +14,24 @@ S4 examples:
     0( {yy "yy is not defined"} )
 
 - To make sure N < T
-     S4 code:             oo>($)
+     S4 code:             %%>($)
      Forth equivalent:    OVER OVER > IF SWAP THEN
      C equivalent:        if (f < t) { int x = f; f = t; t = x; }
 
+- The general form for a FOR loop is:
+    %%<($)%-1+[$    0(code)    1+$1-]
+
 - To do something 41 times:
-    S4 code:             1 41 o-1+[$   0(code here-->)#.32,0(<--code here)   1+$1-]\
+    S4 code:             1 41 o-1+[S   0(code here-->)#.32,0(<--code here)   1+S1-]\
     Forth equivalent:    41 BEGIN DUP . 1- DUP WHILE DROP
     C equivalent:        for (int i = 1; i <= 41; i)) { printf("%d ", i); }
 
 - A simple benchmark for a 100 million (100ml) decrement loop:
-    {ml 1000#**}                0(define function ml)
-    {n3 #100<(0.)#10<(0.).}     0(define function n3)
-    100:ml xT $ [ x- ] xT $ - # 1000 / . "." 1000 % :n3
-         0(-- explained --)
-    100:ml      0( push 100, call ml                [--100ml] )
-    xT $        0( push current time MS, swap       [100ml--t1 100ml] )
-    [ x- ]      0( a decrement loop                 [t1 100ml--t1] )
-    xT $        0( push current time MS, swap       [t1--t2 t1] )
-    -           0( subtract                         [t2 t1--et] )
-    # 1000 /    0( dup, push 1000, divide           [et--et S] )
-    . "."       0( print TOS, print "."             [et S--et] )
-    1000 % :n3  0( push 1000, modulo call n3        [et--] )
+    {ml 1000#**}                 0(define function ml)
+    {n3 #100<(0.)#10<(0.).}      0(define function n3)
+    {md %%/*-}                   0(define function md - MODULO)
+    {el T$-1000%%/.".":md:n3}    0(define function el - ELAPSED)
+    {bm T$[1-]:el
 
 - To display the currently defined code:
-    0 rH@ o-[$   #c@#,125=(:cr)   1+$1-]\
+    0 H@[$   #c@#,h7d=(:cr)   1+$1-]\
