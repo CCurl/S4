@@ -1,0 +1,39 @@
+1( {si "---System info---"IA} )
+
+0(  cd: dump all code currently defined )
+1( {cr 10,13,})
+1( {cd 0H@[$ #c@#,125=(:cr) 1+$1-]\} )
+
+0(  n3: print TOS to 3 width )
+1( {n3 #100<(0.)#10<(0.).} )
+
+0(  md: Modulo, el: Elapsed )
+1( {md %%/*-} )
+1( {el T$-1000%%/.".":md:n3} )
+
+0(  ml: TOS *= 1 million )
+1( {ml 1000#**} )
+
+0(  bm: Benchmark: a simple decrement loop )
+1( {bm T$[1-]:el} )
+
+0(  C0: vt100 CSI code - '<ESC>[' )
+1( {c0 27,"["} )
+
+0(  c1: Set Color: fb bg Y )
+0( {c1 :c0.";"."m"} )
+
+0(  c2: Save the cursor pos )
+0( {c2 :c0"s"} )
+
+0(  c3: cursor pos restore )
+0( {c3 :c0"u""} )
+
+0(  cp: Set cursor pos: x y CP )
+1( {cp :c0.";"."H"} )
+
+0(  cl: Clear Screen )
+1( {cs :c0"2J"0#:cp} )
+
+1( "S4 v0.0.1 - https://github.com/CCurl/S4" )
+1( :cr"Hello." )

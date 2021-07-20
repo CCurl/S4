@@ -34,8 +34,6 @@
 Debug/
 Release/
 *.ipch
-*.l
-/block.*
 /.vs
 /history.txt
 /S4.vcxproj.user
