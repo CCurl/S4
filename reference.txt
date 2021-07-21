@@ -21,21 +21,30 @@ _  (n1--n2)       negate TOS (17 => -17) (same as ~1+)
 $  (a b--b a)     Swap top 2 stack items (Forth SWAP)
 %  (a b--a b a)   Push 2nd (Forth OVER)
 
+*** MEMORY ***
+  NOTE: There are 2 separate address spaces, 8-bit (CODE) and 32-bit
+        The 32-bit address space is NOT shared with the CODE space
+@     (a--n)       Fetch long from 32-bit address a
+!     (n a--)      Store long n to 32-bit address a
+c@    (a--n)       Fetch byte from CODE address a
+c!    (n a--)      Store byte n to CODE address a
+
 *** REGISTERS ***
-  NOTE: the registers are shortcuts for 32-bit addresses [0..25]
-        register A is [0], M is [12], Z is [25]
-        register H is special: it is the HERE address
+  NOTES: the registers are shortcuts for 32-bit addresses [0..25]
+         register A is [0], M is [12], Z is [25]
+         register H is special: it is the HERE address
 X   (--a)         Push address of register X (X:[A..Z])
 X+  (--)          Push address of X and increment X by 1
 X-  (--)          Push address of X and decrement X by 1
 
 *** FUNCTIONS ***
   NOTES: 1) Function names can start with a number [0..9]
-         2) A function cannot have '}' embedded in it (eg - {BD"TE}ST"} will not compile correctly)
-            Use {OK"TE"125,"ST"} instead
-{xx  (--)         Define function xx (xx:AA..99)
+         2) The alpha characters in the function name are not case-sensitive
+         3) A function cannot have '}' embedded in it (eg - {bd "TE}ST"} will not compile correctly)
+            Use {ok "TE"125,"ST"} instead
+{XX  (--)         Define function XX (XX:aa..99)
 }    (--)         End of function definition
-:xx  (--)         Call function xx (xx:AA..Z9)
+:xx  (--)         Call function xx
                     NOTE: Use this to call functions with a 1st character of [0..9]
 ;    (--)         Return from function immediately (i.e. - before reaching '}')
                     NOTE: returning while inside of a loop is not supported; behavior will be undefined.
@@ -45,7 +54,7 @@ X-  (--)          Push address of X and decrement X by 1
 ,     (n--)       Output TOS (27 is ESC, 10 is newline, 65 is A, etc) (Forth emit)
 ?     ( --key)    Read one key, don't wait for ENTER.
 "     (--)        Output bytes until next '"'
-hX    (--n)       Scan HEX number (X) until non hex-digit
+hX    (--n)       Scan HEX number (X) until non hex-digit (not case-sensitive h3Da0 == h3dA0 )
 0..9  (--n)       Scan DECIMAL number until non digit
                      to specify multiple values, separate them by space (4711 3333)
                      to enter a negative number, use _ (negate) after the number (eg - '32_')
@@ -56,47 +65,40 @@ hX    (--n)       Scan HEX number (X) until non hex-digit
 >   (a b--f)      if (a > b), f=true, else f=false
 =   (a b--f)      if (a = b), f=true, else f=false
 (   (f--)         if (f != 0), execute code in '()', if false skip until ')'
-                    NOTE: You can NOT next IFs
-                    NOTE: '()' cannot have ')' embedded in in (EG - a@("TE)ST"1-) fails when a=0)
-                      USE a@("TE"41,"ST") instead
+          NOTES: 1. You can NOT nest IFs
+                 2. '()' cannot have ')' embedded in in (EG - a@("TE)ST"1-) fails when a=0)
+                    USE a@("TE"41,"ST") instead
 [   (f--f)        if (f != 0), begin while loop. Leave f on stack. Else, skip code until ']'
 ]   (f--)         if (f != 0), repeat the loop. Else, drop f and continue.
-                    NOTE: You can NOT next LOOPs
-                    NOTE: '[]' cannot have ']' embedded in it (EG - a@["TE]ST"1-] fails when a=0)
-                      USE a@("TE"93,"ST") instead
-
-*** MEMORY ***
-  NOTE: The 32-bit address space is NOT shared with the CODE space
-@     (a--n)       Fetch long from 32-bit address a
-!     (n a--)      Store long n to 32-bit address a
-c@    (a--n)       Fetch byte from CODE address a
-c!    (n a--)      Store byte n to CODE address a
+          NOTES: 1. You can NOT nest LOOPs
+                 2. '[]' cannot have ']' embedded in it (EG - a@["TE]ST"1-] fails when a=0)
+                    USE a@("TE"93,"ST") instead
 
 *** OTHER ***
-IA    (--)         Info: All (CFMRS)
-IC    (--)         Info: Code
-IF    (--)         Info: Functions
-IM    (--)         Info: Memory
-IR    (--)         Info: Registers
-IS    (--)         Info: Stack
-L     (n--)        Load code from block (block.nnn)
-T     (--n)        Time (Arduino: millis(), Windows: GetTickCount())
-W     (n--)        Wait (Arduino: delay(),  Windows: Sleep())
-XA    (a--)        Call code at address A
-XX    (--)         Reset S4 to initial state
-XZ    (--)         Exit S4
+iA    (--)         Info: All (CFMRS)
+iC    (--)         Info: Code
+iF    (--)         Info: Functions
+iM    (--)         Info: Memory
+iR    (--)         Info: Registers
+iS    (--)         Info: Stack
+l     (n--)        Load code from block (block.nnn)
+t     (--n)        Time (Arduino: millis(), Windows: GetTickCount())
+w     (n--)        Wait (Arduino: delay(),  Windows: Sleep())
+xA    (a--)        Call code at address A
+xX    (--)         Reset S4 to initial state
+xZ    (--)         Exit S4
 
 *** EXTENDED OPCODES ***
-xFOA  (n--f)       File: open for appending (block.n)
-xFOR  (n--f)       File: open for reading (block.n)
-xFOW  (n--f)       File: open for writing (block.n)
-xFC   (f--)        File: close
-xFR   (f--c)       File: read 1 char
-xFW   (c f--)      File: write 1 char
-xPI   (p--)        Arduino: pinMode(p, INPUT)
-xPU   (p--)        Arduino: pinMode(p, INPUT_PULLUP)
-xPO   (p--)        Arduino: pinMode(p, OUTPUT)
-xPRA  (p--n)       Arduino: read analog pin (v = analogRead(p))
-xPRD  (p--n)       Arduino: read digital pin (n = digitalRead(p))
-xPWA  (v p--)      Arduino: write to analog pin (analogWrite(p, v))
-xPWD  (v p--)      Arduino: write to digital pin (digitalWrite(p, v))
+`FOA  (n--f)       File: open for appending (block.n)
+`FOR  (n--f)       File: open for reading (block.n)
+`FOW  (n--f)       File: open for writing (block.n)
+`FC   (f--)        File: close
+`FR   (f--c)       File: read 1 char
+`FW   (c f--)      File: write 1 char
+`PI   (p--)        Arduino: pinMode(p, INPUT)
+`PU   (p--)        Arduino: pinMode(p, INPUT_PULLUP)
+`PO   (p--)        Arduino: pinMode(p, OUTPUT)
+`PRA  (p--n)       Arduino: read analog pin (v = analogRead(p))
+`PRD  (p--n)       Arduino: read digital pin (n = digitalRead(p))
+`PWA  (v p--)      Arduino: write to analog pin (analogWrite(p, v))
+`PWD  (v p--)      Arduino: write to digital pin (digitalWrite(p, v))

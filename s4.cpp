@@ -38,7 +38,7 @@ void rpush(long v) { if (rsp < STK_SZ) { rstack[++rsp] = v; } }
 long rpop() { return (rsp > 0) ? rstack[rsp--] : -1; }
 
 void vmInit() {
-    dsp = rsp = HERE = 0;
+    dsp = rsp = 0;
     for (int i = 0; i < NUM_FUNCS; i++) { func[i] = 0; }
     for (int i = 0; i < MEM_SZ; i++) { MEM[i] = 0; }
 }
@@ -61,6 +61,7 @@ int hexNum(char x) {
 
 int funcNum(char x, int alphaOnly) {
     if (('a' <= x) && (x <= 'z')) { return x - 'a'; }
+    if (('A' <= x) && (x <= 'Z')) { return x - 'A'; }
     if ((!alphaOnly) && ('0' <= x) && (x <= '9')) { return x - '0' + 26; }
     return -1;
 }
@@ -158,7 +159,7 @@ int doQuote(int pc, int isPush) {
 }
 
 void dumpCode() {
-    printStringF("\r\nCODE: size: %d ($%x), HERE=%d ($%x)", CODE_SZ, CODE_SZ, HERE, HERE);
+    printStringF("\r\nCODE: size: %d bytes, HERE=%d", CODE_SZ, HERE);
     if (HERE == 0) { printString("\r\n(no code defined)"); return; }
     int ti = 0, x = HERE, npl = 20;
     char txt[32];
@@ -201,7 +202,7 @@ void dumpStack(int hdr) {
 
 void dumpMemory() {
     int n = 0;
-    printStringF("\r\nMEMORY: size: %d (%d bytes)", MEM_SZ, CODE_SZ);
+    printStringF("\r\nMEMORY: size: %d bytes (%d longs)", MEM_SZ*4, MEM_SZ);
     for (int i = 0; i < MEM_SZ; i++) {
         if (MEM[i] == 0) { continue; }
         long x = MEM[i];

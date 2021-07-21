@@ -6,17 +6,17 @@
     #define INPUT_PULLUP     1
     #define OUTPUT           2
     #define STK_SZ          63
-    #define MEM_SZ    (1024*16)
-    #define CODE_SZ   (1024*64)
-    #define TIB_SZ         128
+    #define MEM_SZ   (1024*128)
+    #define CODE_SZ  (1024* 64)
+    #define TIB_SZ         256
     #define NUM_FUNCS   (36*36)
     #define __PC__
 #else
     #include <Arduino.h>
     #define mySerial SerialUSB
     #define STK_SZ          31
-    #define MEM_SZ    (1024*20)
-    #define CODE_SZ       (512)
+    #define MEM_SZ    (1024* 2)
+    #define CODE_SZ   (1024*16)
     #define TIB_SZ          80
     #define NUM_FUNCS   (10*36)
     #define __DEV_BOARD__

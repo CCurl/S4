@@ -35,3 +35,6 @@ S4 examples:
 
 - To display the currently defined code:
     0 H@[$   #c@#,h7d=(13,10,)   1+$1-]\
+
+- To exit S4:
+    xZ
