@@ -308,9 +308,9 @@ int step(int pc) {
     case 'P': case 'Q': case 'R': case 'S': case 'T':
     case 'U': case 'V': case 'W': case 'X': case 'Y':
     case 'Z': ir = ir - 'A'; t1 = CODE[pc];
-        push(ir);
         if (t1 == '+') { ++pc; ++MEM[ir]; }
-        if (t1 == '-') { ++pc; --MEM[ir]; }
+        else if (t1 == '-') { ++pc; --MEM[ir]; }
+        else { push(ir); }
         break;
 
 #ifdef __PC__

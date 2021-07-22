@@ -38,8 +38,8 @@ d!    (n a--)      Store byte n to CODE address a
          Register A is [0], M is [12], Z is [25]
          Register H is special: it is the HERE address
 X   (--a)         Push address of register X (X:[A..Z])
-X+  (--)          Push address of X and increment X by 1
-X-  (--)          Push address of X and decrement X by 1
+X+  (--)          Increment X by 1 (no push)
+X-  (--)          Decrement X by 1 (no push)
 
 *** FUNCTIONS ***
   NOTES: 1) Function names can start with a number [0..9]

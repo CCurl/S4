@@ -26,6 +26,16 @@ S4 examples:
     Forth equivalent:    1 41 FOR I . NEXT
     C equivalent:        for (int i = 1; i <= 41; i)) { printf("%d ", i); }
 
+- To copy 927 bytes from 10000 to 20000
+    0( cb: copy bytes [n f t--])
+    {cb D!S! [S@ c@ D@ c! S+D+ 1-]}
+    927 10000 20000 :cb
+
+- To copy 927 longs from 10000 to 20000
+    0( cl: copy longs [n f t--])
+    {cl D!S! [S@ @ D@ ! S+D+ 1-]}
+    927 10000 20000 :cb
+
 - A simple benchmark for a 100 million decrement loop:
     {md %%/*-}                   0(define function md - MODULO)
     {n3 #100<(0.)#10<(0.).}      0(define function n3)
