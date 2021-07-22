@@ -11,10 +11,11 @@ char input_fn[32];
 FILE* input_fp = NULL;
 MEMORY_T memory;
 
-#define T     dstack[dsp]
-#define N     dstack[dsp-1]
-#define R     rstack[rsp]
-#define HERE  MEM[7]
+#define T        dstack[dsp]
+#define N        dstack[dsp-1]
+#define R        rstack[rsp]
+#define HERE     MEM[7]
+#define MEM_SZB  (MEM_SZ*4)
 
 #ifdef __PC__
     long millis() { return GetTickCount(); }
@@ -251,6 +252,7 @@ int doExt(int pc) {
 
 int step(int pc) {
     byte ir = CODE[pc++];
+    byte* bMem = (byte*)(&MEM[0]);
     long t1, t2;
     switch (ir) {
     case 0: return -1;                                  // 0
@@ -323,10 +325,17 @@ int step(int pc) {
     case '_': T = -T;                   break;          // 95
     case '`': pc = doExt(pc);           break;          // 96
     case 'c': ir = CODE[pc++];
-        if (ir == '@') { if ((0 <= T) && (T < CODE_SZ)) { T = CODE[T]; } }
-        if (ir == '!') { 
-            t2 = pop(); t1 = pop(); 
-            if ((0 <= t2) && (t2 < CODE_SZ)) { CODE[t2] = (byte)t1; } 
+        t1 = pop();
+        if ((0 <= t1) && (t1 < MEM_SZB)) {
+            if (ir == '@') { push(bMem[t1]); }
+            if (ir == '!') { bMem[t1] = (byte)pop(); }
+        }
+        break;
+    case 'd': ir = CODE[pc++];
+        t1 = pop();
+        if ((0 <= t1) && (t1 < CODE_SZ)) {
+            if (ir == '@') { push(CODE[t1]); }
+            if (ir == '!') { CODE[t1] = (byte)pop(); }
         }
         break;
     case 'h': push(0);

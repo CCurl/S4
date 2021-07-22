@@ -2,7 +2,7 @@
 
 0(  cd: dump all code currently defined )
 1( {cr 10,13,})
-1( {cd 0H@[$ #c@#,125=(:cr) 1+$1-]\} )
+1( {cd 0H@[$ #d@#,125=(:cr) 1+$1-]\} )
 
 0(  n3: print TOS to 3 width )
 1( {n3 #100<(0.)#10<(0.).} )
