@@ -22,7 +22,7 @@ S4 examples:
     0(f t--)   %%>($)%-1+[$    0(code)    1+$1-]\
 
 - To do something 41 times:
-    S4 code:             1 41 %-1+[$   0(code here-->)#.32,0(<--code here)   1+$1-]\
+    S4 code:             1 41 %-1+[$   0(code here-->)#b.0(<--code here)   1+$1-]\
     Forth equivalent:    1 41 FOR I . NEXT
     C equivalent:        for (int i = 1; i <= 41; i)) { printf("%d ", i); }
 
@@ -34,7 +34,7 @@ S4 examples:
     1000#* 100* :bm
 
 - To display the currently defined code:
-    0 H@[$   #c@#,h7d=(13,10,)   1+$1-]\
+    0 H@[$   #c@#,h7d=(r)   1+$1-]\
 
 - To exit S4:
     xZ

@@ -324,6 +324,7 @@ int step(int pc) {
     case '^': t1 = pop(); T ^= t1;      break;          // 94
     case '_': T = -T;                   break;          // 95
     case '`': pc = doExt(pc);           break;          // 96
+    case 'b': printString(" ");         break;
     case 'c': ir = CODE[pc++];
         t1 = pop();
         if ((0 <= t1) && (t1 < MEM_SZB)) {
@@ -358,8 +359,9 @@ int step(int pc) {
         fopen_s(&input_fp, input_fn, "rt");
         break;
 #endif
-    case 't': push(millis());  break;
-    case 'w': delay(pop()); break;
+    case 'r': printString("\r\n");  break;
+    case 't': push(millis());       break;
+    case 'w': delay(pop());         break;
     case 'x': t1 = CODE[pc++];
         if (t1 == 'A') { rpush(pc); pc = pop(); }
         if (t1 == 'X') { vmInit(); }

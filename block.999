@@ -1,8 +1,7 @@
 1( {si "---System info---"iA} )
 
 0(  cd: dump all code currently defined )
-1( {cr 10,13,})
-1( {cd 0H@[$ #d@#,125=(:cr) 1+$1-]\} )
+1( {cd 0H@[$ #d@#,125=(r) 1+$1-]\} )
 
 0(  n3: print TOS to 3 width )
 1( {n3 #100<(0.)#10<(0.).} )
@@ -36,4 +35,4 @@
 1( {cs :c0"2J"0#:cp} )
 
 1( "S4 v0.0.1 - https://github.com/CCurl/S4" )
-1( :cr"Hello." )
+0( r"Hello." )

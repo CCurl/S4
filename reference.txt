@@ -54,6 +54,8 @@ X-  (--)          Push address of X and decrement X by 1
                     NOTE: returning while inside of a loop is not supported; behavior will be undefined.
 
 *** INPUT/OUTPUT ***
+r     (--)        Output a CR/LF (13,10,)
+b     (--)        Output a SPACE (32,)
 .     (n--)       Output TOS as decimal number
 ,     (n--)       Output TOS (27 is ESC, 10 is newline, 65 is A, etc) (Forth emit)
 ?     ( --key)    Read one key, don't wait for ENTER.
