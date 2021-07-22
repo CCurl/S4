@@ -358,7 +358,7 @@ int step(int pc) {
         fopen_s(&input_fp, input_fn, "rt");
         break;
 #endif
-    case 't': push(GetTickCount());  break;
+    case 't': push(millis());  break;
     case 'w': delay(pop()); break;
     case 'x': t1 = CODE[pc++];
         if (t1 == 'A') { rpush(pc); pc = pop(); }
