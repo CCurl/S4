@@ -74,7 +74,7 @@ hX    (--n)       Scan HEX number (X) until non hex-digit (not case-sensitive h3
           NOTES: 1. You can NOT nest IFs
                  2. '()' cannot have ')' embedded in in (EG - a@("TE)ST"1-) fails when a=0)
                     USE a@("TE"41,"ST") instead
-[   (f--f)        if (f != 0), begin while loop. Leave f on stack. Else, skip code until ']'
+[   (f--f)        Begin while loop. If (f==0), skip code until ']'
 ]   (f--)         if (f != 0), repeat the loop. Else, drop f and continue.
           NOTES: 1. You can NOT nest LOOPs
                  2. '[]' cannot have ']' embedded in it (EG - a@["TE]ST"1-] fails when a=0)
