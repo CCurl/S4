@@ -201,24 +201,25 @@ void dumpStack(int hdr) {
     printString(")");
 }
 
-void dumpMemory() {
-    int n = 0;
-    printStringF("\r\nMEMORY: size: %d bytes (%d longs)", MEM_SZ*4, MEM_SZ);
-    for (int i = 0; i < MEM_SZ; i++) {
-        if (MEM[i] == 0) { continue; }
+void dumpMemory(int isRegs) {
+    int c = 0, n = isRegs ? 26 : MEM_SZ;
+    if (isRegs) { printStringF("\r\nREGISTERS: "); }
+    else { printStringF("\r\nMEMORY: size: %d bytes (%d longs)", MEM_SZ * 4, MEM_SZ); }
+    for (int i = 0; i < n; i++) {
         long x = MEM[i];
-        if (((n++) % 6) == 0) { printString("\r\n"); }
-        printStringF("[%05d]: %-10ld  ", i, x);
-        ++n;
+        if ((!x) && (!isRegs)) { continue; }
+        if (((c++) % 6) == 0) { printString("\r\n"); }
+        if (isRegs) { printStringF("%c: %-10ld  ", i+'A', x); }
+        else { printStringF("[%05d]: %-10ld  ", i, x); }
     }
-    if (n == 0) { printString("\r\n(all memory empty)"); }
+    if (c == 0) { printString("\r\n(all memory empty)"); }
 }
 
 void dumpAll() {
-    dumpStack(1);  printString("\r\n");
-    dumpCode();    printString("\r\n");
-    dumpMemory();  printString("\r\n");
-    dumpFuncs();   printString("\r\n");
+    dumpStack(1);   printString("\r\n");
+    dumpMemory(1);  printString("\r\n");
+    dumpCode();     printString("\r\n");
+    dumpFuncs();    printString("\r\n");
 }
 
 int doPin(int pc) {
@@ -350,7 +351,8 @@ int step(int pc) {
         if (t1 == 'A') { dumpAll(); }
         if (t1 == 'C') { dumpCode(); }
         if (t1 == 'F') { dumpFuncs(); }
-        if (t1 == 'M') { dumpMemory(); }
+        if (t1 == 'M') { dumpMemory(0); }
+        if (t1 == 'R') { dumpMemory(1); }
         if (t1 == 'S') { dumpStack(0); }
         break;
     case 'l':
