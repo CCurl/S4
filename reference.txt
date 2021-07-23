@@ -22,16 +22,17 @@ $  (a b--b a)     Swap top 2 stack items (Forth SWAP)
 %  (a b--a b a)   Push 2nd (Forth OVER)
 
 *** MEMORY ***
-  NOTE: There are 2 separate address spaces, 8-bit (CODE) and 32-bit
-        The 32-bit address space is NOT shared with the CODE space
-        The indexing for c@ is byte-wise, @ uses long indexing
-        So 28c@ returns the low byte of HERE, and 7@ returns HERE as a 32-bit number
-@     (a--n)       Fetch long from 32-bit address a
-!     (n a--)      Store long n to 32-bit address a
-c@    (a--n)       Fetch byte from 32-bit address a
-c!    (n a--)      Store byte n to 32-bit address a
-d@    (a--n)       Fetch byte from CODE address a
-d!    (n a--)      Store byte n to CODE address a
+  NOTE: There are 2 separate address spaces, CODE and MEMORY
+        The MEMORY address space is NOT shared with the CODE space
+        c@ and d@ use 8-bit indexing, @ uses 32-bit indexing
+        For example, 28c@ returns the lowest byte of HERE, 
+                       7@ returns HERE as a 32-bit number
+@     (a--n)       Fetch value from MEMORY address a (32-bit indexing)
+!     (n a--)      Store value to   MEMORY address a (32-bit indexing)
+c@    (a--n)       Fetch value from MEMORY address a ( 8-bit indexing)
+c!    (n a--)      Store value to   MEMORY address a ( 8-bit indexing)
+d@    (a--n)       Fetch value from CODE address a
+d!    (n a--)      Store value to   CODE address a
 
 *** REGISTERS ***
   NOTES: The registers are shortcuts for 32-bit addresses [0..25]
@@ -49,7 +50,6 @@ X-  (--a)         Push address of register X and decrement X by 1
 {XX  (--)         Define function XX (XX:aa..99)
 }    (--)         End of function definition
 :xx  (--)         Call function xx
-                    NOTE: Use this to call functions with a 1st character of [0..9]
 ;    (--)         Return from function immediately (i.e. - before reaching '}')
                     NOTE: returning while inside of a loop is not supported; behavior will be undefined.
 
