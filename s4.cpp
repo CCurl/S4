@@ -302,18 +302,16 @@ int step(int pc) {
     case '?': push(_getch());                   break;  // 63
     case '@': if ((0 <= T) && (T < MEM_SZ)) { T = MEM[T]; }
         break;
-    case 'A': case 'B': case 'C': case 'D': case 'E':
-    case 'F': case 'G': case 'H': case 'I': case 'J':
-    case 'K': case 'L': case 'M': case 'N': case 'O':
-    case 'P': case 'Q': case 'R': case 'S': case 'T':
-    case 'U': case 'V': case 'W': case 'X': case 'Y':
-    case 'Z': ir = ir - 'A'; t1 = CODE[pc];
+    case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': 
+    case 'G': case 'H': case 'I': case 'J': case 'K': case 'L': 
+    case 'M': case 'N': case 'O': case 'P': case 'Q': case 'R': 
+    case 'S': case 'T': case 'U': case 'V': case 'W': case 'X': 
+    case 'Y': case 'Z': 
+        ir -= 'A'; push(ir); t1 = CODE[pc];
         if (t1 == '+') { ++pc; ++MEM[ir]; }
-        else if (t1 == '-') { ++pc; --MEM[ir]; }
-        else { push(ir); }
+        if (t1 == '-') { ++pc; --MEM[ir]; }
         break;
 
-#ifdef __PC__
     case '[': rpush(pc);                                // 91
         if (T == 0) {
             while ((pc < CODE_SZ) && (CODE[pc] != ']')) { pc++; }
@@ -356,11 +354,15 @@ int step(int pc) {
         if (t1 == 'S') { dumpStack(0); }
         break;
     case 'l':
+        t1 = pop();
+#ifdef __PC__
         if (input_fp) { fclose(input_fp); }
-        sprintf_s(input_fn, sizeof(input_fn), "block.%03ld", pop());
+        sprintf_s(input_fn, sizeof(input_fn), "block.%03ld", t1);
         fopen_s(&input_fp, input_fn, "rt");
-        break;
+#else
+        printString("-l:pc only-");
 #endif
+        break;
     case 'r': printString("\r\n");  break;
     case 't': push(millis());       break;
     case 'w': delay(pop());         break;
