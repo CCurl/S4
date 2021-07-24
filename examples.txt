@@ -3,15 +3,15 @@ S4 examples:
  - To enter a comment: 
     0( here is a comment )
   
-  - if (c) { xxx } else { yyy } then:
-    c #(xxx #=) ~ (yyy)
+  - if (c) { ys() } else { no() } then:
+    c #(:ys #=)0=(:no)
 
  - x = (a == b) ? c : d;
-    A@ B@ = #(C@$#=)~(D@) X!
+    A B = #(C$)0=(D) _X
 
  - To conditionally define a function: 
-    1( {xx "xx is defined"} )
-    0( {yy "yy is not defined"} )
+    1( {xx "xx will be defined"} )
+    0( {yy "yy will not be defined"} )
 
 - To make sure N < T
      S4 code:             %%>($)
@@ -28,19 +28,19 @@ S4 examples:
 
 - To copy 927 bytes from 1000 to 2000
     0( cb: copy bytes [n f t--])
-    {cb 1- D! 1- S! [S+ @ c@ D+ @ c! 1-]}
+    {cb _D _S [S+ c@ D+ c! 1-]}
     927 1000 2000 :cb
 
 - To copy 927 longs from 1000 to 2000
     0( cl: copy longs [n f t--])
-    {cb 1- D! 1- S! [S+ @ @ D+ @ ! 1-]}
+    {cb _D _S [S+ @ D+ ! 1-]}
     927 1000 2000 :cl
 
 - A simple benchmark for a 100 million decrement loop:
     {md %%/*-}                   0(define function md - MODULO)
     {n3 #100<(0.)#10<(0.).}      0(define function n3)
-    {el T$-1000%%/.".":md:n3}    0(define function el - ELAPSED)
-    {bm T$[1-]:el}
+    {el t$-1000%%/.".":md:n3}    0(define function el - ELAPSED)
+    {bm t$[1-]:el}
     1000#* 100* :bm
 
 - To display the currently defined code:

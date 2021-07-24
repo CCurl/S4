@@ -1,5 +1,5 @@
 0(  cd: dump all code currently defined )
-1( {cd 0H@[$ #d@#,125=(r) 1+$1-]\} )
+1( {cd I0_IH[I+d@#,125=(r)1-]_I} )
 
 0(  n3: print TOS to 3 width )
 1( {n3 #100<(0.)#10<(0.).} )

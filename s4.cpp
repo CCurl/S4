@@ -307,11 +307,10 @@ int step(int pc) {
     case 'M': case 'N': case 'O': case 'P': case 'Q': case 'R': 
     case 'S': case 'T': case 'U': case 'V': case 'W': case 'X': 
     case 'Y': case 'Z': 
-        ir -= 'A'; push(ir); t1 = CODE[pc];
+        ir -= 'A'; push(MEM[ir]); t1 = CODE[pc];
         if (t1 == '+') { ++pc; ++MEM[ir]; }
         if (t1 == '-') { ++pc; --MEM[ir]; }
         break;
-
     case '[': rpush(pc);                                // 91
         if (T == 0) {
             while ((pc < CODE_SZ) && (CODE[pc] != ']')) { pc++; }
@@ -321,7 +320,9 @@ int step(int pc) {
             else { pop();  rpop(); }
             break;
     case '^': t1 = pop(); T ^= t1;      break;          // 94
-    case '_': T = -T;                   break;          // 95
+    case '_': t1 = CODE[pc++] - 'A'; t2 = pop();        // 95
+        if ((0 <= t1) && (t1 <= 25)) { MEM[t1] = t2; }
+        break;
     case '`': pc = doExt(pc);           break;          // 96
     case 'b': printString(" ");         break;
     case 'c': ir = CODE[pc++];
