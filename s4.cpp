@@ -188,8 +188,6 @@ void dumpFuncs() {
         if (func[i]) {
             byte f1 = 'a' + (i / 26);
             byte f2 = 'a' + (i % 26);
-            // if ('z' < f1) { f1 -= 75; }
-            // if ('z' < f2) { f2 -= 75; }
             if (((n++) % 6) == 0) { printString("\r\n"); }
             printStringF("%c%c:%4d    ", f1, f2, func[i]);
         }
@@ -324,8 +322,6 @@ int step(int pc) {
             break;
     case '^': t1 = pop(); T ^= t1;      break;          // 94
     case '_': break; /* FREE */                         // 95
-        if ((0 <= t1) && (t1 <= 25)) { MEM[t1] = t2; }
-        break;
     case '`': pc = doExt(pc);           break;          // 96
     case 'b': printString(" ");         break;
     case 'c': ir = CODE[pc++];
