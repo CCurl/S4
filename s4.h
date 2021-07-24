@@ -9,7 +9,7 @@
     #define MEM_SZ   (1024*128)
     #define CODE_SZ  (1024* 64)
     #define TIB_SZ         256
-    #define NUM_FUNCS   (36*36)
+    #define NUM_FUNCS   (26*26)
     #define __PC__
 #else
     #include <Arduino.h>
@@ -18,7 +18,7 @@
     #define MEM_SZ    (1024* 2)
     #define CODE_SZ   (1024*16)
     #define TIB_SZ          80
-    #define NUM_FUNCS   (10*36)
+    #define NUM_FUNCS   (26*26)
     #define __DEV_BOARD__
     int _getch();
     void printString(const char* str);

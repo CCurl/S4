@@ -39,15 +39,14 @@ d!    (n a--)     Store value  to  CODE address a
 X   (--n)         Push value of register X (X:[A..Z])
 X+  (--n)         Push value of register X, then increment the register by 1
 X-  (--n)         Push value of register X, then decrement the register by 1
-_X  (n--)         Store n to register X
+X;  (n--)         Store n to register X
 
 *** FUNCTIONS ***
-  NOTES: 1) Function names are exactly 2 alpha-numeric characters
-         2) The alpha characters in the function name are not case-sensitive
-         3) A function name can start with a number [0..9]
-         4) A function cannot have '}' embedded in it (eg - {bd "TE}ST"} will not compile correctly)
+  NOTES: 1) Function names are exactly 2 alpha characters
+         2) The function name is NOT case-sensitive
+         3) A function cannot have '}' embedded in it (eg - {bd "TE}ST"} will not compile correctly)
             Use {ok "TE"125,"ST"} instead
-{XX  (--)         Define function XX (XX:aa..99)
+{XX  (--)         Define function XX (XX:AA..zz)
 }    (--)         End of function definition
 :xx  (--)         Call function xx
 ;    (--)         Return from function immediately (i.e. - before reaching '}')

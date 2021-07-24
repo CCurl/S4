@@ -38,13 +38,13 @@ S4 examples:
 
 - A simple benchmark for a 100 million decrement loop:
     {md %%/*-}                   0(define function md - MODULO)
-    {n3 #100<(0.)#10<(0.).}      0(define function n3)
-    {el t$-1000%%/.".":md:n3}    0(define function el - ELAPSED)
+    {nn #100<(0.)#10<(0.).}      0(define function nn)
+    {el t$-1000%%/.".":md:nn}    0(define function el - ELAPSED)
     {bm t$[1-]:el}
     1000#* 100* :bm
 
 - To display the currently defined code:
-    0 H@[$   #c@#,h7d=(r)   1+$1-]\
+    0 H[$   #d@#,h7D=(r)   1+$1-]\
 
 - To exit S4:
     xZ

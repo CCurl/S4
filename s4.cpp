@@ -6,7 +6,7 @@ long dstack[STK_SZ + 1];
 long rstack[STK_SZ + 1];
 long dsp, rsp;
 long func[NUM_FUNCS];
-byte isBye = 0;
+byte isBye = 0, isError = 0;
 char input_fn[32];
 FILE* input_fp = NULL;
 MEMORY_T memory;
@@ -40,8 +40,9 @@ long rpop() { return (rsp > 0) ? rstack[rsp--] : -1; }
 
 void vmInit() {
     dsp = rsp = 0;
-    for (int i = 0; i < NUM_FUNCS; i++) { func[i] = 0; }
+    for (int i = 0; i < CODE_SZ; i++) { CODE[i] = 0; }
     for (int i = 0; i < MEM_SZ; i++) { MEM[i] = 0; }
+    for (int i = 0; i < NUM_FUNCS; i++) { func[i] = 0; }
 }
 
 void printStringF(const char* fmt, ...) {
@@ -60,23 +61,24 @@ int hexNum(char x) {
     return -1;
 }
 
-int funcNum(char x, int alphaOnly) {
-    if (('a' <= x) && (x <= 'z')) { return x - 'a'; }
+int funcNum(char x) {
     if (('A' <= x) && (x <= 'Z')) { return x - 'A'; }
-    if ((!alphaOnly) && ('0' <= x) && (x <= '9')) { return x - '0' + 26; }
+    if (('a' <= x) && (x <= 'z')) { return x - 'a'; }
+    isError = 1;
     return -1;
 }
 
 int GetFunctionNum(int pc) {
-    int f1 = funcNum(CODE[pc], 0);
-    int f2 = funcNum(CODE[pc + 1], 0);
+    int f1 = funcNum(CODE[pc]);
+    int f2 = funcNum(CODE[pc + 1]);
     if ((f1 < 0) || (f2 < 0)) {
         printStringF("-%c%c:FN Bad-", CODE[pc], CODE[pc + 1]);
         return -1;
     }
-    int fn = (f1 * 36) + f2;
+    int fn = (f1 * 26) + f2;
     if ((fn < 0) || (NUM_FUNCS <= fn)) {
         printStringF("-%c%c:FN OOB-", CODE[pc], CODE[pc + 1]);
+        isError = 1;
         return -1;
     }
     return fn;
@@ -184,10 +186,10 @@ void dumpFuncs() {
     int n = 0;
     for (int i = 0; i < NUM_FUNCS; i++) {
         if (func[i]) {
-            byte f1 = 'a' + (i / 36);
-            byte f2 = 'a' + (i % 36);
-            if ('z' < f1) { f1 -= 75; }
-            if ('z' < f2) { f2 -= 75; }
+            byte f1 = 'a' + (i / 26);
+            byte f2 = 'a' + (i % 26);
+            // if ('z' < f1) { f1 -= 75; }
+            // if ('z' < f2) { f2 -= 75; }
             if (((n++) % 6) == 0) { printString("\r\n"); }
             printStringF("%c%c:%4d    ", f1, f2, func[i]);
         }
@@ -306,10 +308,11 @@ int step(int pc) {
     case 'G': case 'H': case 'I': case 'J': case 'K': case 'L': 
     case 'M': case 'N': case 'O': case 'P': case 'Q': case 'R': 
     case 'S': case 'T': case 'U': case 'V': case 'W': case 'X': 
-    case 'Y': case 'Z': 
-        ir -= 'A'; push(MEM[ir]); t1 = CODE[pc];
+    case 'Y': case 'Z': ir -= 'A'; 
+        push(MEM[ir]); t1 = CODE[pc];
         if (t1 == '+') { ++pc; ++MEM[ir]; }
         if (t1 == '-') { ++pc; --MEM[ir]; }
+        if (t1 == ';') { pop(); ++pc; MEM[ir] = pop(); }
         break;
     case '[': rpush(pc);                                // 91
         if (T == 0) {
@@ -320,7 +323,7 @@ int step(int pc) {
             else { pop();  rpop(); }
             break;
     case '^': t1 = pop(); T ^= t1;      break;          // 94
-    case '_': t1 = CODE[pc++] - 'A'; t2 = pop();        // 95
+    case '_': break; /* FREE */                         // 95
         if ((0 <= t1) && (t1 <= 25)) { MEM[t1] = t2; }
         break;
     case '`': pc = doExt(pc);           break;          // 96
@@ -381,9 +384,11 @@ int step(int pc) {
 }
 
 int run(int pc) {
+    isError = 0;
     while (rsp >= 0) {
         if ((pc < 0) || (CODE_SZ <= pc)) { return pc; }
         pc = step(pc);
+        if (isError) { break; }
     }
     return pc;
 }
