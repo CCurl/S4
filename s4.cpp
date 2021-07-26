@@ -43,6 +43,12 @@ void vmInit() {
     for (int i = 0; i < CODE_SZ; i++) { CODE[i] = 0; }
     for (int i = 0; i < MEM_SZ; i++) { MEM[i] = 0; }
     for (int i = 0; i < NUM_FUNCS; i++) { func[i] = 0; }
+    MEM['C'-'A'] = CODE_SZ;
+    MEM['F'-'A'] = (long)&func;
+    MEM['M'-'A'] = (long)&memory;
+    MEM['R'-'A'] = (long)&rstack;
+    MEM['S'-'A'] = (long)&dstack;
+    MEM['Z'-'A'] = MEM_SZ;
 }
 
 void printStringF(const char* fmt, ...) {
@@ -376,6 +382,11 @@ int step(int pc) {
         printString("-l:pc only-");
 #endif
         break;
+    case 'm': ir = CODE[pc++]; {
+        byte* bp = (byte*)T;
+        if (ir == '@') { T = *bp; }
+        if (ir == '!') { t1 = pop(); t2 = pop(); bp[t1] = (byte)t2; }
+    } break;
     case 'r': printString("\r\n");  break;
     case 't': push(millis());       break;
     case 'w': delay(pop());         break;
