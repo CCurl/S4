@@ -131,6 +131,7 @@ int doFile(int pc) {
             char buf[2];
             SIZE_T n = fread_s(buf, 2, 1, 1, (FILE *)T);
             T = ((n) ? buf[0] : 0);
+            push(n);
         }
         break;
     case 'W': if (T) {

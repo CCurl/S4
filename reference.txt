@@ -94,12 +94,12 @@ xX    (--)         Reset S4 to initial state
 xZ    (--)         Exit S4
 
 *** EXTENDED OPCODES ***
-`FOA  (n--f)       File: open for appending (block.n)
-`FOR  (n--f)       File: open for reading (block.n)
-`FOW  (n--f)       File: open for writing (block.n)
-`FC   (f--)        File: close
-`FR   (f--c)       File: read 1 char (0 means EOF)
-`FW   (c f--)      File: write 1 char
+`FOA  (n--fn)      File: open for appending (block.n)
+`FOR  (n--fn)      File: open for reading (block.n)
+`FOW  (n--fn)      File: open for writing (block.n)
+`FC   (fn--)       File: close
+`FR   (fn--c n)    File: read 1 char (n=0 means EOF)
+`FW   (c fn--)     File: write 1 char
 `PI   (p--)        Arduino: pin input  (pinMode(p, INPUT))
 `PU   (p--)        Arduino: pin pullup (pinMode(p, INPUT_PULLUP))
 `PO   (p--)        Arduino: pin output (pinMode(p, OUTPUT)
