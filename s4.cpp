@@ -247,6 +247,18 @@ int doExt(int pc) {
     switch (ir) {
     case 'F': pc = doFile(pc); break;
     case 'P': pc = doPin(pc); break;
+    case 'S': ir = CODE[pc++];
+        if (ir == '"') {
+            int a = T;
+            byte* cp = (byte *)&MEM[0];
+            while (CODE[pc] && CODE[pc] != '"') {
+                cp[a++] = CODE[pc++];
+            }
+            ++pc;
+            cp[a] = 0;
+            T = a - T;
+        }
+        break;
     default: break;
     }
     return pc;

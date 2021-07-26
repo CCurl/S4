@@ -107,3 +107,4 @@ xZ    (--)         Exit S4
 `PRD  (p--n)       Arduino: pin read digital (n = digitalRead(p))
 `PWA  (n p--)      Arduino: pin write analog  (analogWrite(p, n))
 `PWD  (n p--)      Arduino: pin write digital (digitalWrite(p, n))
+`S"   (a--n)       String: copy string to memory (eg - 1000`S"hello")
