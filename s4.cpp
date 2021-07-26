@@ -123,14 +123,12 @@ int doFile(int pc) {
         if (T) { fclose((FILE *)T); }
         pop();
         break;
-    case 'O': ir = CODE[pc++]; 
-        if (T) {
-            char m[3] = {'r','b',0};
-            if (ir == 'A') { m[0] = 'a'; }
-            if (ir == 'R') { m[0] = 'r'; }
-            if (ir == 'W') { m[0] = 'w'; }
-            sprintf_s(input_fn, 24, "block.%03d", T);
-            fopen_s((FILE **)&T, input_fn, m);
+    case 'O': {
+            char* bMEM = (char*)&MEM[0];
+            char* md = bMEM + pop();
+            char* fn = bMEM + T;
+            T = 0;
+            fopen_s((FILE**)&T, fn, md);
         }
         break;
     case 'R': if (T) {
@@ -255,14 +253,13 @@ int doExt(int pc) {
     case 'P': pc = doPin(pc); break;
     case 'S': ir = CODE[pc++];
         if (ir == '"') {
-            int a = T;
+            int a = pop();
             byte* cp = (byte *)&MEM[0];
             while (CODE[pc] && CODE[pc] != '"') {
                 cp[a++] = CODE[pc++];
             }
             ++pc;
             cp[a] = 0;
-            T = a - T;
         }
         break;
     default: break;

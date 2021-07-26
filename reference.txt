@@ -79,6 +79,21 @@ hX    (--n)       Scan HEX number (X) until non hex-digit (not case-sensitive h3
                  2. '[]' cannot have ']' embedded in it (EG - a@["TE]ST"1-] fails when a=0)
                     USE a@("TE"93,"ST") instead
 
+*** EXTENDED OPCODES ***
+`FO   (fn md--fh)  File: open (fn/md: addr of name/mode, use `S"")
+`FR   (fh--c n)    File: read 1 char (n=0 means EOF)
+`FW   (c fh--)     File: write 1 char
+`FC   (fh--)       File: close
+`FNxx (--n)        Function: resolve function address (xx: function name)
+`PI   (p--)        Arduino: pin input  (pinMode(p, INPUT))
+`PU   (p--)        Arduino: pin pullup (pinMode(p, INPUT_PULLUP))
+`PO   (p--)        Arduino: pin output (pinMode(p, OUTPUT)
+`PRA  (p--n)       Arduino: pin read analog  (n = analogRead(p))
+`PRD  (p--n)       Arduino: pin read digital (n = digitalRead(p))
+`PWA  (n p--)      Arduino: pin write analog  (analogWrite(p, n))
+`PWD  (n p--)      Arduino: pin write digital (digitalWrite(p, n))
+`S"   (a--n)       String: copy string to memory (eg - 1000`S"hello")
+
 *** OTHER ***
 iA    (--)         Info: All (CFMRS)
 iC    (--)         Info: Code
@@ -92,19 +107,3 @@ w     (n--)        Wait (Arduino: delay(),  Windows: Sleep())
 xA    (a--)        Call code at address A
 xX    (--)         Reset S4 to initial state
 xZ    (--)         Exit S4
-
-*** EXTENDED OPCODES ***
-`FOA  (n--fn)      File: open for appending (block.n)
-`FOR  (n--fn)      File: open for reading (block.n)
-`FOW  (n--fn)      File: open for writing (block.n)
-`FC   (fn--)       File: close
-`FR   (fn--c n)    File: read 1 char (n=0 means EOF)
-`FW   (c fn--)     File: write 1 char
-`PI   (p--)        Arduino: pin input  (pinMode(p, INPUT))
-`PU   (p--)        Arduino: pin pullup (pinMode(p, INPUT_PULLUP))
-`PO   (p--)        Arduino: pin output (pinMode(p, OUTPUT)
-`PRA  (p--n)       Arduino: pin read analog  (n = analogRead(p))
-`PRD  (p--n)       Arduino: pin read digital (n = digitalRead(p))
-`PWA  (n p--)      Arduino: pin write analog  (analogWrite(p, n))
-`PWD  (n p--)      Arduino: pin write digital (digitalWrite(p, n))
-`S"   (a--n)       String: copy string to memory (eg - 1000`S"hello")
