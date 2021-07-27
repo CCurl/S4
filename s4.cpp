@@ -6,6 +6,8 @@
 #include <stdarg.h>
 #include "s4.h"
 
+#define STK_SZ 31
+
 struct {
     int code_sz;
     int mem_sz;
@@ -13,18 +15,16 @@ struct {
     int num_funcs;
     byte* code;
     long* mem;
-    byte* bMem;
     int* func;
+    long dsp, rsp;
+    long dstack[STK_SZ + 1];
+    long rstack[STK_SZ + 1];
 } sys;
 
-#define STK_SZ 31
-
-long dstack[STK_SZ + 1];
-long rstack[STK_SZ + 1];
-long dsp, rsp;
 byte isBye = 0, isError = 0;
 char input_fn[32];
 FILE* input_fp = NULL;
+byte* bMem;
 
 #define CODE       sys.code
 #define MEM        sys.mem
@@ -34,27 +34,28 @@ FILE* input_fp = NULL;
 #define MEM_SZ     sys.mem_sz
 #define NUM_FUNCS  sys.num_funcs
 
-#define T        dstack[dsp]
-#define N        dstack[dsp-1]
-#define R        rstack[rsp]
+#define T        sys.dstack[sys.dsp]
+#define N        sys.dstack[sys.dsp-1]
+#define R        sys.rstack[sys.rsp]
 #define HERE     MEM[7]
 
-void push(long v) { if (dsp < STK_SZ) { dstack[++dsp] = v; } }
-long pop() { return (dsp > 0) ? dstack[dsp--] : 0; }
+void push(long v) { if (sys.dsp < STK_SZ) { sys.dstack[++sys.dsp] = v; } }
+long pop() { return (sys.dsp > 0) ? sys.dstack[sys.dsp--] : 0; }
 
-void rpush(long v) { if (rsp < STK_SZ) { rstack[++rsp] = v; } }
-long rpop() { return (rsp > 0) ? rstack[rsp--] : -1; }
+void rpush(long v) { if (sys.rsp < STK_SZ) { sys.rstack[++sys.rsp] = v; } }
+long rpop() { return (sys.rsp > 0) ? sys.rstack[sys.rsp--] : -1; }
 
 void vmReset() {
-    dsp = rsp = 0;
+    sys.dsp = sys.rsp = 0;
     for (int i = 0; i < sys.code_sz; i++) { CODE[i] = 0; }
     for (int i = 0; i < sys.mem_sz; i++) { MEM[i] = 0; }
     for (int i = 0; i < sys.num_funcs; i++) { FUNC[i] = 0; }
     MEM['C' - 'A'] = CODE_SZ;
     MEM['F' - 'A'] = (long)&FUNC;
     MEM['M' - 'A'] = (long)&sys.mem;
-    MEM['R' - 'A'] = (long)&rstack;
-    MEM['S' - 'A'] = (long)&dstack;
+    MEM['R' - 'A'] = (long)&sys.rstack;
+    MEM['S' - 'A'] = (long)&sys.dstack;
+    MEM['Y' - 'A'] = (long)&sys;
     MEM['Z' - 'A'] = MEM_SZ;
 }
 
@@ -67,7 +68,7 @@ void vmInit(int code_sz, int mem_sz, int num_funcs) {
     sys.code = (byte*)malloc(sys.code_sz);
     sys.mem = (long*)malloc(sizeof(int) * sys.mem_sz);
     sys.func = (int*)malloc(sizeof(int) * sys.num_funcs);
-    sys.bMem = (byte*)sys.mem;
+    bMem = (byte*)sys.mem;
     vmReset();
 }
 
@@ -144,9 +145,8 @@ int doFile(int pc) {
         pop();
         break;
     case 'O': {
-        char* bMEM = (char*)&MEM[0];
-        char* md = bMEM + pop();
-        char* fn = bMEM + T;
+        char* md = (char *)bMem + pop();
+        char* fn = (char *)bMem + T;
         T = 0;
         fopen_s((FILE**)&T, fn, md);
     }
@@ -222,7 +222,7 @@ void dumpFuncs() {
 void dumpStack(int hdr) {
     if (hdr) { printStringF("\r\nSTACK: size: %d ", STK_SZ); }
     printString("(");
-    for (int i = 1; i <= dsp; i++) { printStringF("%s%ld", (i > 1 ? " " : ""), dstack[i]); }
+    for (int i = 1; i <= sys.dsp; i++) { printStringF("%s%ld", (i > 1 ? " " : ""), sys.dstack[i]); }
     printString(")");
 }
 
@@ -274,12 +274,11 @@ int doExt(int pc) {
     case 'S': ir = CODE[pc++];
         if (ir == '"') {
             int a = pop();
-            byte* cp = (byte*)&MEM[0];
             while (CODE[pc] && CODE[pc] != '"') {
-                cp[a++] = CODE[pc++];
+                bMem[a++] = CODE[pc++];
             }
             ++pc;
-            cp[a] = 0;
+            bMem[a] = 0;
         }
         break;
     default: break;
@@ -289,7 +288,6 @@ int doExt(int pc) {
 
 int step(int pc) {
     byte ir = CODE[pc++];
-    byte* bMem = (byte*)(&MEM[0]);
     long t1, t2;
     switch (ir) {
     case 0: return -1;                                  // 0
@@ -422,7 +420,7 @@ int step(int pc) {
 
 int run(int pc) {
     isError = 0;
-    while (rsp >= 0) {
+    while (sys.rsp >= 0) {
         if ((pc < 0) || (CODE_SZ <= pc)) { return pc; }
         pc = step(pc);
         if (isError) { break; }
