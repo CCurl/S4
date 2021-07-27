@@ -11,12 +11,11 @@
 struct {
     int code_sz;
     int mem_sz;
-    int mem_szb;
     int num_funcs;
+    long dsp, rsp;
     byte* code;
     long* mem;
     int* func;
-    long dsp, rsp;
     long dstack[STK_SZ + 1];
     long rstack[STK_SZ + 1];
 } sys;
@@ -62,11 +61,10 @@ void vmReset() {
 void vmInit(int code_sz, int mem_sz, int num_funcs) {
     sys.code_sz = code_sz;
     sys.mem_sz = mem_sz;
-    sys.mem_szb = mem_sz * sizeof(long);
     sys.num_funcs = num_funcs;
 
     sys.code = (byte*)malloc(sys.code_sz);
-    sys.mem = (long*)malloc(sizeof(int) * sys.mem_sz);
+    sys.mem = (long*)malloc(sizeof(long) * sys.mem_sz);
     sys.func = (int*)malloc(sizeof(int) * sys.num_funcs);
     bMem = (byte*)sys.mem;
     vmReset();
@@ -360,7 +358,7 @@ int step(int pc) {
     case 'b': printString(" ");         break;
     case 'c': ir = CODE[pc++];
         t1 = pop();
-        if ((0 <= t1) && (t1 < sys.mem_szb)) {
+        if ((0 <= t1) && (t1 < (sys.mem_sz * 4))) {
             if (ir == '@') { push(bMem[t1]); }
             if (ir == '!') { bMem[t1] = (byte)pop(); }
         }
