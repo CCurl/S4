@@ -9,28 +9,28 @@
 1( {el t$-1000%%/.".":md:nn} )
 
 0(  ml: TOS *= 1 million )
-1( {ml 1000#**} )
+0( {ml 1000#**} )
 
 0(  bm: Benchmark: a simple decrement loop )
-1( {bm t$[1-]:el} )
+0( {bm t$[1-]:el} )
 
-0(  cx: vt100 CSI code - '<ESC>[' )
-1( {cx 27,"["} )
+0(  cz: vt100 CSI code - '<ESC>[' )
+1( {cz 27,"["} )
 
 0(  cy: Set Color: fb bg Y )
-0( {cy :cx.";"."m"} )
+0( {cy :cz.";"."m"} )
 
-0(  cz: Save the cursor pos )
-0( {cz :cx"s"} )
+0(  cx: Save the cursor pos )
+0( {cx :cz"s"} )
 
-0(  c3: cursor pos restore )
-0( {cw :cx"u""} )
+0(  cw: cursor pos restore )
+0( {cw :cz"u""} )
 
 0(  cp: Set cursor pos: x y CP )
-1( {cp :cx.";"."H"} )
+1( {cp :cz.";"."H"} )
 
 0(  cs: Clear Screen )
-1( {cs :cx"2J"0#:cp} )
+1( {cs :cz"2J"0#:cp} )
 
 1( "S4 v0.0.1 - https://github.com/CCurl/S4" )
 0( r"Hello." )
