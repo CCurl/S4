@@ -6,10 +6,6 @@
 #include <stdarg.h>
 #include "s4.h"
 
-#ifndef __PC__
-#include <Arduino.h>
-#endif
-
 struct {
     int code_sz;
     int mem_sz;
@@ -434,7 +430,7 @@ int run(int pc) {
     return pc;
 }
 
-void setChar(int addr, char ch) {
+void setCodeByte(int addr, char ch) {
     if ((0 <= addr) && (addr < CODE_SZ)) { CODE[addr] = ch; }
 }
 
@@ -450,8 +446,4 @@ int getFunctionAddress(const char* fname) {
     if ((f2 < 0) || (25 < f2)) { return -1; }
     if (NUM_FUNCS <= fn) { return -1; }
     return FUNC[fn];
-}
-
-void s4() {
-    printString("\r\nS4:"); dumpStack(0); printString(">");
 }

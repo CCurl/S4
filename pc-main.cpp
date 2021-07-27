@@ -10,8 +10,8 @@
 
 typedef unsigned char byte;
 
-extern byte isBye, isError;
-extern FILE* input_fp;
+static HANDLE hStdOut = 0;
+static char input_fn[32];
 
 long millis() { return GetTickCount(); }
 int analogRead(int pin) { printStringF("-AR(%d)-", pin); return 0; }
@@ -20,13 +20,15 @@ int digitalRead(int pin) { printStringF("-DR(%d)-", pin); return 0; }
 void digitalWrite(int pin, int val) { printStringF("-DW(%d,%d)-", pin, val); }
 void pinMode(int pin, int mode) { printStringF("-pinMode(%d,%d)-", pin, mode); }
 void delay(DWORD ms) { Sleep(ms); }
-HANDLE hStdOut = 0;
+
 void printString(const char* str) {
     DWORD n = 0, l = strlen(str);
     if (l) { WriteConsoleA(hStdOut, str, l, &n, 0); }
 }
 
-char input_fileName[32];
+void ok() {
+    printString("\r\nS4:"); dumpStack(0); printString(">");
+}
 
 void doHistory(const char* txt) {
     FILE* fp = NULL;
@@ -40,15 +42,12 @@ void doHistory(const char* txt) {
 void loop() {
     char tib[100];
     int nTib = CODE_SZ - 100;
-    int n, l;
     FILE* fp = (input_fp) ? input_fp : stdin;
-    if (fp == stdin) { s4(); }
+    if (fp == stdin) { ok(); }
     if (fgets(tib, 100, fp) == tib) {
         if (fp == stdin) { doHistory(tib); }
-        l = strlen(tib);
-        n = 0;
-        for (int i = 0; i <= l; i++) {
-            setChar(nTib + i, tib[i]);
+        for (size_t i = 0; i <= strlen(tib); i++) {
+            setCodeByte(nTib + i, tib[i]);
         }
         run(nTib);
         return;
@@ -63,7 +62,7 @@ void process_arg(char* arg)
 {
     if ((*arg == 'i') && (*(arg + 1) == ':')) {
         arg = arg + 2;
-        strcpy_s(input_fileName, sizeof(input_fileName), arg);
+        strcpy_s(input_fn, sizeof(input_fn), arg);
     }
     else if (*arg == '?') {
         printString("usage s4 [args] [source-file]\n");
@@ -79,18 +78,18 @@ int main(int argc, char** argv) {
     DWORD m; GetConsoleMode(hStdOut, &m);
     SetConsoleMode(hStdOut, (m | ENABLE_VIRTUAL_TERMINAL_PROCESSING));
     vmInit(CODE_SZ, MEM_SZ, NUM_FUNCS);
-    strcpy_s(input_fileName, 32, "");
+    strcpy_s(input_fn, sizeof(input_fn), "");
     input_fp = NULL;
 
     for (int i = 1; i < argc; i++)
     {
         char* cp = argv[i];
         if (*cp == '-') { process_arg(++cp); }
-        else { strcpy_s(input_fileName, sizeof(input_fileName), cp); }
+        else { strcpy_s(input_fn, sizeof(input_fn), cp); }
     }
 
-    if (strlen(input_fileName) > 0) {
-        fopen_s(&input_fp, input_fileName, "rt");
+    if (strlen(input_fn) > 0) {
+        fopen_s(&input_fp, input_fn, "rt");
     }
 
     while (isBye == 0) { loop(); }

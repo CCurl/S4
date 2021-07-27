@@ -5,12 +5,14 @@ typedef unsigned char byte;
 extern void vmInit(int code_sz, int mem_sz, int num_funcs);
 extern int run(int pc);
 extern void dumpStack(int hdr);
-extern void setChar(int addr, char ch);
+extern void setCodeByte(int addr, char ch);
 extern long getRegister(int reg);
 extern int getFunctionAddress(const char* fname);
 extern void printString(const char*);
 extern void printStringF(const char* fmt, ...);
-extern void s4();
+
+extern byte isBye;
+extern FILE* input_fp;
 
 #ifdef _WIN32
 #define __PC__
@@ -24,4 +26,6 @@ extern int digitalRead(int pin);
 extern void digitalWrite(int pin, int val);
 extern void pinMode(int pin, int mode);
 extern void delay(unsigned long ms);
+#else
+#include <Arduino.h>
 #endif // _WIN32
