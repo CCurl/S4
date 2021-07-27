@@ -21,7 +21,7 @@ struct {
 } sys;
 
 byte isBye = 0, isError = 0;
-char input_fn[32];
+char buf[100];
 FILE* input_fp = NULL;
 byte* bMem;
 
@@ -71,7 +71,6 @@ void vmInit(int code_sz, int mem_sz, int num_funcs) {
 }
 
 void printStringF(const char* fmt, ...) {
-    char buf[100];
     va_list args;
     va_start(args, fmt);
     vsnprintf(buf, sizeof(buf), fmt, args);
@@ -150,7 +149,6 @@ int doFile(int pc) {
     }
             break;
     case 'R': if (T) {
-        char buf[2];
         long n = fread_s(buf, 2, 1, 1, (FILE*)T);
         T = ((n) ? buf[0] : 0);
         push(n);
@@ -158,7 +156,7 @@ int doFile(int pc) {
             break;
     case 'W': if (T) {
         FILE* fh = (FILE*)pop();
-        char buf[2] = { 0,0 };
+        buf[1] = 0;
         buf[0] = (byte)pop();
         fwrite(buf, 1, 1, fh);
     }
@@ -293,10 +291,10 @@ int step(int pc) {
     case '!': t2 = pop(); t1 = pop();                   // 33
         if ((0 <= t2) && (t2 < MEM_SZ)) { MEM[t2] = t1; }
         break;
-    case '"': input_fn[1] = 0;                          // 34
+    case '"': buf[1] = 0;                          // 34
         while ((pc < CODE_SZ) && (CODE[pc] != '"')) {
-            input_fn[0] = CODE[pc++];
-            printString(input_fn);
+            buf[0] = CODE[pc++];
+            printString(buf);
         }
         ++pc; break;
     case '#': push(T);               break;             // 35 (DUP)
@@ -389,8 +387,8 @@ int step(int pc) {
         t1 = pop();
 #ifdef __PC__
         if (input_fp) { fclose(input_fp); }
-        sprintf_s(input_fn, sizeof(input_fn), "block.%03ld", t1);
-        fopen_s(&input_fp, input_fn, "rt");
+        sprintf_s(buf, sizeof(buf), "block.%03ld", t1);
+        fopen_s(&input_fp, buf, "rt");
 #else
         printString("-l:pc only-");
 #endif
