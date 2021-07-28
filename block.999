@@ -32,5 +32,9 @@
 0(  cs: Clear Screen )
 1( {cs :cz"2J"0#:cp} )
 
+0( zt: print NULL-terminated string )
+0( - EG - 123#_hello world_\:zt )
+1( {zt #c@[,1+#c@]\} )
+
 1( "S4 v0.0.1 - https://github.com/CCurl/S4" )
 0( r"Hello." )

@@ -59,6 +59,8 @@ b     (--)        Output a SPACE (32,)
 r     (--)        Output a CR/LF (13,10,)
 ?     ( --key)    Read one key, don't wait for ENTER.
 "     (--)        Output bytes until next '"'
+_     (a1--a2)    String: copy string to address (a1) (eg - 1000_hello_)
+                    Pushes address (a2) after terminating NULL
 hX    (--n)       Scan HEX number (X) until non hex-digit (not case-sensitive h3Da0 == h3dA0 )
 0..9  (--n)       Scan DECIMAL number until non digit
                      to specify multiple values, separate them by space (4711 3333)
@@ -92,7 +94,6 @@ hX    (--n)       Scan HEX number (X) until non hex-digit (not case-sensitive h3
 `PRD  (p--n)       Arduino: pin read digital (n = digitalRead(p))
 `PWA  (n p--)      Arduino: pin write analog  (analogWrite(p, n))
 `PWD  (n p--)      Arduino: pin write digital (digitalWrite(p, n))
-`S"   (a--n)       String: copy string to memory (eg - 1000`S"hello")
 
 *** OTHER ***
 iA    (--)         Info: All (CFMRS)

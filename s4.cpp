@@ -133,16 +133,6 @@ int doCallFunction(int pc) {
     return FUNC[fn];
 }
 
-int doQuote(int pc, int isPush) {
-    char x[2];
-    x[1] = 0;
-    while ((pc < CODE_SZ) && (CODE[pc] != '"')) {
-        x[0] = CODE[pc++];
-        printString(x);
-    }
-    return ++pc;
-}
-
 void dumpCode() {
     printStringF("\r\nCODE: size: %d bytes, HERE=%d", CODE_SZ, HERE);
     if (HERE == 0) { printString("\r\n(no code defined)"); return; }
@@ -343,8 +333,7 @@ int step(int pc) {
     case '^': t1 = pop(); T ^= t1;      break;          // 94
     case '_': t1 = T;                                   // 95
         while (CODE[pc] && CODE[pc] != '_') { bMem[t1++] = CODE[pc++]; }
-        ++pc; 
-        bMem[t1] = 0;
+        ++pc; bMem[t1++] = 0; T = t1;
         break;
     case '`': pc = doExt(pc);           break;          // 96
     case 'b': printString(" ");         break;
