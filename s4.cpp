@@ -133,45 +133,6 @@ int doCallFunction(int pc) {
     return FUNC[fn];
 }
 
-int doFile(int pc) {
-    int ir = CODE[pc++];
-    switch (ir) {
-#ifdef __PC__
-    case 'C':
-        if (T) { fclose((FILE*)T); }
-        pop();
-        break;
-    case 'O': {
-        char* md = (char *)bMem + pop();
-        char* fn = (char *)bMem + T;
-        T = 0;
-        fopen_s((FILE**)&T, fn, md);
-    }
-            break;
-    case 'R': if (T) {
-        long n = fread_s(buf, 2, 1, 1, (FILE*)T);
-        T = ((n) ? buf[0] : 0);
-        push(n);
-    }
-            break;
-    case 'W': if (T) {
-        FILE* fh = (FILE*)pop();
-        buf[1] = 0;
-        buf[0] = (byte)pop();
-        fwrite(buf, 1, 1, fh);
-    }
-            break;
-#endif
-    case 'N':
-        push(0);
-        ir = GetFunctionNum(pc);
-        if (0 <= ir) { T = FUNC[ir]; }
-        pc += 2;
-        break;
-    }
-    return pc;
-}
-
 int doQuote(int pc, int isPush) {
     char x[2];
     x[1] = 0;
@@ -243,6 +204,45 @@ void dumpAll() {
     dumpFuncs();    printString("\r\n");
 }
 
+int doFile(int pc) {
+    int ir = CODE[pc++];
+    switch (ir) {
+#ifdef __PC__
+    case 'C':
+        if (T) { fclose((FILE*)T); }
+        pop();
+        break;
+    case 'O': {
+        char* md = (char*)bMem + pop();
+        char* fn = (char*)bMem + T;
+        T = 0;
+        fopen_s((FILE**)&T, fn, md);
+    }
+            break;
+    case 'R': if (T) {
+        long n = fread_s(buf, 2, 1, 1, (FILE*)T);
+        T = ((n) ? buf[0] : 0);
+        push(n);
+    }
+            break;
+    case 'W': if (T) {
+        FILE* fh = (FILE*)pop();
+        buf[1] = 0;
+        buf[0] = (byte)pop();
+        fwrite(buf, 1, 1, fh);
+    }
+            break;
+#endif
+    case 'N':
+        push(0);
+        ir = GetFunctionNum(pc);
+        if (0 <= ir) { T = FUNC[ir]; }
+        pc += 2;
+        break;
+    }
+    return pc;
+}
+
 int doPin(int pc) {
     int ir = CODE[pc++];
     long pin = pop(), val = 0;
@@ -267,16 +267,6 @@ int doExt(int pc) {
     switch (ir) {
     case 'F': pc = doFile(pc); break;
     case 'P': pc = doPin(pc); break;
-    case 'S': ir = CODE[pc++];
-        if (ir == '"') {
-            int a = pop();
-            while (CODE[pc] && CODE[pc] != '"') {
-                bMem[a++] = CODE[pc++];
-            }
-            ++pc;
-            bMem[a] = 0;
-        }
-        break;
     default: break;
     }
     return pc;
@@ -351,7 +341,11 @@ int step(int pc) {
             else { pop();  rpop(); }
             break;
     case '^': t1 = pop(); T ^= t1;      break;          // 94
-    case '_': break; /* FREE */                         // 95
+    case '_': t1 = T;                                   // 95
+        while (CODE[pc] && CODE[pc] != '_') { bMem[t1++] = CODE[pc++]; }
+        ++pc; 
+        bMem[t1] = 0;
+        break;
     case '`': pc = doExt(pc);           break;          // 96
     case 'b': printString(" ");         break;
     case 'c': ir = CODE[pc++];
