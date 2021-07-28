@@ -1,0 +1,67 @@
+1( {si "---System info---"iA} )
+
+0(  cd: dump all code currently defined )
+1( {cd I0I;H[I+ d@#,125=(r) 1-]I;} )
+
+0(  nn: print TOS to 3 width )
+1( {nn #100<(0.)#10<(0.).} )
+
+0(  db: [f t--] dump bytes )
+1( {db %%>($)%-1+[$ #c@:nnb 1+$1-]\} )
+
+0(  dl: [f t--] dump longs )
+1( {dl %%>($)%-1+[$ #@ :nnb 1+$1-]\} )
+
+0(  md: Modulo )
+1( {md %%/*-} )
+
+0(  el: Elapsed )
+1( {el t$-1000%%/.".":md:nn} )
+
+0(  ml: TOS *= 1 million )
+0( {ml 1000#**} )
+
+0(  bm: Benchmark: a simple decrement loop )
+0( {bm t$[1-]:el} )
+
+0(  cz: vt100 CSI code - '<ESC>[' )
+1( {cz 27,"["} )
+
+0(  cc: Set Color: fb bg Y )
+0( {cc :cz.";"."m"} )
+
+0(  xs: Save the cursor pos )
+0( {xs :cz"s"} )
+
+0(  xr: cursor pos restore )
+0( {xr :cz"u""} )
+
+0(  cp: Set cursor pos: x y CP )
+1( {cp :cz.";"."H"} )
+
+0(  cl: Clear Screen )
+1( {cs :cz"2J"0#:cp} )
+
+0(  al: align a number on a 4-byte boundary )
+1( {al #4:md(4/1+4*)} )
+
+0(  fz: subroutine for :fr [--f])
+1( {fz F`FR#($D+c!)0=(\F`FC 0 F;)F} )
+0(  fr: read a file into memory [addr fn md--sz])
+0( usage: 150#`S"jack.bmp" 200#`S"rb" 1000 :fr . " bytes" )
+0( - sets reg S to addr, D to end of block )
+0( - uses reg F for the file handle )
+1( {fr #S;D;`FO #F;[\:fz]DS -} )
+
+0(  fd: dump the file [--])
+1( {fd ISI;DS -[I+ c@, 1-]I;} )
+0(  fb: dump the block as bytes [--] )
+1( {fb SD:db} )
+
+0(  zt: type a NULL terminated string [a--] )
+1( {zt #c@[,1+#c@]\} )
+
+{lm #3+m@h1000000*$#2+m@h10000*$#1+m@h100*$m@+++}
+
+1( "S4 v0.0.1 - https://github.com/CCurl/S4" )
+1( r"Hello." :si )

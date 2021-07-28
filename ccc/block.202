@@ -1,0 +1,15 @@
+0(compare files)
+{fo 1000 #N;_jack.bmp_  #M;_rb_\ NM `FO F;}
+{fc F`FC 0F;}
+{to 1000 #N;_jack2.bmp_ #M;_rb_\ NM `FO T;}
+{tc T`FC 0T;}
+{sh 54[F`FR\\ T`FR\\1-]}
+
+{dc %%= #(\\\1)0=(I.$": L:".", R:".r)}
+{cd = 0=(D+\)}
+{cb 0I; 1[\F`FR(T`FR\:cd 1) I+\]\}
+{cf :fo:to:sh:cb:fc:tc}
+"comparing ..."
+0D;
+:cf
+D." differences. "
