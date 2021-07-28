@@ -50,7 +50,7 @@ void vmReset() {
     for (int i = 0; i < sys.mem_sz; i++) { MEM[i] = 0; }
     for (int i = 0; i < sys.num_funcs; i++) { FUNC[i] = 0; }
     MEM['C' - 'A'] = CODE_SZ;
-    MEM['F' - 'A'] = (long)&FUNC;
+    MEM['F' - 'A'] = (long)&sys.func;
     MEM['M' - 'A'] = (long)&sys.mem;
     MEM['R' - 'A'] = (long)&sys.rstack;
     MEM['S' - 'A'] = (long)&sys.dstack;
