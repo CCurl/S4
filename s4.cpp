@@ -85,21 +85,22 @@ int hexNum(char x) {
     return -1;
 }
 
-int funcNum(char x) {
+int funcNum(char x, int alpha) {
     if (('A' <= x) && (x <= 'Z')) { return x - 'A'; }
     if (('a' <= x) && (x <= 'z')) { return x - 'a'; }
+    if (('0' <= x) && (x <= '9') && (alpha)) { return x - '0' + 25; }
     isError = 1;
     return -1;
 }
 
 int GetFunctionNum(int pc) {
-    int f1 = funcNum(CODE[pc]);
-    int f2 = funcNum(CODE[pc + 1]);
+    int f1 = funcNum(CODE[pc], 0);
+    int f2 = funcNum(CODE[pc + 1], 1);
     if ((f1 < 0) || (f2 < 0)) {
         printStringF("-%c%c:FN Bad-", CODE[pc], CODE[pc + 1]);
         return -1;
     }
-    int fn = (f1 * 26) + f2;
+    int fn = (f1 * 36) + f2;
     if ((fn < 0) || (NUM_FUNCS <= fn)) {
         printStringF("-%c%c:FN OOB-", CODE[pc], CODE[pc + 1]);
         isError = 1;
@@ -158,8 +159,9 @@ void dumpFuncs() {
     int n = 0;
     for (int i = 0; i < NUM_FUNCS; i++) {
         if (FUNC[i]) {
-            byte f1 = 'a' + (i / 26);
-            byte f2 = 'a' + (i % 26);
+            byte f1 = 'a' + (i / 36);
+            byte f2 = (i % 36);
+            f2 = (f2 <= 25) ? 'a' + f2 : '0' + (f2-25);
             if (((n++) % 6) == 0) { printString("\r\n"); }
             printStringF("%c%c:%4d    ", f1, f2, FUNC[i]);
         }
@@ -417,10 +419,9 @@ long getRegister(int reg) {
 }
 
 int getFunctionAddress(const char* fname) {
-    int f1 = fname[0] - 'A', f2 = fname[1] - 'A';
-    int fn = (f1 * 26) + f2;
-    if ((f1 < 0) || (25 < f1)) { return -1; }
-    if ((f2 < 0) || (25 < f2)) { return -1; }
-    if (NUM_FUNCS <= fn) { return -1; }
-    return FUNC[fn];
+    int pc = getRegister('H') + 2;
+    CODE[pc] = fname[0];
+    CODE[pc+1] = fname[0];
+    int fn = GetFunctionNum(pc);
+    return (fn < 0) ? fn : FUNC[fn];
 }

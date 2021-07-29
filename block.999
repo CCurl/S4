@@ -1,38 +1,40 @@
 0(  cd: dump all code currently defined )
 1( {cd I0I;H[I+d@#,125=(r)1-]I;} )
 
-0(  nn: print TOS to 3 width )
-1( {nn #100<(0.)#10<(0.).} )
+0(  nx: print n1 to width of n2 [n1 n2--] )
+1( {nx %%<[\0.10/%%<]\.} )
 
-0(  md: Modulo, el: Elapsed )
+0(  md: Modulo [n1--n2] )
 1( {md %%/*-} )
-1( {el t$-1000%%/.".":md:nn} )
 
-0(  ml: TOS *= 1 million )
+0(  el: Elapsed [t--] )
+1( {el t$-1000%%/.".":md100:nx} )
+
+0(  ml: TOS *= 1 million [n1--n2] )
 0( {ml 1000#**} )
 
-0(  bm: Benchmark: a simple decrement loop )
+0(  bm: simple decrement benchmark [n--] )
 0( {bm t$[1-]:el} )
 
-0(  cz: vt100 CSI code - '<ESC>[' )
-1( {cz 27,"["} )
+0(  c0: vt100 CSI code )
+1( {c0 27,"["} )
 
-0(  cy: Set Color: fb bg Y )
-0( {cy :cz.";"."m"} )
+0(  sc: Set Color: [fb bg--] )
+0( {sc :c0.";"."m"} )
 
-0(  cx: Save the cursor pos )
-0( {cx :cz"s"} )
+0(  sp: Save cursor pos )
+0( {sp :c0"s"} )
 
-0(  cw: cursor pos restore )
-0( {cw :cz"u""} )
+0(  rp: restore cursor pos )
+0( {rp :c0"u""} )
 
-0(  cp: Set cursor pos: x y CP )
-1( {cp :cz.";"."H"} )
+0(  xy: gotoXY: [x y--] )
+1( {xy :c0.";"."H"} )
 
 0(  cs: Clear Screen )
-1( {cs :cz"2J"0#:cp} )
+1( {cs :c0"2J"0#:xy} )
 
-0( zt: print NULL-terminated string )
+0( zt: print NULL-terminated string [a--] )
 0( - EG - 123#_hello world_\:zt )
 1( {zt #c@[,1+#c@]\} )
 
