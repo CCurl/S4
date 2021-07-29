@@ -21,21 +21,40 @@ $  (a b--b a)     Swap top 2 stack items (Forth SWAP)
 %  (a b--a b a)   Push 2nd (Forth OVER)
 
 *** MEMORY ***
-  NOTE: There are 2 separate address spaces, CODE and MEMORY
-        c@ and d@ use  8-bit indexing
-        @  and !  use 32-bit indexing
-        For example, 28 c@ returns the lowest byte of HERE, 
-                      7  @ returns HERE as a 32-bit number
-@     (a--n)      Fetch value from MEMORY address a (32-bit indexing)
-!     (n a--)     Store value  to  MEMORY address a (32-bit indexing)
-c@    (a--n)      Fetch value from MEMORY address a ( 8-bit indexing)
-c!    (n a--)     Store value  to  MEMORY address a ( 8-bit indexing)
-d@    (a--n)      Fetch value from CODE address a
-d!    (n a--)     Store value  to  CODE address a
+  NOTEs: There are 3 address spaces, CODE, MEMORY, and ABSOLUTE
+         CODE and MEMORY addresses are indexes into that specific area of memory
+         ABSOLUTE addresses are the addresses of the entire machine
+
+        ** 8-bit operations: **
+         these use 8-bit indexing and values
+         E.G. - 28 c@ returns the lowest byte of HERE
+c@    (a--n)      Fetch from MEMORY address a
+c!    (n a--)     Store n to MEMORY address a
+d@    (a--n)      Fetch from CODE address a
+d!    (n a--)     Store n to CODE address a
+m@    (a--n)      Fetch from ABSOLUTE address a
+m!    (n a--)     Store n to ABSOLUTE address a
+
+        ** 32-bit operations: **
+         these use 32-bit indexing and values
+         E.G. - 7 @ returns the 32-value of HERE
+@     (a--n)      Fetch from MEMORY address a
+!     (n a--)     Store n to MEMORY address a
 
 *** REGISTERS ***
   NOTES: The registers are stored in MEMORY addresses [0..25]
          Register H is special: it is the HERE address
+         Register initial values:
+         - A: Size of CODE area
+         - N: Size of FUNCTIONS array
+         - Z: Size of MEMORY area
+         - D: Start of CODE area
+         - F: Start of FUNCTIONS array
+         - M: Start of MEMORY area
+         - R: Start of return stack
+         - S: Start of data stack
+         - Y: Start of system info sructure
+         - All others set to 0
 X   (--n)         Push value of register X (X:[A..Z])
 X+  (--n)         Push value of register X, then increment the register by 1
 X-  (--n)         Push value of register X, then decrement the register by 1
