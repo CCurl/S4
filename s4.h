@@ -1,7 +1,7 @@
 // S4 - a stack VM, inspired by Sandor Schneider's STABLE - https://w3group.de/stable.html
 
 typedef unsigned char byte;
-#define MAX_FUNC (36*26)
+#define MAX_FUNC (62*52)
 
 extern void vmInit(int code_sz, int mem_sz, int num_funcs);
 extern int run(int pc);

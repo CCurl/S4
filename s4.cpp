@@ -63,7 +63,7 @@ void vmReset() {
 void vmInit(int code_sz, int mem_sz, int num_funcs) {
     sys.code_sz = code_sz;
     sys.mem_sz = mem_sz;
-    sys.num_funcs = num_funcs;
+    sys.num_funcs = (num_funcs <= MAX_FUNC) ? num_funcs : MAX_FUNC;
 
     sys.code = (byte*)malloc(sys.code_sz);
     sys.mem = (long*)malloc(sizeof(long) * sys.mem_sz);
@@ -89,8 +89,8 @@ int hexNum(char x) {
 
 int funcNum(char x, int alpha) {
     if (('A' <= x) && (x <= 'Z')) { return x - 'A'; }
-    if (('a' <= x) && (x <= 'z')) { return x - 'a'; }
-    if (('0' <= x) && (x <= '9') && (alpha)) { return x - '0' + 25; }
+    if (('a' <= x) && (x <= 'z')) { return x - 'a' + 26; }
+    if (('0' <= x) && (x <= '9') && (alpha)) { return x - '0' + 52; }
     isError = 1;
     return -1;
 }
@@ -102,7 +102,7 @@ int GetFunctionNum(int pc) {
         printStringF("-%c%c:FN Bad-", CODE[pc], CODE[pc + 1]);
         return -1;
     }
-    int fn = (f1 * 36) + f2;
+    int fn = (f1 * 62) + f2;
     if ((fn < 0) || (NUM_FUNCS <= fn)) {
         printStringF("-%c%c:FN OOB-", CODE[pc], CODE[pc + 1]);
         isError = 1;
@@ -161,11 +161,15 @@ void dumpFuncs() {
     int n = 0;
     for (int i = 0; i < NUM_FUNCS; i++) {
         if (FUNC[i]) {
-            byte f1 = 'a' + (i / 36);
-            byte f2 = (i % 36);
-            f2 = (f2 <= 25) ? 'a' + f2 : '0' + (f2-25);
+            byte f1, f2, x = (i / 62);
+            f1 = 'A' + x;
+            if (26 <= x) { f1 = 'a' + (x-26); }
+            x = (i % 62);
+            f2 = 'A' + x;
+            if (26 <= x) { f2 = 'a' + (x-26); }
+            if (52 <= x) { f2 = '0' + (x-52); }
             if (((n++) % 6) == 0) { printString("\r\n"); }
-            printStringF("%c%c:%4d    ", f1, f2, FUNC[i]);
+            printStringF("%c%c:%4d (%d)    ", f1, f2, FUNC[i], i);
         }
     }
 }
@@ -385,11 +389,17 @@ int step(int pc) {
         if (ir == '@') { T = *bp; }
         if (ir == '!') { t1 = pop(); t2 = pop(); bp[t1] = (byte)t2; }
     } break;
-    case 'r': printString("\r\n");  break;
+    case 'n': printString("\r\n");  break;
+    case 'r': ir = CODE[pc++]; {
+        if (ir == '<') { rpush(pop()); }
+        if (ir == '@') { push(R); }
+        if (ir == '>') { push(rpop()); }
+    } break;
     case 't': push(millis());       break;
     case 'w': delay(pop());         break;
     case 'x': t1 = CODE[pc++];
         if (t1 == 'A') { rpush(pc); pc = pop(); }
+        if (t1 == 'J') { pc = pop(); }
         if (t1 == 'X') { vmReset(); }
         if (t1 == 'Z') { isBye = 1; }
         break;

@@ -44,7 +44,7 @@ S4 examples:
     1000#* 100* :bm
 
 - To display the currently defined code:
-    0 H[$   #d@#,h7D=(r)   1+$1-]\
+    0 H[$   #d@#,h7D=(n)   1+$1-]\
 
 - To exit S4:
     xZ

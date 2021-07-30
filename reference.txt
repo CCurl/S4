@@ -15,10 +15,13 @@
 ~  (n1--n2)       ones complement (10110010 => 01001101)
 
 *** STACK ***
-#  (a--a a)       Duplicate TOS (Forth DUP)
-\  (a b--a)       Drop TOS (Forth DROP)
-$  (a b--b a)     Swap top 2 stack items (Forth SWAP)
-%  (a b--a b a)   Push 2nd (Forth OVER)
+#  (a--a a)       Duplicate TOS                          (Forth DUP)
+\  (a b--a)       Drop TOS                               (Forth DROP)
+$  (a b--b a)     Swap top 2 stack items                 (Forth SWAP)
+%  (a b--a b a)   Push 2nd                               (Forth OVER)
+r< (n--)          Move TOS to return stack               (Forth >R)
+r@ (--n)          Fetch top of return stack              (Forth R@)
+r> (--n)          Move top of return stack to data stack (Forth R>)
 
 *** MEMORY ***
   NOTEs: There are 3 address spaces, CODE, MEMORY, and ABSOLUTE
@@ -61,30 +64,30 @@ X-  (--n)         Push value of register X, then decrement the register by 1
 X;  (n--)         Store n to register X
 
 *** FUNCTIONS ***
-  NOTES: 1) Function names are exactly 2 characters, NOT case-sensitive
-         2) The first character is ALPHA only [A..Z] or [a..z]
-         3) The second character can be ALPHA or NUMERIC [0..9]
+  NOTES: 1) Function names are exactly 2 characters, case-sensitive
+         2) The first character is ALPHA only
+         3) The second character ALPHANUMERIC
          4) A function cannot have '}' embedded in it (eg - {bd "TE}ST"} will not compile correctly)
             Use {ok "TE"125,"ST"} instead
-{XX  (--)         Define function XX (XX:AA..z9)
+{XX  (--)         Define function XX (XX:[AA..z9])
 }    (--)         End of function definition
-:xx  (--)         Call function xx
+:XX  (--)         Call function XX
 ;    (--)         Return from function immediately (i.e. - before reaching '}')
                     NOTE: returning while inside of a loop is not supported; behavior will be undefined.
 
 *** INPUT/OUTPUT ***
 .     (n--)       Output TOS as decimal number
 ,     (n--)       Output TOS (27 is ESC, 10 is newline, 65 is A, etc) (Forth emit)
-b     (--)        Output a SPACE (32,)
-r     (--)        Output a CR/LF (13,10,)
+b     (--)        Output a BLANK (32,)
+n     (--)        Output a NEWLINE (13,10,)
 ?     ( --key)    Read one key, don't wait for ENTER.
 "     (--)        Output bytes until next '"'
 _     (a1--a2)    String: copy string to address (a1) (eg - 1000_hello_)
                     Pushes address (a2) after terminating NULL
-hX    (--n)       Scan HEX number (X) until non hex-digit (not case-sensitive h3Da0 == h3dA0 )
+hX    (--n)       Scan HEX number until non hex-digit (not case-sensitive h3Da0 == h3dA0 )
 0..9  (--n)       Scan DECIMAL number until non digit
                      to specify multiple values, separate them by space (4711 3333)
-                     to enter a negative number, use '~1+' (eg - '32~1+')
+                     to enter a negative number, use '~1+' (eg - '32~1+') (make it a function!)
 'x   (--n)        Push the ascii value of x (x: [any char possible])
 
 *** CONDITIONS/FLOW CONTROL ***
@@ -102,10 +105,10 @@ hX    (--n)       Scan HEX number (X) until non hex-digit (not case-sensitive h3
                     USE a@("TE"93,"ST") instead
 
 *** EXTENDED OPCODES ***
-`FO   (fn md--fh)  File: open (fn/md: addr of name/mode, use `S"")
-`FR   (fh--c n)    File: read 1 char (n=0 means EOF)
-`FW   (c fh--)     File: write 1 char
-`FC   (fh--)       File: close
+`FO   (fn md--fh)  PC-File: open (fn/md: addr of name/mode, use `S"")
+`FR   (fh--c n)    PC-File: read 1 char (n=0 means EOF)
+`FW   (c fh--)     PC-File: write 1 char
+`FC   (fh--)       PC-File: close
 `FNxx (--n)        Function: resolve function address (xx: function name)
 `PI   (p--)        Arduino: pin input  (pinMode(p, INPUT))
 `PU   (p--)        Arduino: pin pullup (pinMode(p, INPUT_PULLUP))
@@ -126,5 +129,6 @@ l     (n--)        Load code from block (block.nnn)
 t     (--n)        Time (Arduino: millis(), Windows: GetTickCount())
 w     (n--)        Wait (Arduino: delay(),  Windows: Sleep())
 xA    (a--)        Call code at address A
+xJ    (a--)        Jump to code at address A
 xX    (--)         Reset S4 to initial state
 xZ    (--)         Exit S4
