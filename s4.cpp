@@ -1,58 +1,78 @@
 // S4 - a stack VM, inspired by Sandor Schneider's STABLE - https://w3group.de/stable.html
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdarg.h>
 #include "s4.h"
 
-long dstack[STK_SZ + 1];
-long rstack[STK_SZ + 1];
-long dsp, rsp;
-long func[NUM_FUNCS];
+#define STK_SZ 31
+
+struct {
+    int code_sz;
+    int mem_sz;
+    int num_funcs;
+    long dsp, rsp;
+    byte* code;
+    long* mem;
+    int* func;
+    long dstack[STK_SZ + 1];
+    long rstack[STK_SZ + 1];
+} sys;
+
 byte isBye = 0, isError = 0;
-char input_fn[32];
+char buf[100];
 FILE* input_fp = NULL;
-MEMORY_T memory;
+byte* bMem;
 
-#define T        dstack[dsp]
-#define N        dstack[dsp-1]
-#define R        rstack[rsp]
+#define CODE       sys.code
+#define MEM        sys.mem
+#define FUNC       sys.func
+
+#define CODE_SZ    sys.code_sz
+#define MEM_SZ     sys.mem_sz
+#define NUM_FUNCS  sys.num_funcs
+
+#define T        sys.dstack[sys.dsp]
+#define N        sys.dstack[sys.dsp-1]
+#define R        sys.rstack[sys.rsp]
 #define HERE     MEM[7]
-#define MEM_SZB  (MEM_SZ*4)
 
-#ifdef __PC__
-    long millis() { return GetTickCount(); }
-    int analogRead(int pin) { printStringF("-AR(%d)-", pin); return 0; }
-    void analogWrite(int pin, int val) { printStringF("-AW(%d,%d)-", pin, val); }
-    int digitalRead(int pin) { printStringF("-DR(%d)-", pin); return 0; }
-    void digitalWrite(int pin, int val) { printStringF("-DW(%d,%d)-", pin, val); }
-    void pinMode(int pin, int mode) { printStringF("-pinMode(%d,%d)-", pin, mode); }
-    void delay(DWORD ms) { Sleep(ms); }
-    HANDLE hStdOut = 0;
-    void printString(const char* str) {
-        DWORD n = 0, l = strlen(str);
-        if (l) { WriteConsoleA(hStdOut, str, l, &n, 0); }
-    }
-#endif
+void push(long v) { if (sys.dsp < STK_SZ) { sys.dstack[++sys.dsp] = v; } }
+long pop() { return (sys.dsp > 0) ? sys.dstack[sys.dsp--] : 0; }
 
-void push(long v) { if (dsp < STK_SZ) { dstack[++dsp] = v; } }
-long pop() { return (dsp > 0) ? dstack[dsp--] : 0; }
+void rpush(long v) { if (sys.rsp < STK_SZ) { sys.rstack[++sys.rsp] = v; } }
+long rpop() { return (sys.rsp > 0) ? sys.rstack[sys.rsp--] : -1; }
 
-void rpush(long v) { if (rsp < STK_SZ) { rstack[++rsp] = v; } }
-long rpop() { return (rsp > 0) ? rstack[rsp--] : -1; }
+void vmReset() {
+    sys.dsp = sys.rsp = 0;
+    for (int i = 0; i < sys.code_sz; i++) { CODE[i] = 0; }
+    for (int i = 0; i < sys.mem_sz; i++) { MEM[i] = 0; }
+    for (int i = 0; i < sys.num_funcs; i++) { FUNC[i] = 0; }
+    MEM['C' - 'A'] = CODE_SZ;
+    MEM['D' - 'A'] = (long)&sys.code[0];
+    MEM['F' - 'A'] = (long)&sys.func[0];
+    MEM['M' - 'A'] = (long)&sys.mem[0];
+    MEM['N' - 'A'] = sys.num_funcs;
+    MEM['R' - 'A'] = (long)&sys.rstack[0];
+    MEM['S' - 'A'] = (long)&sys.dstack[0];
+    MEM['Y' - 'A'] = (long)&sys;
+    MEM['Z' - 'A'] = MEM_SZ;
+}
 
-void vmInit() {
-    dsp = rsp = 0;
-    for (int i = 0; i < CODE_SZ; i++) { CODE[i] = 0; }
-    for (int i = 0; i < MEM_SZ; i++) { MEM[i] = 0; }
-    for (int i = 0; i < NUM_FUNCS; i++) { func[i] = 0; }
-    MEM['C'-'A'] = CODE_SZ;
-    MEM['F'-'A'] = (long)&func;
-    MEM['M'-'A'] = (long)&memory;
-    MEM['R'-'A'] = (long)&rstack;
-    MEM['S'-'A'] = (long)&dstack;
-    MEM['Z'-'A'] = MEM_SZ;
+void vmInit(int code_sz, int mem_sz, int num_funcs) {
+    sys.code_sz = code_sz;
+    sys.mem_sz = mem_sz;
+    sys.num_funcs = num_funcs;
+
+    sys.code = (byte*)malloc(sys.code_sz);
+    sys.mem = (long*)malloc(sizeof(long) * sys.mem_sz);
+    sys.func = (int*)malloc(sizeof(int) * sys.num_funcs);
+    bMem = (byte*)sys.mem;
+    vmReset();
 }
 
 void printStringF(const char* fmt, ...) {
-    char buf[100];
     va_list args;
     va_start(args, fmt);
     vsnprintf(buf, sizeof(buf), fmt, args);
@@ -67,21 +87,22 @@ int hexNum(char x) {
     return -1;
 }
 
-int funcNum(char x) {
+int funcNum(char x, int alpha) {
     if (('A' <= x) && (x <= 'Z')) { return x - 'A'; }
     if (('a' <= x) && (x <= 'z')) { return x - 'a'; }
+    if (('0' <= x) && (x <= '9') && (alpha)) { return x - '0' + 25; }
     isError = 1;
     return -1;
 }
 
 int GetFunctionNum(int pc) {
-    int f1 = funcNum(CODE[pc]);
-    int f2 = funcNum(CODE[pc + 1]);
+    int f1 = funcNum(CODE[pc], 0);
+    int f2 = funcNum(CODE[pc + 1], 1);
     if ((f1 < 0) || (f2 < 0)) {
         printStringF("-%c%c:FN Bad-", CODE[pc], CODE[pc + 1]);
         return -1;
     }
-    int fn = (f1 * 26) + f2;
+    int fn = (f1 * 36) + f2;
     if ((fn < 0) || (NUM_FUNCS <= fn)) {
         printStringF("-%c%c:FN OOB-", CODE[pc], CODE[pc + 1]);
         isError = 1;
@@ -96,12 +117,12 @@ int doDefineFunction(int pc) {
     if (fn < 0) { return pc + 2; }
     CODE[HERE++] = '{';
     CODE[HERE++] = CODE[pc];
-    CODE[HERE++] = CODE[pc+1];
+    CODE[HERE++] = CODE[pc + 1];
     pc += 2;
-    func[fn] = HERE;
+    FUNC[fn] = HERE;
     while ((pc < CODE_SZ) && CODE[pc]) {
         CODE[HERE++] = CODE[pc++];
-        if (CODE[HERE-1] == '}') { return pc; }
+        if (CODE[HERE - 1] == '}') { return pc; }
     }
     printString("-overflow-");
     return pc;
@@ -110,60 +131,9 @@ int doDefineFunction(int pc) {
 int doCallFunction(int pc) {
     int fn = GetFunctionNum(pc);
     if (fn < 0) { return pc + 2; }
-    if (!func[fn]) { return pc + 2; }
+    if (!FUNC[fn]) { return pc + 2; }
     rpush(pc + 2);
-    return func[fn];
-}
-
-#ifdef __PC__
-int doFile(int pc) {
-    int ir = CODE[pc++];
-    switch (ir) {
-    case 'C':
-        if (T) { fclose((FILE *)T); }
-        pop();
-        break;
-    case 'O': {
-            char* bMEM = (char*)&MEM[0];
-            char* md = bMEM + pop();
-            char* fn = bMEM + T;
-            T = 0;
-            fopen_s((FILE**)&T, fn, md);
-        }
-        break;
-    case 'R': if (T) {
-            char buf[2];
-            SIZE_T n = fread_s(buf, 2, 1, 1, (FILE *)T);
-            T = ((n) ? buf[0] : 0);
-            push(n);
-        }
-        break;
-    case 'W': if (T) {
-            FILE *fh = (FILE*)pop();
-            char buf[2] = {0,0};
-            buf[0] = (byte)pop();
-            fwrite(buf, 1, 1, fh);
-        }
-        break;
-    case 'N':
-        push(0);
-        ir = GetFunctionNum(pc);
-        if (0 <= ir) { T = func[ir]; }
-        pc += 2;
-        break;
-    }
-    return pc;
-}
-#endif
-
-int doQuote(int pc, int isPush) {
-    char x[2];
-    x[1] = 0;
-    while ((pc < CODE_SZ) && (CODE[pc] != '"')) {
-        x[0] = CODE[pc++];
-        printString(x);
-    }
-    return ++pc;
+    return FUNC[fn];
 }
 
 void dumpCode() {
@@ -190,11 +160,12 @@ void dumpFuncs() {
     printStringF("\r\nFUNCTIONS: (%d available)", NUM_FUNCS);
     int n = 0;
     for (int i = 0; i < NUM_FUNCS; i++) {
-        if (func[i]) {
-            byte f1 = 'a' + (i / 26);
-            byte f2 = 'a' + (i % 26);
+        if (FUNC[i]) {
+            byte f1 = 'a' + (i / 36);
+            byte f2 = (i % 36);
+            f2 = (f2 <= 25) ? 'a' + f2 : '0' + (f2-25);
             if (((n++) % 6) == 0) { printString("\r\n"); }
-            printStringF("%c%c:%4d    ", f1, f2, func[i]);
+            printStringF("%c%c:%4d    ", f1, f2, FUNC[i]);
         }
     }
 }
@@ -202,7 +173,7 @@ void dumpFuncs() {
 void dumpStack(int hdr) {
     if (hdr) { printStringF("\r\nSTACK: size: %d ", STK_SZ); }
     printString("(");
-    for (int i = 1; i <= dsp; i++) { printStringF("%s%ld", (i > 1 ? " " : ""), dstack[i]); }
+    for (int i = 1; i <= sys.dsp; i++) { printStringF("%s%ld", (i > 1 ? " " : ""), sys.dstack[i]); }
     printString(")");
 }
 
@@ -214,7 +185,7 @@ void dumpMemory(int isRegs) {
         long x = MEM[i];
         if ((!x) && (!isRegs)) { continue; }
         if (((c++) % 6) == 0) { printString("\r\n"); }
-        if (isRegs) { printStringF("%c: %-10ld  ", i+'A', x); }
+        if (isRegs) { printStringF("%c: %-10ld  ", i + 'A', x); }
         else { printStringF("[%05d]: %-10ld  ", i, x); }
     }
     if (c == 0) { printString("\r\n(all memory empty)"); }
@@ -225,6 +196,45 @@ void dumpAll() {
     dumpMemory(1);  printString("\r\n");
     dumpCode();     printString("\r\n");
     dumpFuncs();    printString("\r\n");
+}
+
+int doFile(int pc) {
+    int ir = CODE[pc++];
+    switch (ir) {
+#ifdef __PC__
+    case 'C':
+        if (T) { fclose((FILE*)T); }
+        pop();
+        break;
+    case 'O': {
+        char* md = (char*)bMem + pop();
+        char* fn = (char*)bMem + T;
+        T = 0;
+        fopen_s((FILE**)&T, fn, md);
+    }
+            break;
+    case 'R': if (T) {
+        long n = fread_s(buf, 2, 1, 1, (FILE*)T);
+        T = ((n) ? buf[0] : 0);
+        push(n);
+    }
+            break;
+    case 'W': if (T) {
+        FILE* fh = (FILE*)pop();
+        buf[1] = 0;
+        buf[0] = (byte)pop();
+        fwrite(buf, 1, 1, fh);
+    }
+            break;
+#endif
+    case 'N':
+        push(0);
+        ir = GetFunctionNum(pc);
+        if (0 <= ir) { T = FUNC[ir]; }
+        pc += 2;
+        break;
+    }
+    return pc;
 }
 
 int doPin(int pc) {
@@ -251,17 +261,6 @@ int doExt(int pc) {
     switch (ir) {
     case 'F': pc = doFile(pc); break;
     case 'P': pc = doPin(pc); break;
-    case 'S': ir = CODE[pc++];
-        if (ir == '"') {
-            int a = pop();
-            byte* cp = (byte *)&MEM[0];
-            while (CODE[pc] && CODE[pc] != '"') {
-                cp[a++] = CODE[pc++];
-            }
-            ++pc;
-            cp[a] = 0;
-        }
-        break;
     default: break;
     }
     return pc;
@@ -269,7 +268,6 @@ int doExt(int pc) {
 
 int step(int pc) {
     byte ir = CODE[pc++];
-    byte* bMem = (byte*)(&MEM[0]);
     long t1, t2;
     switch (ir) {
     case 0: return -1;                                  // 0
@@ -277,10 +275,10 @@ int step(int pc) {
     case '!': t2 = pop(); t1 = pop();                   // 33
         if ((0 <= t2) && (t2 < MEM_SZ)) { MEM[t2] = t1; }
         break;
-    case '"': input_fn[1] = 0;                          // 34
+    case '"': buf[1] = 0;                          // 34
         while ((pc < CODE_SZ) && (CODE[pc] != '"')) {
-            input_fn[0] = CODE[pc++];
-            printString(input_fn);
+            buf[0] = CODE[pc++];
+            printString(buf);
         }
         ++pc; break;
     case '#': push(T);               break;             // 35 (DUP)
@@ -290,10 +288,10 @@ int step(int pc) {
     case '&': t1 = pop(); T &= t1;   break;             // 38
     case '\'': push(CODE[pc++]);     break;             // 39
     case '(': if (pop() == 0) {                         // 40
-            while ((pc < CODE_SZ) && (CODE[pc] != ')')) { ++pc; }
-            ++pc;
-        }
-        break;
+        while ((pc < CODE_SZ) && (CODE[pc] != ')')) { ++pc; }
+        ++pc;
+    }
+            break;
     case ')': /*maybe ELSE?*/        break;             // 41
     case '*': t1 = pop(); T *= t1;   break;             // 42
     case '+': N += T; pop();         break;             // 43
@@ -315,14 +313,14 @@ int step(int pc) {
     case '<': t1 = pop(); T = T < t1 ? -1 : 0;  break;  // 60
     case '=': t1 = pop(); T = T == t1 ? -1 : 0; break;  // 61
     case '>': t1 = pop(); T = T > t1 ? -1 : 0;  break;  // 62
-    case '?': push(_getch());                   break;  // 63
+    // case '?': push(_getch());                   break;  // 63
     case '@': if ((0 <= T) && (T < MEM_SZ)) { T = MEM[T]; }
-        break;
-    case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': 
-    case 'G': case 'H': case 'I': case 'J': case 'K': case 'L': 
-    case 'M': case 'N': case 'O': case 'P': case 'Q': case 'R': 
-    case 'S': case 'T': case 'U': case 'V': case 'W': case 'X': 
-    case 'Y': case 'Z': ir -= 'A'; 
+            break;
+    case 'A': case 'B': case 'C': case 'D': case 'E': case 'F':
+    case 'G': case 'H': case 'I': case 'J': case 'K': case 'L':
+    case 'M': case 'N': case 'O': case 'P': case 'Q': case 'R':
+    case 'S': case 'T': case 'U': case 'V': case 'W': case 'X':
+    case 'Y': case 'Z': ir -= 'A';
         push(MEM[ir]); t1 = CODE[pc];
         if (t1 == '+') { ++pc; ++MEM[ir]; }
         if (t1 == '-') { ++pc; --MEM[ir]; }
@@ -337,12 +335,15 @@ int step(int pc) {
             else { pop();  rpop(); }
             break;
     case '^': t1 = pop(); T ^= t1;      break;          // 94
-    case '_': break; /* FREE */                         // 95
+    case '_': t1 = T;                                   // 95
+        while (CODE[pc] && CODE[pc] != '_') { bMem[t1++] = CODE[pc++]; }
+        ++pc; bMem[t1++] = 0; T = t1;
+        break;
     case '`': pc = doExt(pc);           break;          // 96
     case 'b': printString(" ");         break;
     case 'c': ir = CODE[pc++];
         t1 = pop();
-        if ((0 <= t1) && (t1 < MEM_SZB)) {
+        if ((0 <= t1) && (t1 < (sys.mem_sz * 4))) {
             if (ir == '@') { push(bMem[t1]); }
             if (ir == '!') { bMem[t1] = (byte)pop(); }
         }
@@ -373,8 +374,8 @@ int step(int pc) {
         t1 = pop();
 #ifdef __PC__
         if (input_fp) { fclose(input_fp); }
-        sprintf_s(input_fn, sizeof(input_fn), "block.%03ld", t1);
-        fopen_s(&input_fp, input_fn, "rt");
+        sprintf_s(buf, sizeof(buf), "block.%03ld", t1);
+        fopen_s(&input_fp, buf, "rt");
 #else
         printString("-l:pc only-");
 #endif
@@ -389,7 +390,7 @@ int step(int pc) {
     case 'w': delay(pop());         break;
     case 'x': t1 = CODE[pc++];
         if (t1 == 'A') { rpush(pc); pc = pop(); }
-        if (t1 == 'X') { vmInit(); }
+        if (t1 == 'X') { vmReset(); }
         if (t1 == 'Z') { isBye = 1; }
         break;
     case '{': pc = doDefineFunction(pc); break;         // 123
@@ -402,7 +403,7 @@ int step(int pc) {
 
 int run(int pc) {
     isError = 0;
-    while (rsp >= 0) {
+    while (sys.rsp >= 0) {
         if ((pc < 0) || (CODE_SZ <= pc)) { return pc; }
         pc = step(pc);
         if (isError) { break; }
@@ -410,69 +411,19 @@ int run(int pc) {
     return pc;
 }
 
-void s4() {
-    printString("\r\nS4:"); dumpStack(0); printString(">");
+void setCodeByte(int addr, char ch) {
+    if ((0 <= addr) && (addr < CODE_SZ)) { CODE[addr] = ch; }
 }
 
-#ifdef __PC__
-void doHistory(const char *txt) {
-    FILE* fp = NULL;
-    fopen_s(&fp, "history.txt", "at");
-    if (fp) {
-        fprintf(fp, "%s", txt);
-        fclose(fp);
-    }
+long getRegister(int reg) {
+    if ((0 <= 'A') && (reg <= 'Z')) { return MEM[reg - 'A']; }
+    return 0;
 }
 
-void loop() {
-    char* tib = (char*)&CODE[TIB];
-    FILE* fp = (input_fp) ? input_fp : stdin;
-    if (fp == stdin) { s4(); }
-    if (fgets(tib, TIB_SZ, fp) == tib) {
-        if (fp == stdin) { doHistory(tib); }
-        run(TIB);
-        return;
-    }
-    if (input_fp) { 
-        fclose(input_fp); 
-        input_fp = NULL; 
-    }
+int getFunctionAddress(const char* fname) {
+    int pc = getRegister('H') + 2;
+    CODE[pc] = fname[0];
+    CODE[pc+1] = fname[0];
+    int fn = GetFunctionNum(pc);
+    return (fn < 0) ? fn : FUNC[fn];
 }
-
-void process_arg(char* arg)
-{
-    if ((*arg == 'i') && (*(arg + 1) == ':')) {
-        arg = arg + 2;
-        strcpy_s(input_fn, sizeof(input_fn), arg);
-    }
-    else if (*arg == '?') {
-        printString("usage s4 [args] [source-file]\n");
-        printString("  -i:file\n");
-        printString("  -? - Prints this message\n");
-        exit(0);
-    }
-    else { printf("unknown arg '-%s'\n", arg); }
-}
-
-int main(int argc, char** argv) {
-    hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-    DWORD m; GetConsoleMode(hStdOut, &m);
-    SetConsoleMode(hStdOut, (m | ENABLE_VIRTUAL_TERMINAL_PROCESSING));
-    vmInit();
-    strcpy_s(input_fn, sizeof(input_fn), "");
-    input_fp = NULL;
-
-    for (int i = 1; i < argc; i++)
-    {
-        char* cp = argv[i];
-        if (*cp == '-') { process_arg(++cp); }
-        else { strcpy_s(input_fn, sizeof(input_fn), cp); }
-    }
-
-    if (strlen(input_fn) > 0) {
-        fopen_s(&input_fp, input_fn, "rt");
-    }
-
-    while (isBye == 0) { loop(); }
-}
-#endif
