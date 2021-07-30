@@ -1,3 +1,5 @@
+#ifdef _WIN32
+
 #include <Windows.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -10,9 +12,11 @@
 
 typedef unsigned char byte;
 
+// These are used only be the PC version
 static HANDLE hStdOut = 0;
 static char input_fn[32];
 
+// These are in the <Arduino.h> file
 long millis() { return GetTickCount(); }
 int analogRead(int pin) { printStringF("-AR(%d)-", pin); return 0; }
 void analogWrite(int pin, int val) { printStringF("-AW(%d,%d)-", pin, val); }
@@ -94,3 +98,5 @@ int main(int argc, char** argv) {
 
     while (isBye == 0) { loop(); }
 }
+
+#endif // #define _WIN32

@@ -12,9 +12,6 @@ extern int getFunctionAddress(const char* fname);
 extern void printString(const char*);
 extern void printStringF(const char* fmt, ...);
 
-extern byte isBye;
-extern FILE* input_fp;
-
 #ifdef _WIN32
 #define __PC__
 #define INPUT 0
@@ -27,6 +24,8 @@ extern int digitalRead(int pin);
 extern void digitalWrite(int pin, int val);
 extern void pinMode(int pin, int mode);
 extern void delay(unsigned long ms);
+extern FILE* input_fp;
+extern byte isBye;
 #else
 #include <Arduino.h>
 #endif // _WIN32

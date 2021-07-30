@@ -1,59 +1,55 @@
 #include "s4.h"
 
+#define CODE_SZ   (1024*20)
+#define MEM_SZ    (1024*2)
+#define NUM_FUNCS  MAX_FUNC
+#define mySerial SerialUSB
+
 int _getch() { return (mySerial.available()) ? mySerial.read() : 0; }
 void printString(const char* str) { mySerial.print(str); }
-int doFile(int pc) { return pc; }
 
-extern void loadCode(const char *);
-extern void vmInit();
-extern int run(int);
-extern void s4();
-
-extern byte code[];
-extern long reg[];
-
-extern MEMORY_T memory;
-#define CODE memory.code
+#define TIB_SZ    80
+#define TIB      (CODE_SZ - TIB_SZ)
+int tibEnd;
 
 // ********************************************
 // * HERE is where you load your default code *
 // ********************************************
 
 void loadCode(const char* src) {
-    char* tgt = (char*)&CODE[TIB];
-    while (*src) { *(tgt++) = *(src++); }
-    *tgt = 0;
+    int i = TIB;
+    while (*src) { setCodeByte(i++, *(src++)); }
+    setCodeByte(i, 0);
     run(TIB);
 }
 
 void loadBaseSystem() {
-    // MB: ManageButton
-    loadCode("{MB 0(p--) SC RD CQ (RV RA)}");
-    // SC: SetContext
-    loadCode("{SC 0(p--) p! p@ 100+ m! m@ M@ s! 0(todo xxx r!)}");
-    // RD: Read pin, put val in to reg v
-    loadCode("{RD 0(--)  p@ :PRD v!}");
-    // CQ: Changed?
-    loadCode("{CQ 0(--f) m@ :M@ v@ =}");
-    // RV: RememberValue
-    loadCode("{RV 0(--)  v@ m@ :M!}");
-    loadCode("{RA 0(--)  todo}");
+    loadCode("0( MB: ManageButton )");
+    loadCode("0( SC: SetContext )");
+    loadCode("0( RD: Read pin, put val in to reg v )");
+    loadCode("0( CQ: Changed? )");
+    loadCode("0( RV: RememberValue )");
+    loadCode("0( RA: todo )");
+}
+
+void ok() {
+    printString("\r\nS4:"); dumpStack(0); printString(">");
 }
 
 void setup() {
     mySerial.begin(19200);
     // while (!mySerial) {}
     // while (mySerial.available()) {}
-    vmInit();
+    vmInit(CODE_SZ, MEM_SZ, NUM_FUNCS);
+    tibEnd = TIB;
     loadBaseSystem();
-    s4();
+    ok();
 }
 
 void loop() {
     static int iLed = 0;
     static ulong nextBlink = 0;
     static int ledState = LOW;
-    static int tibEnd = TIB;
     ulong curTm = millis();
     
     if (iLed == 0) {
@@ -68,20 +64,23 @@ void loop() {
 
     while (mySerial.available()) {
         char c = mySerial.read();
+        if (c == 9) { c = 32; }
         if (c == 13) {
-            CODE[tibEnd] = (char)0;
-            printString(" ");
-            run(TIB);
-            s4();
+            if (TIB < tibEnd) {
+                setCodeByte(tibEnd, 0);
+                printString(" ");
+                run(TIB);
+            }
+            ok();
             tibEnd = TIB;
-        }
-        else {
-            if (tibEnd < CODE_SZ) {
-                CODE[tibEnd++] = (char)0;
+        } else {
+            if ((32 <= c) && (tibEnd < CODE_SZ)) {
+                setCodeByte(tibEnd++, c);
                 char b[2]; b[0] = c; b[1] = 0;
                 printString(b);
             }
         }
     }
-    if (reg[25]) { run((int)reg[25]); }    // autorun
+    int addr = getFunctionAddress("ar");
+    if (addr) { run(addr); }
 }
