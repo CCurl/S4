@@ -6,10 +6,6 @@
 #include <string.h>
 #include "s4.h"
 
-#define MEM_SZ    (1024*64)
-#define CODE_SZ   (1024*64)
-#define NUM_FUNCS  MAX_FUNC
-
 typedef unsigned char byte;
 
 // These are used only be the PC version

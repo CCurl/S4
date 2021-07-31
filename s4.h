@@ -26,6 +26,13 @@ extern void pinMode(int pin, int mode);
 extern void delay(unsigned long ms);
 extern FILE* input_fp;
 extern byte isBye;
+#define CODE_SZ   (1024*64)
+#define MEM_SZ    (1024*256)
+#define NUM_FUNCS   MAX_FUNC
 #else
+#define _DEV_BOARD_
 #include <Arduino.h>
+#define CODE_SZ   (1024*18)
+#define MEM_SZ     (256*4)
+#define NUM_FUNCS    26
 #endif // _WIN32

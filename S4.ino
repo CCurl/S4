@@ -1,8 +1,5 @@
 #include "s4.h"
 
-#define CODE_SZ   (1024*20)
-#define MEM_SZ    (1024*2)
-#define NUM_FUNCS  MAX_FUNC
 #define mySerial SerialUSB
 
 int _getch() { return (mySerial.available()) ? mySerial.read() : 0; }
@@ -38,11 +35,11 @@ void ok() {
 
 void setup() {
     mySerial.begin(19200);
-    // while (!mySerial) {}
+    while (!mySerial) {}
     // while (mySerial.available()) {}
     vmInit(CODE_SZ, MEM_SZ, NUM_FUNCS);
     tibEnd = TIB;
-    loadBaseSystem();
+    // loadBaseSystem();
     ok();
 }
 
@@ -59,16 +56,16 @@ void loop() {
     if (nextBlink < curTm) {
         ledState = (ledState == LOW) ? HIGH : LOW;
         digitalWrite(iLed, ledState);
-        nextBlink = curTm + 777;
+        nextBlink = curTm + 1111;
     }
 
     while (mySerial.available()) {
         char c = mySerial.read();
         if (c == 9) { c = 32; }
         if (c == 13) {
+            printString(" ");
             if (TIB < tibEnd) {
                 setCodeByte(tibEnd, 0);
-                printString(" ");
                 run(TIB);
             }
             ok();
@@ -81,6 +78,6 @@ void loop() {
             }
         }
     }
-    int addr = getFunctionAddress("ar");
+    int addr = getFunctionAddress("AZ");
     if (addr) { run(addr); }
 }

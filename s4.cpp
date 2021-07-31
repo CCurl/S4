@@ -9,13 +9,10 @@
 #define STK_SZ 31
 
 struct {
-    int code_sz;
-    int mem_sz;
-    int num_funcs;
     long dsp, rsp;
-    byte* code;
-    long* mem;
-    int* func;
+    byte code[CODE_SZ];
+    long mem[MEM_SZ];
+    int func[NUM_FUNCS];
     long dstack[STK_SZ + 1];
     long rstack[STK_SZ + 1];
 } sys;
@@ -29,9 +26,6 @@ byte* bMem;
 #define MEM        sys.mem
 #define FUNC       sys.func
 
-#define CODE_SZ    sys.code_sz
-#define MEM_SZ     sys.mem_sz
-#define NUM_FUNCS  sys.num_funcs
 
 #define T        sys.dstack[sys.dsp]
 #define N        sys.dstack[sys.dsp-1]
@@ -46,14 +40,14 @@ long rpop() { return (sys.rsp > 0) ? sys.rstack[sys.rsp--] : -1; }
 
 void vmReset() {
     sys.dsp = sys.rsp = 0;
-    for (int i = 0; i < sys.code_sz; i++) { CODE[i] = 0; }
-    for (int i = 0; i < sys.mem_sz; i++) { MEM[i] = 0; }
-    for (int i = 0; i < sys.num_funcs; i++) { FUNC[i] = 0; }
+    for (int i = 0; i < CODE_SZ; i++) { CODE[i] = 0; }
+    for (int i = 0; i < MEM_SZ; i++) { MEM[i] = 0; }
+    for (int i = 0; i < NUM_FUNCS; i++) { FUNC[i] = 0; }
     MEM['C' - 'A'] = CODE_SZ;
     MEM['D' - 'A'] = (long)&sys.code[0];
     MEM['F' - 'A'] = (long)&sys.func[0];
     MEM['M' - 'A'] = (long)&sys.mem[0];
-    MEM['N' - 'A'] = sys.num_funcs;
+    MEM['N' - 'A'] = NUM_FUNCS;
     MEM['R' - 'A'] = (long)&sys.rstack[0];
     MEM['S' - 'A'] = (long)&sys.dstack[0];
     MEM['Y' - 'A'] = (long)&sys;
@@ -61,14 +55,7 @@ void vmReset() {
 }
 
 void vmInit(int code_sz, int mem_sz, int num_funcs) {
-    sys.code_sz = code_sz;
-    sys.mem_sz = mem_sz;
-    sys.num_funcs = (num_funcs <= MAX_FUNC) ? num_funcs : MAX_FUNC;
-
-    sys.code = (byte*)malloc(sys.code_sz);
-    sys.mem = (long*)malloc(sizeof(long) * sys.mem_sz);
-    sys.func = (int*)malloc(sizeof(int) * sys.num_funcs);
-    bMem = (byte*)sys.mem;
+    bMem = (byte*)&sys.mem[0];
     vmReset();
 }
 
@@ -347,7 +334,7 @@ int step(int pc) {
     case 'b': printString(" ");         break;
     case 'c': ir = CODE[pc++];
         t1 = pop();
-        if ((0 <= t1) && (t1 < (sys.mem_sz * 4))) {
+        if ((0 <= t1) && (t1 < (MEM_SZ * 4))) {
             if (ir == '@') { push(bMem[t1]); }
             if (ir == '!') { bMem[t1] = (byte)pop(); }
         }
