@@ -250,19 +250,24 @@ int doPin(int pc) {
 int doExt(int pc) {
     byte ir = CODE[pc++];
     switch (ir) {
-    case 'F': pc = doFile(pc); break;
-    case 'P': pc = doPin(pc); break;
-    default: break;
+    case 'A': rpush(pc); pc = pop();    break;
+    case 'F': pc = doFile(pc);          break;
+    case 'J': pc = pop();               break;
+    case 'X': vmReset();                break;
+    case 'P': pc = doPin(pc);           break;
+    case 'T': isBye = 1;                break;
     }
     return pc;
 }
+
 
 int step(int pc) {
     byte ir = CODE[pc++];
     long t1, t2;
     switch (ir) {
     case 0: return -1;                                  // 0
-    case ' ': break;                                    // 32
+    case ' ': while (CODE[pc] == ' ') { pc++; }         // 32
+        break;
     case '!': t2 = pop(); t1 = pop();                   // 33
         if ((0 <= t2) && (t2 < MEM_SZ)) { MEM[t2] = t1; }
         break;
@@ -330,7 +335,7 @@ int step(int pc) {
         while (CODE[pc] && CODE[pc] != '_') { bMem[t1++] = CODE[pc++]; }
         ++pc; bMem[t1++] = 0; T = t1;
         break;
-    case '`': pc = doExt(pc);           break;          // 96
+    case '`': /* FREE*/                 break;          // 96
     case 'b': printString(" ");         break;
     case 'c': ir = CODE[pc++];
         t1 = pop();
@@ -384,12 +389,7 @@ int step(int pc) {
     } break;
     case 't': push(millis());       break;
     case 'w': delay(pop());         break;
-    case 'x': t1 = CODE[pc++];
-        if (t1 == 'A') { rpush(pc); pc = pop(); }
-        if (t1 == 'J') { pc = pop(); }
-        if (t1 == 'X') { vmReset(); }
-        if (t1 == 'Z') { isBye = 1; }
-        break;
+    case 'x': pc = doExt(pc);       break;
     case '{': pc = doDefineFunction(pc); break;         // 123
     case '|': t1 = pop(); T |= t1; break;               // 124
     case '}': pc = rpop(); break;                       // 125

@@ -7,7 +7,7 @@ S4 examples:
     C #(:ys #=)0=(:no)
 
  - x = (a == b) ? c : d;
-    A B = #(C$)0=(D) _X
+    A B = #(C$)0=(D) X;
 
  - To conditionally define a function: 
     1( {xx "xx will be defined"} )
@@ -47,4 +47,4 @@ S4 examples:
     0 H[$   #d@#,h7D=(n)   1+$1-]\
 
 - To exit S4:
-    xZ
+    xT

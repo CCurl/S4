@@ -105,18 +105,22 @@ hX    (--n)       Scan HEX number until non hex-digit (not case-sensitive h3Da0 
                     USE a@("TE"93,"ST") instead
 
 *** EXTENDED OPCODES ***
-`FO   (fn md--fh)  PC-File: open (fn/md: addr of name/mode, use `S"")
-`FR   (fh--c n)    PC-File: read 1 char (n=0 means EOF)
-`FW   (c fh--)     PC-File: write 1 char
-`FC   (fh--)       PC-File: close
-`FNxx (--n)        Function: resolve function address (xx: function name)
-`PI   (p--)        Arduino: pin input  (pinMode(p, INPUT))
-`PU   (p--)        Arduino: pin pullup (pinMode(p, INPUT_PULLUP))
-`PO   (p--)        Arduino: pin output (pinMode(p, OUTPUT)
-`PRA  (p--n)       Arduino: pin read analog  (n = analogRead(p))
-`PRD  (p--n)       Arduino: pin read digital (n = digitalRead(p))
-`PWA  (n p--)      Arduino: pin write analog  (analogWrite(p, n))
-`PWD  (n p--)      Arduino: pin write digital (digitalWrite(p, n))
+xA    (a--)        Call code at address A
+xJ    (a--)        Jump to code at address A
+xFO   (fn md--fh)  PC-File: open (fn/md: addr of name/mode, use `S"")
+xFR   (fh--c n)    PC-File: read 1 char (n=0 means EOF)
+xFW   (c fh--)     PC-File: write 1 char
+xFC   (fh--)       PC-File: close
+xFNxx (--n)        Function: resolve function address (xx: function name)
+xPI   (p--)        Arduino: pin input  (pinMode(p, INPUT))
+xPU   (p--)        Arduino: pin pullup (pinMode(p, INPUT_PULLUP))
+xPO   (p--)        Arduino: pin output (pinMode(p, OUTPUT)
+xPRA  (p--n)       Arduino: pin read analog  (n = analogRead(p))
+xPRD  (p--n)       Arduino: pin read digital (n = digitalRead(p))
+xPWA  (n p--)      Arduino: pin write analog  (analogWrite(p, n))
+xPWD  (n p--)      Arduino: pin write digital (digitalWrite(p, n))
+xT    (--)         Exit S4
+xX    (--)         Reset S4 to initial state
 
 *** OTHER ***
 iA    (--)         Info: All (CFMRS)
@@ -128,7 +132,3 @@ iS    (--)         Info: Stack
 l     (n--)        Load code from block (block.nnn)
 t     (--n)        Time (Arduino: millis(), Windows: GetTickCount())
 w     (n--)        Wait (Arduino: delay(),  Windows: Sleep())
-xA    (a--)        Call code at address A
-xJ    (a--)        Jump to code at address A
-xX    (--)         Reset S4 to initial state
-xZ    (--)         Exit S4
