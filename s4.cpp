@@ -82,16 +82,17 @@ int funcNum(char x, int alpha) {
     return -1;
 }
 
-int GetFunctionNum(int pc) {
+int GetFunctionNum(int pc, int msg) {
     int f1 = funcNum(CODE[pc], 0);
     int f2 = funcNum(CODE[pc + 1], 1);
     if ((f1 < 0) || (f2 < 0)) {
-        printStringF("-%c%c:FN Bad-", CODE[pc], CODE[pc + 1]);
+        if (msg) { printStringF("-%c%c:FN Bad-", CODE[pc], CODE[pc + 1]); }
+        isError = 1;
         return -1;
     }
     int fn = (f1 * 62) + f2;
     if ((fn < 0) || (NUM_FUNCS <= fn)) {
-        printStringF("-%c%c:FN OOB-", CODE[pc], CODE[pc + 1]);
+        if (msg) { printStringF("-%c%c:FN OOB-", CODE[pc], CODE[pc + 1]); }
         isError = 1;
         return -1;
     }
@@ -100,7 +101,7 @@ int GetFunctionNum(int pc) {
 
 int doDefineFunction(int pc) {
     if (pc < HERE) { return pc; }
-    int fn = GetFunctionNum(pc);
+    int fn = GetFunctionNum(pc, 1);
     if (fn < 0) { return pc + 2; }
     CODE[HERE++] = '{';
     CODE[HERE++] = CODE[pc];
@@ -111,16 +112,9 @@ int doDefineFunction(int pc) {
         CODE[HERE++] = CODE[pc++];
         if (CODE[HERE - 1] == '}') { return pc; }
     }
+    isError = 1;
     printString("-overflow-");
     return pc;
-}
-
-int doCallFunction(int pc) {
-    int fn = GetFunctionNum(pc);
-    if (fn < 0) { return pc + 2; }
-    if (!FUNC[fn]) { return pc + 2; }
-    rpush(pc + 2);
-    return FUNC[fn];
 }
 
 void dumpCode() {
@@ -220,7 +214,7 @@ int doFile(int pc) {
 #endif
     case 'N':
         push(0);
-        ir = GetFunctionNum(pc);
+        ir = GetFunctionNum(pc, 1);
         if (0 <= ir) { T = FUNC[ir]; }
         pc += 2;
         break;
@@ -250,9 +244,7 @@ int doPin(int pc) {
 int doExt(int pc) {
     byte ir = CODE[pc++];
     switch (ir) {
-    case 'A': rpush(pc); pc = pop();    break;
     case 'F': pc = doFile(pc);          break;
-    case 'J': pc = pop();               break;
     case 'X': vmReset();                break;
     case 'P': pc = doPin(pc);           break;
     case 'T': isBye = 1;                break;
@@ -304,7 +296,13 @@ int step(int pc) {
             t1 = CODE[++pc] - '0';
         }
         break;
-    case ':': pc = doCallFunction(pc); break;           // 58
+    case ':': t1 = GetFunctionNum(pc, 1);                // 58
+        pc += 2;
+        if ((0 <= t1) && (FUNC[t1])) { 
+            rpush(pc);
+            pc = FUNC[t1];
+        } 
+        break;
     case ';': pc = rpop(); break;                       // 59
     case '<': t1 = pop(); T = T < t1 ? -1 : 0;  break;  // 60
     case '=': t1 = pop(); T = T == t1 ? -1 : 0; break;  // 61
@@ -351,6 +349,7 @@ int step(int pc) {
             if (ir == '!') { CODE[t1] = (byte)pop(); }
         }
         break;
+    case 'e': rpush(pc); pc = pop();    break;
     case 'h': push(0);
         t1 = hexNum(CODE[pc]);
         while (0 <= t1) {
@@ -366,6 +365,7 @@ int step(int pc) {
         if (t1 == 'R') { dumpMemory(1); }
         if (t1 == 'S') { dumpStack(0); }
         break;
+    case 'j': pc = pop();               break;
     case 'l':
         t1 = pop();
 #ifdef __PC__
@@ -381,19 +381,19 @@ int step(int pc) {
         if (ir == '@') { T = *bp; }
         if (ir == '!') { t1 = pop(); t2 = pop(); bp[t1] = (byte)t2; }
     } break;
-    case 'n': printString("\r\n");  break;
+    case 'n': printString("\r\n");      break;
     case 'r': ir = CODE[pc++]; {
         if (ir == '<') { rpush(pop()); }
         if (ir == '@') { push(R); }
         if (ir == '>') { push(rpop()); }
     } break;
-    case 't': push(millis());       break;
-    case 'w': delay(pop());         break;
-    case 'x': pc = doExt(pc);       break;
-    case '{': pc = doDefineFunction(pc); break;         // 123
-    case '|': t1 = pop(); T |= t1; break;               // 124
-    case '}': pc = rpop(); break;                       // 125
-    case '~': T = ~T; break;                            // 126
+    case 't': push(millis());            break;
+    case 'w': delay(pop());              break;
+    case 'x': pc = doExt(pc);            break;
+    case '{': pc = doDefineFunction(pc); break;    // 123
+    case '|': t1 = pop(); T |= t1;       break;    // 124
+    case '}': pc = rpop();               break;    // 125
+    case '~': T = ~T;                    break;    // 126
     }
     return pc;
 }
@@ -412,15 +412,16 @@ void setCodeByte(int addr, char ch) {
     if ((0 <= addr) && (addr < CODE_SZ)) { CODE[addr] = ch; }
 }
 
-long getRegister(int reg) {
+long registerVal(int reg) {
     if ((0 <= 'A') && (reg <= 'Z')) { return MEM[reg - 'A']; }
+    if ((0 <= 'a') && (reg <= 'z')) { return MEM[reg - 'a']; }
     return 0;
 }
 
-int getFunctionAddress(const char* fname) {
-    int pc = getRegister('H') + 2;
+int functionAddress(const char* fname) {
+    int pc = registerVal('H') + 2;
     CODE[pc] = fname[0];
-    CODE[pc+1] = fname[0];
-    int fn = GetFunctionNum(pc);
+    CODE[pc+1] = fname[1];
+    int fn = GetFunctionNum(pc, 0);
     return (fn < 0) ? fn : FUNC[fn];
 }

@@ -48,7 +48,7 @@ m!    (n a--)     Store n to ABSOLUTE address a
   NOTES: The registers are stored in MEMORY addresses [0..25]
          Register H is special: it is the HERE address
          Register initial values:
-         - A: Size of CODE area
+         - C: Size of CODE area
          - N: Size of FUNCTIONS array
          - Z: Size of MEMORY area
          - D: Start of CODE area
@@ -56,12 +56,12 @@ m!    (n a--)     Store n to ABSOLUTE address a
          - M: Start of MEMORY area
          - R: Start of return stack
          - S: Start of data stack
-         - Y: Start of system info sructure
-         - All others set to 0
+         - Y: Start of system structure
+         - All other registers set to 0
 X   (--n)         Push value of register X (X:[A..Z])
 X+  (--n)         Push value of register X, then increment the register by 1
 X-  (--n)         Push value of register X, then decrement the register by 1
-X;  (n--)         Store n to register X
+X;  (n--)         Set register X value to n
 
 *** FUNCTIONS ***
   NOTES: 1) Function names are exactly 2 characters, case-sensitive
@@ -76,15 +76,15 @@ X;  (n--)         Store n to register X
                     NOTE: returning while inside of a loop is not supported; behavior will be undefined.
 
 *** INPUT/OUTPUT ***
-.     (n--)       Output TOS as decimal number
-,     (n--)       Output TOS (27 is ESC, 10 is newline, 65 is A, etc) (Forth emit)
+.     (N--)       Output N as decimal number
+,     (N--)       Output N as character (Forth EMIT)
 b     (--)        Output a BLANK (32,)
 n     (--)        Output a NEWLINE (13,10,)
 ?     ( --key)    Read one key, don't wait for ENTER.
-"     (--)        Output bytes until next '"'
+"     (--)        Output characters until next '"'
 _     (a1--a2)    String: copy string to address (a1) (eg - 1000_hello_)
                     Pushes address (a2) after terminating NULL
-hX    (--n)       Scan HEX number until non hex-digit (not case-sensitive h3Da0 == h3dA0 )
+hX    (--n)       Scan HEX number X until non hex-digit (not case-sensitive, h3Da0 == h3dA0 )
 0..9  (--n)       Scan DECIMAL number until non digit
                      to specify multiple values, separate them by space (4711 3333)
                      to enter a negative number, use '~1+' (eg - '32~1+') (make it a function!)
@@ -103,24 +103,8 @@ hX    (--n)       Scan HEX number until non hex-digit (not case-sensitive h3Da0 
           NOTES: 1. You can NOT nest LOOPs
                  2. '[]' cannot have ']' embedded in it (EG - a@["TE]ST"1-] fails when a=0)
                     USE a@("TE"93,"ST") instead
-
-*** EXTENDED OPCODES ***
-xA    (a--)        Call code at address A
-xJ    (a--)        Jump to code at address A
-xFO   (fn md--fh)  PC-File: open (fn/md: addr of name/mode, use `S"")
-xFR   (fh--c n)    PC-File: read 1 char (n=0 means EOF)
-xFW   (c fh--)     PC-File: write 1 char
-xFC   (fh--)       PC-File: close
-xFNxx (--n)        Function: resolve function address (xx: function name)
-xPI   (p--)        Arduino: pin input  (pinMode(p, INPUT))
-xPU   (p--)        Arduino: pin pullup (pinMode(p, INPUT_PULLUP))
-xPO   (p--)        Arduino: pin output (pinMode(p, OUTPUT)
-xPRA  (p--n)       Arduino: pin read analog  (n = analogRead(p))
-xPRD  (p--n)       Arduino: pin read digital (n = digitalRead(p))
-xPWA  (n p--)      Arduino: pin write analog  (analogWrite(p, n))
-xPWD  (n p--)      Arduino: pin write digital (digitalWrite(p, n))
-xT    (--)         Exit S4
-xX    (--)         Reset S4 to initial state
+e   (A--)        Execute (call) address A
+j   (A--)        Jump to address A
 
 *** OTHER ***
 iA    (--)         Info: All (CFMRS)
@@ -132,3 +116,17 @@ iS    (--)         Info: Stack
 l     (n--)        Load code from block (block.nnn)
 t     (--n)        Time (Arduino: millis(), Windows: GetTickCount())
 w     (n--)        Wait (Arduino: delay(),  Windows: Sleep())
+xFO   (fn md--fh)  PC-File: open (fn/md: addr of name/mode, use `S"")
+xFR   (fh--c n)    PC-File: read 1 char (n=0 means EOF)
+xFW   (c fh--)     PC-File: write 1 char
+xFC   (fh--)       PC-File: close
+xFNxx (--A)        Function: resolve function address (xx: function name)
+xPI   (p--)        Arduino: pin input  (pinMode(p, INPUT))
+xPU   (p--)        Arduino: pin pullup (pinMode(p, INPUT_PULLUP))
+xPO   (p--)        Arduino: pin output (pinMode(p, OUTPUT)
+xPRA  (p--n)       Arduino: pin read analog  (n = analogRead(p))
+xPRD  (p--n)       Arduino: pin read digital (n = digitalRead(p))
+xPWA  (n p--)      Arduino: pin write analog  (analogWrite(p, n))
+xPWD  (n p--)      Arduino: pin write digital (digitalWrite(p, n))
+xT    (--)         Exit S4
+xX    (--)         Reset S4 to initial state

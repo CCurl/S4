@@ -7,8 +7,8 @@ extern void vmInit(int code_sz, int mem_sz, int num_funcs);
 extern int run(int pc);
 extern void dumpStack(int hdr);
 extern void setCodeByte(int addr, char ch);
-extern long getRegister(int reg);
-extern int getFunctionAddress(const char* fname);
+extern long registerVal(int reg);
+extern int functionAddress(const char* fname);
 extern void printString(const char*);
 extern void printStringF(const char* fmt, ...);
 

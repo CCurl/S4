@@ -78,6 +78,6 @@ void loop() {
             }
         }
     }
-    int addr = getFunctionAddress("AZ");
+    int addr = functionAddress("Ar");
     if (addr) { run(addr); }
 }
