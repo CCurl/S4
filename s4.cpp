@@ -169,7 +169,7 @@ void dumpMemory(int isRegs) {
     for (int i = 0; i < n; i++) {
         long x = MEM[i];
         if ((!x) && (!isRegs)) { continue; }
-        if (((c++) % 6) == 0) { printString("\r\n"); }
+        if (((c++) % 5) == 0) { printString("\r\n"); }
         if (isRegs) { printStringF("%c: %-10ld  ", i + 'A', x); }
         else { printStringF("[%05d]: %-10ld  ", i, x); }
     }
