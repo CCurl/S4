@@ -282,11 +282,11 @@ int step(int pc) {
             break;
     case ')': /*maybe ELSE?*/        break;             // 41
     case '*': t1 = pop(); T *= t1;   break;             // 42
-    case '+': N += T; pop();         break;             // 43
+    case '+': t1 = pop(); T += t1;   break;             // 43
+    case '-': t1 = pop(); T -= t1;   break;             // 45
+    case '/': t1 = pop(); if (t1) { T /= t1; }  break;  // 47
     case ',': printStringF("%c", (char)pop());  break;  // 44
-    case '-': N -= T; pop();         break;             // 45
-    case '.': printStringF("%ld", pop());      break;   // 46
-    case '/': t1 = pop(); if (t1) { T /= t1; } break;   // 47
+    case '.': printStringF("%ld", pop());       break;  // 46
     case '0': case '1': case '2': case '3': case '4':   // 48-57
     case '5': case '6': case '7': case '8': case '9':
         push(ir - '0');
