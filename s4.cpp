@@ -303,11 +303,11 @@ int step(int pc) {
             pc = FUNC[t1];
         } 
         break;
-    case ';': pc = rpop(); break;                       // 59
-    case '<': t1 = pop(); T = T < t1 ? -1 : 0;  break;  // 60
-    case '=': t1 = pop(); T = T == t1 ? -1 : 0; break;  // 61
-    case '>': t1 = pop(); T = T > t1 ? -1 : 0;  break;  // 62
-    // case '?': push(_getch());                   break;  // 63
+    case ';': pc = rpop();                       break;  // 59
+    case '<': t1 = pop(); T = T < t1  ? -1 : 0;  break;  // 60
+    case '=': t1 = pop(); T = T == t1 ? -1 : 0;  break;  // 61
+    case '>': t1 = pop(); T = T > t1  ? -1 : 0;  break;  // 62
+    // case '?': push(_getch());                    break;  // 63
     case '@': if ((0 <= T) && (T < MEM_SZ)) { T = MEM[T]; }
             break;
     case 'A': case 'B': case 'C': case 'D': case 'E': case 'F':
@@ -329,9 +329,9 @@ int step(int pc) {
             else { pop();  rpop(); }
             break;
     case '^': t1 = pop(); T ^= t1;      break;          // 94
-    case '_': t1 = T;                                   // 95
-        while (CODE[pc] && CODE[pc] != '_') { bMem[t1++] = CODE[pc++]; }
-        ++pc; bMem[t1++] = 0; T = t1;
+    case '_':                                           // 95
+        while (CODE[pc] && (CODE[pc] != '_')) { bMem[T++] = CODE[pc++]; }
+        ++pc; bMem[T++] = 0;
         break;
     case '`': /* FREE*/                 break;          // 96
     case 'b': printString(" ");         break;
@@ -366,8 +366,7 @@ int step(int pc) {
         if (t1 == 'S') { dumpStack(0); }
         break;
     case 'j': pc = pop();               break;
-    case 'l':
-        t1 = pop();
+    case 'l': t1 = pop();               // LOAD
 #ifdef __PC__
         if (input_fp) { fclose(input_fp); }
         sprintf_s(buf, sizeof(buf), "block.%03ld", t1);
