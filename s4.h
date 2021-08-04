@@ -35,7 +35,9 @@ extern byte isBye;
 #define CODE_SZ      (1024*64)  // PICO
 #define MEM_SZ       (16*1024)  // PICO
 #define NUM_FUNCS    MAX_FUNC   // PICO
+#define ILED          25        // PICO
 //#define CODE_SZ      (1024*16)  // XIAO
 //#define MEM_SZ       (8192/4)   // XIAO
 //#define NUM_FUNCS    (13*62)    // XIAO
+// #define ILED          13       // XIAO
 #endif // _WIN32
