@@ -50,7 +50,7 @@ void loop() {
     ulong curTm = millis();
     
     if (iLed == 0) {
-        iLed = 13;
+        iLed = ILED;
         pinMode(iLed, OUTPUT);
     }
     if (nextBlink < curTm) {
