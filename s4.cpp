@@ -74,17 +74,19 @@ int hexNum(char x) {
     return -1;
 }
 
-int funcNum(char x, int alpha) {
+int funcNum(char x, int alphaOnly) {
     if (('A' <= x) && (x <= 'Z')) { return x - 'A'; }
     if (('a' <= x) && (x <= 'z')) { return x - 'a' + 26; }
-    if (('0' <= x) && (x <= '9') && (alpha)) { return x - '0' + 52; }
+    if (!alphaOnly) {
+        if (('0' <= x) && (x <= '9')) { return x - '0' + 52; }
+    }
     isError = 1;
     return -1;
 }
 
 int GetFunctionNum(int pc, int msg) {
-    int f1 = funcNum(CODE[pc], 0);
-    int f2 = funcNum(CODE[pc + 1], 1);
+    int f1 = funcNum(CODE[pc], 1);
+    int f2 = funcNum(CODE[pc + 1], 0);
     if ((f1 < 0) || (f2 < 0)) {
         if (msg) { printStringF("-%c%c:FN Bad-", CODE[pc], CODE[pc + 1]); }
         isError = 1;
