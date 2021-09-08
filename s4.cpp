@@ -294,9 +294,9 @@ int doExt(int pc) {
     case 'X': vmReset();                break;
     case 'P': pc = doPin(pc);           break;
     case 'T': isBye = 1;                break;
-    case 'I': pc = doIJK(pc, 1);       break;
-    case 'J': pc = doIJK(pc, 2);       break;
-    case 'K': pc = doIJK(pc, 3);       break;
+    case 'I': pc = doIJK(pc, 1);        break;
+    case 'J': pc = doIJK(pc, 2);        break;
+    case 'K': pc = doIJK(pc, 3);        break;
     }
     return pc;
 }
