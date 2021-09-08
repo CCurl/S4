@@ -8,13 +8,20 @@
 
 #define STK_SZ 31
 
+typedef struct {
+    long pc;
+    long from;
+    long to;
+} LOOP_ENTRY_T;
+
 struct {
-    long dsp, rsp;
+    long dsp, rsp, lsp;
     byte code[CODE_SZ];
     long mem[MEM_SZ];
     int func[NUM_FUNCS];
     long dstack[STK_SZ + 1];
     long rstack[STK_SZ + 1];
+    LOOP_ENTRY_T lstack[4];
 } sys;
 
 byte isBye = 0, isError = 0;
@@ -26,10 +33,11 @@ byte* bMem;
 #define MEM        sys.mem
 #define FUNC       sys.func
 
-
 #define T        sys.dstack[sys.dsp]
 #define N        sys.dstack[sys.dsp-1]
 #define R        sys.rstack[sys.rsp]
+#define L        sys.lsp
+
 #define HERE     MEM[7]
 
 void push(long v) { if (sys.dsp < STK_SZ) { sys.dstack[++sys.dsp] = v; } }
@@ -39,13 +47,14 @@ void rpush(long v) { if (sys.rsp < STK_SZ) { sys.rstack[++sys.rsp] = v; } }
 long rpop() { return (sys.rsp > 0) ? sys.rstack[sys.rsp--] : -1; }
 
 void vmReset() {
-    sys.dsp = sys.rsp = 0;
+    sys.dsp = sys.rsp = sys.lsp = 0;
     for (int i = 0; i < CODE_SZ; i++) { CODE[i] = 0; }
     for (int i = 0; i < MEM_SZ; i++) { MEM[i] = 0; }
     for (int i = 0; i < NUM_FUNCS; i++) { FUNC[i] = 0; }
     MEM['C' - 'A'] = CODE_SZ;
     MEM['D' - 'A'] = (long)&sys.code[0];
     MEM['F' - 'A'] = (long)&sys.func[0];
+    MEM['L' - 'A'] = (long)&sys.lstack[0];
     MEM['M' - 'A'] = (long)&sys.mem[0];
     MEM['N' - 'A'] = NUM_FUNCS;
     MEM['R' - 'A'] = (long)&sys.rstack[0];
@@ -116,6 +125,41 @@ int doDefineFunction(int pc) {
     }
     isError = 1;
     printString("-overflow-");
+    return pc;
+}
+
+long doFor(long pc) {
+    if (L < 4) {
+        LOOP_ENTRY_T* x = &sys.lstack[L];
+        L++;
+        x->pc = pc;
+        x->to = pop();
+        x->from = pop();
+        if (x->to < x->from) {
+            push(x->to);
+            x->to = x->from;
+            x->from = pop();
+        }
+    }
+    return pc;
+}
+
+long doNext(long pc) {
+    if (L < 1) { L = 0; }
+    else {
+        LOOP_ENTRY_T* x = &sys.lstack[L - 1];
+        ++x->from;
+        if (x->from <= x->to) { pc = x->pc; }
+        else { L--; }
+    }
+    return pc;
+}
+
+long doIJK(long pc, int mode) {
+    push(0);
+    if ((mode == 1) && (0 < L)) { T = sys.lstack[L - 1].from; }
+    if ((mode == 2) && (0 < L)) { T = sys.lstack[L - 2].from; }
+    if ((mode == 3) && (0 < L)) { T = sys.lstack[L - 3].from; }
     return pc;
 }
 
@@ -250,6 +294,9 @@ int doExt(int pc) {
     case 'X': vmReset();                break;
     case 'P': pc = doPin(pc);           break;
     case 'T': isBye = 1;                break;
+    case 'I': pc = doIJK(pc, 1);       break;
+    case 'J': pc = doIJK(pc, 2);       break;
+    case 'K': pc = doIJK(pc, 3);       break;
     }
     return pc;
 }
@@ -322,14 +369,22 @@ int step(int pc) {
         if (t1 == '-') { ++pc; --MEM[ir]; }
         if (t1 == ';') { pop(); ++pc; MEM[ir] = pop(); }
         break;
-    case '[': rpush(pc);                                // 91
-        if (T == 0) {
-            while ((pc < CODE_SZ) && (CODE[pc] != ']')) { pc++; }
+    case '[': if (CODE[pc] == '[') {                    // 91
+            pc = doFor(pc+1);       
+        } else {
+            rpush(pc);
+            if (T == 0) {
+                while ((pc < CODE_SZ) && (CODE[pc] != ']')) { pc++; }
+            }
         }
         break;
-    case ']': if (T) { pc = R; }                        // 93
+    case ']': if (CODE[pc] == ']') {                    // 93
+            pc = doNext(pc + 1);
+        } else {
+            if (T) { pc = R; }
             else { pop();  rpop(); }
-            break;
+        }
+        break;
     case '^': t1 = pop(); T ^= t1;      break;          // 94
     case '_':                                           // 95
         while (CODE[pc] && (CODE[pc] != '_')) { bMem[T++] = CODE[pc++]; }

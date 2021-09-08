@@ -105,6 +105,11 @@ hX    (--n)       Scan HEX number X until non hex-digit (not case-sensitive, h3D
                     USE a@("TE"93,"ST") instead
 e   (A--)        Execute (call) address A
 j   (A--)        Jump to address A
+[[  (F T --)     For: start a For/Next loop. Swap F&T if (T < F)
+]]  ( -- )       Next: increment index xI and loop if xI < T
+xI  ( -- n)      Index: push the index of the current FOR loop
+xJ  ( -- n)      Index: push the index of the 1st inner FOR loop
+xK  ( -- n)      Index: push the index of the 2nd inner FOR loop
 
 *** OTHER ***
 iA    (--)         Info: All (CFMRS)

@@ -18,8 +18,8 @@ S4 examples:
      Forth equivalent:    OVER OVER > IF SWAP THEN
      C equivalent:        if (f < t) { int x = f; f = t; t = x; }
 
-- The general form for a FOR loop is:
-    0(f t--)   %%>($)%-1+[$    0(code)    1+$1-]\
+- To count from 100 to 199
+    100 199 [[ xI .b x]]
 
 - To do something 41 times:
     S4 code:             1 41 %-1+[$   0(code here-->)#b.0(<--code here)   1+$1-]\
