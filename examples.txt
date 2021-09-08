@@ -22,7 +22,10 @@ S4 examples:
     100 199 [[ xI .b x]]
 
 - To do something 41 times:
-    S4 code:             1 41 %-1+[$   0(code here-->)#b.0(<--code here)   1+$1-]\
+    S4 code:             41[$ 0(code) 1-]
+  
+ - To count 1 to 41:
+    S4 code:             1 41 %-1+[$ #b. 1+$1-]\
     Forth equivalent:    1 41 FOR I . NEXT
     C equivalent:        for (int i = 1; i <= 41; i)) { printf("%d ", i); }
 
