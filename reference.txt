@@ -98,18 +98,19 @@ hX    (--n)       Scan HEX number X until non hex-digit (not case-sensitive, h3D
           NOTES: 1. You can NOT nest IFs
                  2. '()' cannot have ')' embedded in in (EG - a@("TE)ST"1-) fails when a=0)
                     USE a@("TE"41,"ST") instead
-[   (f--f)        Begin while loop. If (f==0), skip code until ']'
-]   (f--)         if (f != 0), repeat the loop, else drop f and continue.
-          NOTES: 1. You can NOT nest LOOPs
-                 2. '[]' cannot have ']' embedded in it (EG - a@["TE]ST"1-] fails when a=0)
-                    USE a@("TE"93,"ST") instead
-e   (A--)        Execute (call) address A
-j   (A--)        Jump to address A
-[[  (F T --)     For: start a For/Next loop. Swap F&T if (T < F)
-]]  ( -- )       Next: increment index xI and loop if xI < T
+[   (F T --)     For: start a For/Next loop. Swap F&T if (T < F)
+]   ( -- )       Next: increment index xI and loop if xI < T
+          NOTE: For loops CAN be nested
 xI  ( -- n)      Index: push the index of the current FOR loop
 xJ  ( -- n)      Index: push the index of the 1st inner FOR loop
 xK  ( -- n)      Index: push the index of the 2nd inner FOR loop
+e   (A--)        Execute (call) address A
+j   (A--)        Jump to address A
+[[  (f--f)        Begin while loop. If (f==0), skip code until ']'
+]]  (f--)         if (f != 0), repeat the loop, else drop f and continue.
+          NOTES: 1. You can NOT nest LOOPs
+                 2. '[[]]' cannot have ']' embedded in it (EG - a@["TE]ST"1-] fails when a=0)
+                    USE a@("TE"93,"ST") instead
 
 *** OTHER ***
 iA    (--)         Info: All (CFMRS)

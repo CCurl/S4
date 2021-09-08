@@ -1,10 +1,10 @@
 0( Block.999: tests and a sandbox )
 
 0(  cd: dump all code currently defined )
-1( {cd I0I;H[I+d@#,125=(n)1-]I;} )
+1( {cd 0H1-[xId@#,125=(n)]} )
 
 0(  nx: print n1 to width of n2 [n1 n2--] )
-1( {nx %%<[\0.10/%%<]\.} )
+1( {nx %%<[[\0.10/%%<]]\.} )
 
 0(  md: Modulo [n1--n2] )
 1( {md %%/*-} )
@@ -16,7 +16,7 @@
 0( {ml 1000#**} )
 
 0(  bm: simple decrement benchmark [n--] )
-0( {bm t$[1-]:el} )
+0( {bm t$[[1-]]:el} )
 
 0(  c0: vt100 CSI code )
 1( {c0 27,"["} )
@@ -38,7 +38,7 @@
 
 0( zt: print NULL-terminated string [a--] )
 0( - EG - 123#_hello world_\:zt )
-1( {zt #c@[,1+#c@]\} )
+1( {zt #c@[[,1+#c@]]\} )
 
 1( "S4 v0.0.1 - https://github.com/CCurl/S4" )
 0( n"Hello." )

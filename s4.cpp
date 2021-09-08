@@ -128,6 +128,20 @@ int doDefineFunction(int pc) {
     return pc;
 }
 
+long doBegin(int pc) {
+    rpush(pc);
+    if (T == 0) {
+        while ((pc < CODE_SZ) && (CODE[pc] != ']')) { pc++; }
+    }
+    return pc;
+}
+
+long doWhile(int pc) {
+    if (T) { pc = R; }
+    else { pop();  rpop(); }
+    return pc;
+}
+
 long doFor(long pc) {
     if (L < 4) {
         LOOP_ENTRY_T* x = &sys.lstack[L];
@@ -369,21 +383,9 @@ int step(int pc) {
         if (t1 == '-') { ++pc; --MEM[ir]; }
         if (t1 == ';') { pop(); ++pc; MEM[ir] = pop(); }
         break;
-    case '[': if (CODE[pc] == '[') {                    // 91
-            pc = doFor(pc+1);       
-        } else {
-            rpush(pc);
-            if (T == 0) {
-                while ((pc < CODE_SZ) && (CODE[pc] != ']')) { pc++; }
-            }
-        }
+    case '[': pc = (CODE[pc] == '[') ? doBegin(pc + 1) : doFor(pc);
         break;
-    case ']': if (CODE[pc] == ']') {                    // 93
-            pc = doNext(pc + 1);
-        } else {
-            if (T) { pc = R; }
-            else { pop();  rpop(); }
-        }
+    case ']': pc = (CODE[pc] == ']') ? doWhile(pc + 1) : doNext(pc);
         break;
     case '^': t1 = pop(); T ^= t1;      break;          // 94
     case '_':                                           // 95

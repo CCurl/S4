@@ -13,38 +13,38 @@ S4 examples:
     1( {xx "xx will be defined"} )
     0( {yy "yy will not be defined"} )
 
-- To make sure N < T
+- To make sure F < T
      S4 code:             %%>($)
      Forth equivalent:    OVER OVER > IF SWAP THEN
-     C equivalent:        if (f < t) { int x = f; f = t; t = x; }
+     C equivalent:        if (f > t) { int x = f; f = t; t = x; }
 
-- To do something (in this case, call :lp) 41 times:
-    S4 code:             41[:lp 1-]
+- To do something (in this case, call :lp) N times:
+    S4 code:             N[[:lp 1-]]
 
- - To count 10 to 20:
-    S4 code:             10 20[[xI.b]]
+ - To count from 10 to 20:
+    S4 code:             10 20[xI.b]
     Forth equivalent:    10 20 FOR I . NEXT
     C equivalent:        for (int i = 10; i <= 20; i)) { printf("%d ", i); }
 
-- To copy 927 bytes from 1000 to 2000
+- To copy N bytes from 1000 to 2000
     0( cb: copy bytes [n f t--])
-    {cb D; S; [S+ c@ D+ c! 1-]}
-    927 1000 2000 :cb
+    {cb D; S; [[S+ c@ D+ c! 1-]]}
+    N 1000 2000 :cb
 
-- To copy 927 longs from 1000 to 2000
+- To copy N longs from 1000 to 2000
     0( cl: copy longs [n f t--])
-    {cb D; S; [S+ @ D+ ! 1-]}
-    927 1000 2000 :cl
+    {cl D; S; [[S+ @ D+ ! 1-]]}
+    N 1000 2000 :cl
 
 - A simple benchmark for a 100 million decrement loop:
     {md %%/*-}                   0(define function md - MODULO)
-    {nn #100<(0.)#10<(0.).}      0(define function nn)
-    {el t$-1000%%/.".":md:nn}    0(define function el - ELAPSED)
-    {bm t$[1-]:el}
+    {n3 #100<(0.)#10<(0.).}      0(define function nn)
+    {el t$-1000%%/.".":md:n3}    0(define function el - ELAPSED)
+    {bm t$[[1-]]:el}
     1000#* 100* :bm
 
-- To display the currently defined code:
-    0 H 1-[[ xI d@ #, h7D=(n) ]]
+- One way to display the currently defined code:
+    0 H 1-[ xI d@ #, h7D=(n) ]
 
 - To exit S4:
     xT
