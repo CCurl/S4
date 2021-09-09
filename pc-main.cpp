@@ -77,7 +77,7 @@ int main(int argc, char** argv) {
     hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
     DWORD m; GetConsoleMode(hStdOut, &m);
     SetConsoleMode(hStdOut, (m | ENABLE_VIRTUAL_TERMINAL_PROCESSING));
-    vmInit(CODE_SZ, MEM_SZ, NUM_FUNCS);
+    vmInit();
     strcpy_s(input_fn, sizeof(input_fn), "");
     input_fp = NULL;
 

@@ -9,16 +9,16 @@ void printString(const char* str) { mySerial.print(str); }
 #define TIB      (CODE_SZ - TIB_SZ)
 int tibEnd;
 
-// ********************************************
-// * HERE is where you load your default code *
-// ********************************************
-
 void loadCode(const char* src) {
     int i = TIB;
     while (*src) { setCodeByte(i++, *(src++)); }
     setCodeByte(i, 0);
     run(TIB);
 }
+
+// ********************************************
+// * HERE is where you load your default code *
+// ********************************************
 
 void loadBaseSystem() {
     loadCode("0( MB: ManageButton )");
@@ -30,16 +30,16 @@ void loadBaseSystem() {
 }
 
 void ok() {
-    printString("\r\nS4:"); dumpStack(0); printString(">");
+    printString("\r\ns4:"); dumpStack(0); printString(">");
 }
 
 void setup() {
-    mySerial.begin(19200);
     while (!mySerial) {}
-    // while (mySerial.available()) {}
-    vmInit(CODE_SZ, MEM_SZ, NUM_FUNCS);
+    mySerial.begin(19200);
+    while (mySerial.available()) { char c = mySerial.read(); }
+    vmInit();
     tibEnd = TIB;
-    // loadBaseSystem();
+    loadBaseSystem();
     ok();
 }
 

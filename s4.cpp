@@ -18,7 +18,7 @@ struct {
     long dsp, rsp, lsp;
     byte code[CODE_SZ];
     long mem[MEM_SZ];
-    int func[NUM_FUNCS];
+    long func[NUM_FUNCS];
     long dstack[STK_SZ + 1];
     long rstack[STK_SZ + 1];
     LOOP_ENTRY_T lstack[4];
@@ -60,10 +60,10 @@ void vmReset() {
     MEM['R' - 'A'] = (long)&sys.rstack[0];
     MEM['S' - 'A'] = (long)&sys.dstack[0];
     MEM['Y' - 'A'] = (long)&sys;
-    MEM['Z' - 'A'] = MEM_SZ;
+    MEM['Z' - 'A'] = MEM_SZB;
 }
 
-void vmInit(int code_sz, int mem_sz, int num_funcs) {
+void vmInit() {
     bMem = (byte*)&sys.mem[0];
     vmReset();
 }
