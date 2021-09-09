@@ -6,7 +6,8 @@
 #include <stdarg.h>
 #include "s4.h"
 
-#define STK_SZ 31
+#define STK_SZ   31
+#define HERE     MEM[7]
 
 typedef struct {
     long pc;
@@ -37,8 +38,6 @@ byte* bMem;
 #define N        sys.dstack[sys.dsp-1]
 #define R        sys.rstack[sys.rsp]
 #define L        sys.lsp
-
-#define HERE     MEM[7]
 
 void push(long v) { if (sys.dsp < STK_SZ) { sys.dstack[++sys.dsp] = v; } }
 long pop() { return (sys.dsp > 0) ? sys.dstack[sys.dsp--] : 0; }

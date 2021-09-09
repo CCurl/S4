@@ -1,9 +1,13 @@
 #include "s4.h"
 
+#ifdef __SERIAL__
 #define mySerial SerialUSB
-
 int _getch() { return (mySerial.available()) ? mySerial.read() : 0; }
 void printString(const char* str) { mySerial.print(str); }
+#else
+int _getch() { return 0; }
+void printString(const char* str) { }
+#endif
 
 #define TIB_SZ    80
 #define TIB      (CODE_SZ - TIB_SZ)
@@ -34,9 +38,11 @@ void ok() {
 }
 
 void setup() {
+#ifdef __SERIAL__
     while (!mySerial) {}
     mySerial.begin(19200);
     while (mySerial.available()) { char c = mySerial.read(); }
+#endif
     vmInit();
     tibEnd = TIB;
     loadBaseSystem();
@@ -59,6 +65,7 @@ void loop() {
         nextBlink = curTm + 1111;
     }
 
+#ifdef __SERIAL__
     while (mySerial.available()) {
         char c = mySerial.read();
         if (c == 9) { c = 32; }
@@ -78,6 +85,7 @@ void loop() {
             }
         }
     }
+#endif
     int addr = functionAddress("Ar");
     if (addr) { run(addr); }
 }
