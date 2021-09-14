@@ -9,7 +9,7 @@ extern int run(int pc);
 extern void dumpStack(int hdr);
 extern void setCodeByte(int addr, char ch);
 extern long registerVal(int reg);
-extern int functionAddress(const char* fname);
+extern int functionAddress(int fn);
 extern void printString(const char*);
 extern void printStringF(const char* fmt, ...);
 
