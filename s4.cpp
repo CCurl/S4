@@ -201,7 +201,7 @@ void dumpFuncs() {
     for (int i = 0; i < NUM_FUNCS; i++) {
         if (FUNC[i]) {
             if (((n++) % 6) == 0) { printString("\r\n"); }
-            printStringF("%d:%4d      ", i, FUNC[i]);
+            printStringF("%03d:%5d      ", i, FUNC[i]);
         }
     }
 }
