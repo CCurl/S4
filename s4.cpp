@@ -466,11 +466,6 @@ long registerVal(int reg) {
     return 0;
 }
 
-int functionAddress(const char* fname) {
-    int pc = registerVal('H') + 2;
-    CODE[pc] = fname[0];
-    CODE[pc+1] = fname[1];
-    CODE[pc+2] = fname[2];
-    int fn = GetFunctionNum(pc, 0);
-    return (fn < 0) ? fn : FUNC[fn];
+int functionAddress(int fn) {
+    return ((fn < 0) && (fn < NUM_FUNCS)) ? FUNC[fn] : 0;
 }
