@@ -3,8 +3,8 @@ S4 examples:
  - To enter a comment: 
     0( here is a comment )
   
-  - if (c) { ys() } else { no() } then:
-    C #(:ys #=)0=(:no)
+  - if (c) { print("Yes") } else { print("No") }
+    C #("Yes"#=)0=("No")
 
  - x = (a == b) ? c : d;
     A B = #(C$)0=(D) X;
@@ -21,27 +21,28 @@ S4 examples:
 - To do something (in this case, call :lp) N times:
     S4 code:             N[[:lp 1-]]
 
- - To count from 10 to 20:
+ - To print numbers from 10 to 20:
     S4 code:             10 20[xI.b]
     Forth equivalent:    10 20 FOR I . NEXT
     C equivalent:        for (int i = 10; i <= 20; i)) { printf("%d ", i); }
 
-- To copy N bytes from 1000 to 2000
-    0( cb: copy bytes [n f t--])
-    {cb D; S; [[S+ c@ D+ c! 1-]]}
-    N 1000 2000 :cb
+- One way to copy N bytes from A to B
+    0( 300: copy bytes [n f t--])
+    {300 D;S; 1[S+ c@ D+ c!]}
+    NAB:300
 
-- To copy N longs from 1000 to 2000
-    0( cl: copy longs [n f t--])
-    {cl D; S; [[S+ @ D+ ! 1-]]}
-    N 1000 2000 :cl
+- One way to copy N longs from A to B
+    0( 301: copy longs [n f t--])
+    {301 D;S; 1[S+ @ D+ !]}
+    NAB:301
 
 - A simple benchmark for a 100 million decrement loop:
-    {md %%/*-}                   0(define function md - MODULO)
-    {n3 #100<(0.)#10<(0.).}      0(define function nn)
-    {el t$-1000%%/.".":md:n3}    0(define function el - ELAPSED)
-    {bm t$[[1-]]:el}
-    1000#* 100* :bm
+    {101 %%/*-}                   0(define function 101 - MODULO)
+    {103 #100<(0.)#10<(0.).}      0(define function 103 - .w with 0 pad to 3)
+    {105 t$-1000%%/.".":101:103}  0(define function 105 - ELAPSED)
+    {661 t$[[1-]]:105}
+    {662 t$1[]:105}
+    1000#* 100* # :661b:662
 
 - One way to display the currently defined code:
     0 H 1-[ xI d@ #, h7D=(n) ]
