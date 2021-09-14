@@ -8,6 +8,7 @@
 
 #define STK_SZ   31
 #define HERE     MEM[7]
+#define FN_SZ    3
 
 typedef struct {
     long pc;
@@ -82,27 +83,24 @@ int hexNum(char x) {
     return -1;
 }
 
-int funcNum(char x, int alphaOnly) {
-    if (('A' <= x) && (x <= 'Z')) { return x - 'A'; }
-    if (('a' <= x) && (x <= 'z')) { return x - 'a' + 26; }
-    if (!alphaOnly) {
-        if (('0' <= x) && (x <= '9')) { return x - '0' + 52; }
-    }
+int funcNum(char x) {
+    if (('0' <= x) && (x <= '9')) { return x - '0'; }
     isError = 1;
     return -1;
 }
 
 int GetFunctionNum(int pc, int msg) {
-    int f1 = funcNum(CODE[pc], 1);
-    int f2 = funcNum(CODE[pc + 1], 0);
-    if ((f1 < 0) || (f2 < 0)) {
+    int f1 = funcNum(CODE[pc]);
+    int f2 = funcNum(CODE[pc + 1]);
+    int f3 = funcNum(CODE[pc + 2]);
+    if ((f1 < 0) || (f2 < 0) || (f3 < 0)) {
         if (msg) { printStringF("-%c%c:FN Bad-", CODE[pc], CODE[pc + 1]); }
         isError = 1;
         return -1;
     }
-    int fn = (f1 * 62) + f2;
-    if ((fn < 0) || (NUM_FUNCS <= fn)) {
-        if (msg) { printStringF("-%c%c:FN OOB-", CODE[pc], CODE[pc + 1]); }
+    int fn = (f1 * 100) + (f2*10) + f3;
+    if (NUM_FUNCS <= fn) {
+        if (msg) { printStringF("-%d:FN OOB-", fn); }
         isError = 1;
         return -1;
     }
@@ -112,11 +110,12 @@ int GetFunctionNum(int pc, int msg) {
 int doDefineFunction(int pc) {
     if (pc < HERE) { return pc; }
     int fn = GetFunctionNum(pc, 1);
-    if (fn < 0) { return pc + 2; }
+    if (fn < 0) { return pc + FN_SZ; }
     CODE[HERE++] = '{';
     CODE[HERE++] = CODE[pc];
     CODE[HERE++] = CODE[pc + 1];
-    pc += 2;
+    CODE[HERE++] = CODE[pc + 2];
+    pc += FN_SZ;
     FUNC[fn] = HERE;
     while ((pc < CODE_SZ) && CODE[pc]) {
         CODE[HERE++] = CODE[pc++];
@@ -201,15 +200,8 @@ void dumpFuncs() {
     int n = 0;
     for (int i = 0; i < NUM_FUNCS; i++) {
         if (FUNC[i]) {
-            byte f1, f2, x = (i / 62);
-            f1 = 'A' + x;
-            if (26 <= x) { f1 = 'a' + (x-26); }
-            x = (i % 62);
-            f2 = 'A' + x;
-            if (26 <= x) { f2 = 'a' + (x-26); }
-            if (52 <= x) { f2 = '0' + (x-52); }
             if (((n++) % 6) == 0) { printString("\r\n"); }
-            printStringF("%c%c:%4d (%d)    ", f1, f2, FUNC[i], i);
+            printStringF("%d:%4d      ", i, FUNC[i]);
         }
     }
 }
@@ -359,7 +351,7 @@ int step(int pc) {
         }
         break;
     case ':': t1 = GetFunctionNum(pc, 1);                // 58
-        pc += 2;
+        pc += FN_SZ;
         if ((0 <= t1) && (FUNC[t1])) { 
             rpush(pc);
             pc = FUNC[t1];
@@ -479,6 +471,7 @@ int functionAddress(const char* fname) {
     int pc = registerVal('H') + 2;
     CODE[pc] = fname[0];
     CODE[pc+1] = fname[1];
+    CODE[pc+2] = fname[2];
     int fn = GetFunctionNum(pc, 0);
     return (fn < 0) ? fn : FUNC[fn];
 }
