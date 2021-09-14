@@ -72,7 +72,8 @@ X;  (n--)         Set register X value to n
 }    (--)         End of function definition
 :XXX (--)         Call function XXX
 ;    (--)         Return from function immediately (i.e. - before reaching '}')
-                    NOTE: returning while inside of a loop is not supported; behavior will be undefined.
+                  NOTE: returning while inside of a loop is not supported; behavior will be undefined.
+xFN  (n1--n2)     Resolve the function code address for function #n1. 0 means not defined.
 
 *** INPUT/OUTPUT ***
 .     (N--)       Output N as decimal number
@@ -125,7 +126,6 @@ xFO   (fn md--fh)  PC-File: open (fn/md: addr of name/mode, use `S"")
 xFR   (fh--c n)    PC-File: read 1 char (n=0 means EOF)
 xFW   (c fh--)     PC-File: write 1 char
 xFC   (fh--)       PC-File: close
-xFNxx (--A)        Function: resolve function address (xx: function name)
 xPI   (p--)        Arduino: pin input  (pinMode(p, INPUT))
 xPU   (p--)        Arduino: pin pullup (pinMode(p, INPUT_PULLUP))
 xPO   (p--)        Arduino: pin output (pinMode(p, OUTPUT)

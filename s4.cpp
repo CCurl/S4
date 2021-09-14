@@ -264,10 +264,8 @@ int doFile(int pc) {
             break;
 #endif
     case 'N':
-        push(0);
-        ir = GetFunctionNum(pc, 1);
-        if (0 <= ir) { T = FUNC[ir]; }
-        pc += 2;
+        if ((0 <= T) && (T < NUM_FUNCS)) { T = FUNC[T]; }
+        else { T = 0; }
         break;
     }
     return pc;
