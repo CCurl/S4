@@ -39,6 +39,13 @@ void doHistory(const char* txt) {
     }
 }
 
+void strToTIB(int addr, const char *txt) {
+    while (*txt) {
+        setCodeByte(addr++, *(txt++));
+    }
+    setCodeByte(addr++, 0);
+}
+
 void loop() {
     char tib[100];
     int nTib = CODE_SZ - 100;
@@ -46,9 +53,7 @@ void loop() {
     if (fp == stdin) { ok(); }
     if (fgets(tib, 100, fp) == tib) {
         if (fp == stdin) { doHistory(tib); }
-        for (size_t i = 0; i <= strlen(tib); i++) {
-            setCodeByte(nTib + i, tib[i]);
-        }
+        strToTIB(nTib, tib);
         run(nTib);
         return;
     }
@@ -78,6 +83,10 @@ int main(int argc, char** argv) {
     DWORD m; GetConsoleMode(hStdOut, &m);
     SetConsoleMode(hStdOut, (m | ENABLE_VIRTUAL_TERMINAL_PROCESSING));
     vmInit();
+    // 0(111: dump all code currently defined)
+    strToTIB(100, "{111 0H1-[xId@#,125=(n)]}");
+    run(100);
+
     strcpy_s(input_fn, sizeof(input_fn), "");
     input_fp = NULL;
 

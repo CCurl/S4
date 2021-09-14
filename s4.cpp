@@ -296,12 +296,13 @@ int doExt(int pc) {
     byte ir = CODE[pc++];
     switch (ir) {
     case 'F': pc = doFile(pc);          break;
-    case 'X': vmReset();                break;
-    case 'P': pc = doPin(pc);           break;
-    case 'T': isBye = 1;                break;
     case 'I': pc = doIJK(pc, 1);        break;
     case 'J': pc = doIJK(pc, 2);        break;
     case 'K': pc = doIJK(pc, 3);        break;
+    case 'P': pc = doPin(pc);           break;
+    case 'S': sys.dsp = 0;              break;
+    case 'T': isBye = 1;                break;
+    case 'X': vmReset();                break;
     }
     return pc;
 }

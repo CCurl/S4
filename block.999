@@ -1,9 +1,3 @@
 0( Block.999: tests and a sandbox )
-
-0(  045: dump all code currently defined )
-1( {045 0H1-[xId@#,125=(n)]} )
-
-
-1( "S4 v0.0.1 - https://github.com/CCurl/S4" )
-nn:045
-1( n"Hello." )
+"S4 v0.0.1 - https://github.com/CCurl/S4"
+n"Hello." 

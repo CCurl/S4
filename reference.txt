@@ -22,6 +22,7 @@ $  (a b--b a)     Swap top 2 stack items                 (Forth SWAP)
 r< (n--)          Move TOS to return stack               (Forth >R)
 r@ (--n)          Fetch top of return stack              (Forth R@)
 r> (--n)          Move top of return stack to data stack (Forth R>)
+xS (?--)          Clear the stack, remove all entries    (Forth 0SP)
 
 *** MEMORY ***
   NOTEs: There are 3 address spaces, CODE, MEMORY, and ABSOLUTE
