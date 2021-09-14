@@ -94,13 +94,13 @@ int GetFunctionNum(int pc, int msg) {
     int f2 = funcNum(CODE[pc + 1]);
     int f3 = funcNum(CODE[pc + 2]);
     if ((f1 < 0) || (f2 < 0) || (f3 < 0)) {
-        if (msg) { printStringF("-%c%c:FN Bad-", CODE[pc], CODE[pc + 1]); }
+        if (msg) { printStringF("-%c%c%c:BadName-", CODE[pc], CODE[pc + 1], CODE[pc + 2]); }
         isError = 1;
         return -1;
     }
     int fn = (f1 * 100) + (f2*10) + f3;
     if (NUM_FUNCS <= fn) {
-        if (msg) { printStringF("-%d:FN OOB-", fn); }
+        if (msg) { printStringF("-%d:FN_OOB-", fn); }
         isError = 1;
         return -1;
     }
