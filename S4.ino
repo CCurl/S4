@@ -86,6 +86,6 @@ void loop() {
         }
     }
 #endif
-    int addr = functionAddress("Ar");
+    int addr = functionAddress(0);
     if (addr) { run(addr); }
 }
