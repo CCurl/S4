@@ -467,5 +467,5 @@ long registerVal(int reg) {
 }
 
 int functionAddress(int fn) {
-    return ((fn < 0) && (fn < NUM_FUNCS)) ? FUNC[fn] : 0;
+    return ((0 < fn) && (fn < NUM_FUNCS)) ? FUNC[fn] : 0;
 }
