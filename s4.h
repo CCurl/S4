@@ -2,14 +2,16 @@
 
 typedef unsigned char byte;
 #define MAX_FUNC (1000)
+#define MAX_CODE (64*1024)
 #define MEM_SZ   (MEM_SZB/4)
+typedef unsigned short addr;
 
 extern void vmInit();
-extern int run(int pc);
+extern addr run(addr pc);
 extern void dumpStack(int hdr);
-extern void setCodeByte(int addr, char ch);
+extern void setCodeByte(addr loc, char ch);
 extern long registerVal(int reg);
-extern int functionAddress(int fn);
+extern addr functionAddress(int fn);
 extern void printString(const char*);
 extern void printStringF(const char* fmt, ...);
 
@@ -27,7 +29,7 @@ extern void pinMode(int pin, int mode);
 extern void delay(unsigned long ms);
 extern FILE* input_fp;
 extern byte isBye;
-#define CODE_SZ      ( 64*1024)
+#define CODE_SZ      MAX_CODE
 #define MEM_SZB      (256*1024)
 #define NUM_FUNCS     MAX_FUNC
 #else
@@ -37,14 +39,14 @@ extern byte isBye;
 #define PICO 1
 #define XIAO 0
 #if PICO
-#define CODE_SZ      (64*1024)  // PICO
+#define CODE_SZ      MAX_CODE   // PICO
 #define MEM_SZB      (96*1024)  // PICO
 #define NUM_FUNCS    MAX_FUNC   // PICO
 #define ILED          25        // PICO
 #elif XIAO
-#define CODE_SZ      (16*1024)  // XIAO
-#define MEM_SZB      ( 8*1024)  // XIAO
-#define NUM_FUNCS    (13*62)    // XIAO
+#define CODE_SZ      (12*1024)  // XIAO
+#define MEM_SZB      (12*1024)  // XIAO
+#define NUM_FUNCS    MAX_FUNC   // XIAO
 #define ILED          13        // XIAO
 #endif
 #endif // _WIN32

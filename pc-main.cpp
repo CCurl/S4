@@ -39,16 +39,16 @@ void doHistory(const char* txt) {
     }
 }
 
-void strToTIB(int addr, const char *txt) {
+void strToTIB(addr loc, const char *txt) {
     while (*txt) {
-        setCodeByte(addr++, *(txt++));
+        setCodeByte(loc++, *(txt++));
     }
-    setCodeByte(addr++, 0);
+    setCodeByte(loc++, 0);
 }
 
 void loop() {
     char tib[100];
-    int nTib = CODE_SZ - 100;
+    addr nTib = CODE_SZ - 100;
     FILE* fp = (input_fp) ? input_fp : stdin;
     if (fp == stdin) { ok(); }
     if (fgets(tib, 100, fp) == tib) {
