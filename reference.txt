@@ -66,18 +66,17 @@ X-  (--n)         Push value of register X, then decrement the register by 1
 X;  (n--)         Set register X value to n
 
 *** FUNCTIONS ***
-  NOTES: 1) Function names are exactly 3 digits: [000..999]
+  NOTES: 1) Function names are exactly 3 characters: X##
          2) A function cannot have '}' embedded in it (eg - {273 "TE}ST"} will not compile correctly)
             Use {273 "TE"125,"ST"} instead
-{XXX (--)         Define function XXX (XX:[000..999])
+{X## (--)         Define function XXX (XX:[000..999])
 }    (--)         End of function definition
-:XXX (--)         Call function XXX
-jXXX (--)         Jump to function XXX (eg - tail call optimization)
+:X## (--)         Call function XXX
+jX## (--)         Jump to function XXX (eg - tail call optimization)
 e    (A--)        Call address A
 ;    (--)         Return from function immediately (i.e. - before reaching '}')
                   NOTE: returning while inside of a loop is not supported; behavior will be undefined.
-xFN  (n1--n2)     Resolve the function code address for function #n1. 0 means not defined.
-  (n1--n2)     Resolve the function code address for function #n1. 0 means not defined.
+BROKEN: xFN  (n1--n2)     Resolve the function code address for function #n1. 0 means not defined.
 
 *** INPUT/OUTPUT ***
 .     (N--)       Output N as decimal number
