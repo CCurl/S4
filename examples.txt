@@ -19,12 +19,12 @@ S4 examples:
      C equivalent:        if (f > t) { int x = f; f = t; t = x; }
 
 - To do something (in this case, call :lp) N times:
-    S4 code:             N[[:lp 1-]]
+    S4 code:             N1[:lp 1-]
 
- - To print numbers from 10 to 20:
-    S4 code:             10 20[xI.b]
-    Forth equivalent:    10 20 FOR I . NEXT
-    C equivalent:        for (int i = 10; i <= 20; i)) { printf("%d ", i); }
+ - To print numbers from F to T:
+    S4 code:             FT[xI.b]
+    Forth equivalent:    F T FOR I . NEXT
+    C equivalent:        for (int i = F; i <= T; i)) { printf("%d ", i); }
 
 - One way to copy N bytes from A to B
     0( 300: copy bytes [n f t--])
@@ -36,13 +36,14 @@ S4 examples:
     {301 D;S; 1[S+ @ D+ !]}
     NAB:301
 
-- A simple benchmark for a 100 million decrement loop:
-    {101 %%/*-}                   0(define function 101 - MODULO)
-    {103 #100<(0.)#10<(0.).}      0(define function 103 - .w with 0 pad to 3)
-    {105 t$-1000%%/.".":101:103}  0(define function 105 - ELAPSED)
-    {661 t$[[1-]]:105}
+- A simple benchmark for a 100 million decrement and FOR loop:
+    {101 %%/*-}                 0(define function 101 - MODULO)
+    {102 #10<(0.).}             0(define function 103 - .w with 0 pad to 3)
+    {103 #100<(0.)j102}         0(define function 103 - .w with 0 pad to 3)
+    {105 t$-1k%%/.".":101:103}  0(define function 105 - ELAPSED)
+    {661 t$[[1-]]j105}
     {662 t$1[]:105}
-    1000#* 100* # :661b:662
+    100kk # :661b:662
 
 - One way to display the currently defined code:
     0 H 1-[ xI d@ #, h7D=(n) ]

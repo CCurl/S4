@@ -347,11 +347,7 @@ addr run(addr pc) {
             }
             break;
         case ':': t1 = GetFunctionNum(pc, 1);                // 58
-            pc += FN_SZ;
-            if ((0 <= t1) && (FUNC[t1])) {
-                rpush(pc);
-                pc = FUNC[t1];
-            }
+            if (!isError) { rpush(pc+FN_SZ); pc = FUNC[t1]; }
             break;
         case ';': pc = rpop();                       break;  // 59
         case '<': t1 = pop(); T = T < t1 ? -1 : 0;  break;  // 60
@@ -410,7 +406,10 @@ addr run(addr pc) {
             if (t1 == 'R') { dumpRegs(); }
             if (t1 == 'S') { dumpStack(0); }
             break;
-        //case 'j': pc = (addr)pop();               break;
+        case 'j': t1 = GetFunctionNum(pc, 1);
+            if (!isError) { pc = FUNC[t1]; }
+            break;
+        case 'k': T *= 1000;   break;
         case 'l': t1 = pop();               // LOAD
 #ifdef __PC__
             if (input_fp) { fclose(input_fp); }

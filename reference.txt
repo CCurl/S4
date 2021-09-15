@@ -7,6 +7,7 @@
 -  (a b--a-b)     subtraction
 *  (a b--a*b)     multiplication
 /  (a b--a/b)     division
+k  (T--n2)        multiply TOS by 1000
 
 *** BIT MANIPULATION ***
 &  (a b--n)       and
@@ -71,9 +72,12 @@ X;  (n--)         Set register X value to n
 {XXX (--)         Define function XXX (XX:[000..999])
 }    (--)         End of function definition
 :XXX (--)         Call function XXX
+jXXX (--)         Jump to function XXX (eg - tail call optimization)
+e    (A--)        Call address A
 ;    (--)         Return from function immediately (i.e. - before reaching '}')
                   NOTE: returning while inside of a loop is not supported; behavior will be undefined.
 xFN  (n1--n2)     Resolve the function code address for function #n1. 0 means not defined.
+  (n1--n2)     Resolve the function code address for function #n1. 0 means not defined.
 
 *** INPUT/OUTPUT ***
 .     (N--)       Output N as decimal number
@@ -104,7 +108,6 @@ hX    (--n)       Scan HEX number X until non hex-digit (not case-sensitive, h3D
 xI  ( -- n)      Index: push the index of the current FOR loop
 xJ  ( -- n)      Index: push the index of the 1st inner FOR loop
 xK  ( -- n)      Index: push the index of the 2nd inner FOR loop
-e   (A--)        Execute (call) address A
 j   (A--)        Jump to address A
 [[  (f--f)        Begin while loop. If (f==0), skip code until ']'
 ]]  (f--)         if (f != 0), repeat the loop, else drop f and continue.
