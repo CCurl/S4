@@ -7,55 +7,63 @@
 -  (a b--a-b)     subtraction
 *  (a b--a*b)     multiplication
 /  (a b--a/b)     division
-k  (T--n2)        multiply TOS by 1000
+k  (T--n)         multiply TOS by 1000
+o  (T--n)         set TOS to (-T)
+p  (T--n)         increment TOS by 1
+q  (T--n)         decrement TOS by 1
+s  (a n--q r)     q: a/n, r: a MODULO n (/MOD)
+u  (T--n)         set TOS the absolute value of T
+
 
 *** BIT MANIPULATION ***
 &  (a b--n)       and
 |  (a b--n)       or
 ^  (a b--n)       xor
-~  (n1--n2)       ones complement (10110010 => 01001101)
+f  (n1--n2)       flip bits: (one's complement) (e.e - 1011 => 0100)
+r  (v n--t)       t: v SHIFT-RIGHT n
+v  (v n--t)       t: v SHIFT-LEFT n
+
 
 *** STACK ***
 #  (a--a a)       Duplicate TOS                          (Forth DUP)
 \  (a b--a)       Drop TOS                               (Forth DROP)
 $  (a b--b a)     Swap top 2 stack items                 (Forth SWAP)
 %  (a b--a b a)   Push 2nd                               (Forth OVER)
-r< (n--)          Move TOS to return stack               (Forth >R)
-r@ (--n)          Fetch top of return stack              (Forth R@)
-r> (--n)          Move top of return stack to data stack (Forth R>)
 xS (?--)          Clear the stack, remove all entries    (Forth 0SP)
 
+
 *** MEMORY ***
-  NOTEs: There are 3 address spaces, CODE, MEMORY, and ABSOLUTE
+  NOTEs: There are 3 address spaces, CODE, VAR, and ABSOLUTE
          CODE and MEMORY addresses are indexes into that specific area of memory
          ABSOLUTE addresses are the addresses of the entire machine
 
-        ** 8-bit operations: **
-         these use 8-bit indexing and values
-         E.G. - 28 c@ returns the lowest byte of HERE
-c@    (a--n)      Fetch from MEMORY address a
-c!    (n a--)     Store n to MEMORY address a
-d@    (a--n)      Fetch from CODE address a
-d!    (n a--)     Store n to CODE address a
-m@    (a--n)      Fetch from ABSOLUTE address a
-m!    (n a--)     Store n to ABSOLUTE address a
+          ** these use 8-bit indexing **
+       E.G. - '7 4 * c@' returns the lowest byte of HERE
+c@    (a--n)      Fetch byte n from VAR address a
+c!    (n a--)     Store byte n  to  VAR address a
+d@    (a--n)      Fetch byte n from CODE address a
+d!    (n a--)     Store byte n  to  CODE address a
+a@    (a--n)      Fetch byte n from ABSOLUTE address a
+a!    (n a--)     Store byte n  to  ABSOLUTE address a
+m@    (a--n)      Fetch long n from ABSOLUTE address a
+m!    (n a--)     Store long n  to  ABSOLUTE address a
 
-        ** 32-bit operations: **
-         these use 32-bit indexing and values
-         E.G. - 7 @ returns the 32-value of HERE
-@     (a--n)      Fetch from MEMORY address a
-!     (n a--)     Store n to MEMORY address a
+          **these use 32-bit indexing **
+       E.G. - '7 @' returns the value of HERE
+@     (a--n)      Fetch long from VAR address a
+!     (n a--)     Store long n to VAR address a
+
 
 *** REGISTERS ***
-  NOTES: The registers are stored in MEMORY addresses [0..25]
-         Register H is special: it is the HERE address
+  NOTES: The registers are stored in VAR addresses [0..25]
          Register initial values:
          - C: Size of CODE area
          - N: Size of FUNCTIONS array
-         - Z: Size of MEMORY area
+         - Z: Size of VARS area
          - D: Start of CODE area
          - F: Start of FUNCTIONS array
-         - M: Start of MEMORY area
+         - H: HERE **special**
+         - M: Start of VARS area
          - R: Start of return stack
          - S: Start of data stack
          - Y: Start of system structure
@@ -64,6 +72,7 @@ X   (--n)         Push value of register X (X:[A..Z])
 X+  (--n)         Push value of register X, then increment the register by 1
 X-  (--n)         Push value of register X, then decrement the register by 1
 X;  (n--)         Set register X value to n
+
 
 *** FUNCTIONS ***
   NOTES: 1) Function names are exactly 3 characters: X##
@@ -78,6 +87,7 @@ e    (A--)        Call address A
                   NOTE: returning while inside of a loop is not supported; behavior will be undefined.
 BROKEN: xFN  (n1--n2)     Resolve the function code address for function #n1. 0 means not defined.
 
+
 *** INPUT/OUTPUT ***
 .     (N--)       Output N as decimal number
 ,     (N--)       Output N as character (Forth EMIT)
@@ -90,29 +100,33 @@ _     (a1--a2)    String: copy string to address (a1) (eg - 1000_hello_)
 hX    (--n)       Scan HEX number X until non hex-digit (not case-sensitive, h3Da0 == h3dA0 )
 0..9  (--n)       Scan DECIMAL number until non digit
                      to specify multiple values, separate them by space (4711 3333)
-                     to enter a negative number, use '~1+' (eg - '32~1+') (make it a function!)
+                     to enter a negative number, use 'o' (eg - '32o')
 'x   (--n)        Push the ascii value of x (x: [any char possible])
 
+
 *** CONDITIONS/FLOW CONTROL ***
-<   (a b--f)      if (a < b), f=true, else f=false
->   (a b--f)      if (a > b), f=true, else f=false
-=   (a b--f)      if (a = b), f=true, else f=false
+<   (a b--f)      f: (a < b) ? 1 : 0;
+=   (a b--f)      f: (a = b) ? 1 : 0;
+>   (a b--f)      f: (a > b) ? 1 : 0;
+~   (x--f)        f: (x = 0) ? 1 : 0;
 (   (f--)         if (f != 0), execute code in '()', else skip until ')'
           NOTES: 1. You can NOT nest IFs
                  2. '()' cannot have ')' embedded in in (EG - a@("TE)ST"1-) fails when a=0)
                     USE a@("TE"41,"ST") instead
-[   (F T --)     For: start a For/Next loop. Swap F&T if (T < F)
-]   ( -- )       Next: increment index xI and loop if xI < T
+[   (F T --)     FOR: start a For/Next loop. if (T < F), swap F and T 
+]   ( -- )       NEXT: increment index (xI) and loop if (xI < T)
           NOTE: For loops CAN be nested
 xI  ( -- n)      Index: push the index of the current FOR loop
 xJ  ( -- n)      Index: push the index of the 1st inner FOR loop
 xK  ( -- n)      Index: push the index of the 2nd inner FOR loop
-j   (A--)        Jump to address A
-[[  (f--f)        Begin while loop. If (f==0), skip code until ']'
+j   (X##--)      Jump to function X##
+[[  (f--f)        Begin WHILE loop. If (f==0), skip code until ']]'
 ]]  (f--)         if (f != 0), repeat the loop, else drop f and continue.
           NOTES: 1. You can NOT nest LOOPs
-                 2. '[[]]' cannot have ']' embedded in it (EG - a@["TE]ST"1-] fails when a=0)
-                    USE a@("TE"93,"ST") instead
+                 2. '[[]]' cannot have a ']' embedded in it (EG - X[["TE]ST"1-]] fails when a=0)
+                    USE X[["TE"93,"ST"1-]] instead.
+                 3. To put a FOR loop in a WHILE loop, put it into a function.
+
 
 *** OTHER ***
 iA    (--)         Info: All (CFMRS)

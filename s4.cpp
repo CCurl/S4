@@ -39,6 +39,8 @@ byte* bMem;
 #define N        sys.dstack[sys.dsp-1]
 #define R        sys.rstack[sys.rsp]
 #define L        sys.lsp
+#define DROP1    pop()
+#define DROP2    pop(); pop()
 
 void push(long v) { if (sys.dsp < STK_SZ) { sys.dstack[++sys.dsp] = v; } }
 long pop() { return (sys.dsp > 0) ? sys.dstack[sys.dsp--] : 0; }
@@ -138,7 +140,7 @@ addr doBegin(addr pc) {
 
 addr doWhile(addr pc) {
     if (T) { pc = R; }
-    else { pop();  rpop(); }
+    else { DROP1;  rpop(); }
     return pc;
 }
 
@@ -241,7 +243,7 @@ addr doFile(addr pc) {
 #ifdef __PC__
     case 'C':
         if (T) { fclose((FILE*)T); }
-        pop();
+        DROP1;
         break;
     case 'O': {
         char* md = (char*)bMem + pop();
@@ -308,11 +310,12 @@ addr doExt(addr pc) {
 
 addr run(addr pc) {
     long t1, t2;
+    byte* bp;
     isError = 0;
     while (!isError) {
         byte ir = CODE[pc++];
         switch (ir) {
-        case 0: return -1;                                  // 0
+        case 0: return -1; /* FREE */                      // 0
         case ' ': while (CODE[pc] == ' ') { pc++; }         // 32
                 break;
         case '!': t2 = pop(); t1 = pop();                   // 33
@@ -327,7 +330,7 @@ addr run(addr pc) {
         case '#': push(T);               break;             // 35 (DUP)
         case '$': t1 = N; N = T; T = t1; break;             // 36 (SWAP)
         case '%': push(N);               break;             // 37 (OVER)
-        case '\\': pop();                break;             // 92 (DROP)
+        case '\\': DROP1;                break;             // 92 (DROP)
         case '&': t1 = pop(); T &= t1;   break;             // 38
         case '\'': push(CODE[pc++]);     break;             // 39
         case '(': if (pop() == 0) {                         // 40
@@ -339,7 +342,10 @@ addr run(addr pc) {
         case '*': t1 = pop(); T *= t1;   break;             // 42
         case '+': t1 = pop(); T += t1;   break;             // 43
         case '-': t1 = pop(); T -= t1;   break;             // 45
-        case '/': t1 = pop(); if (t1) { T /= t1; }  break;  // 47
+        case '/': t1 = pop(); 
+            if (t1) { T /= t1; }
+            else { isError = 1; }
+            break;  // 47
         case ',': printStringF("%c", (char)pop());  break;  // 44
         case '.': printStringF("%ld", pop());       break;  // 46
         case '0': case '1': case '2': case '3': case '4':   // 48-57
@@ -356,9 +362,9 @@ addr run(addr pc) {
             else { pc += FN_SZ; }
             break;
         case ';': pc = rpop();                       break;  // 59
-        case '<': t1 = pop(); T = T < t1 ? -1 : 0;  break;  // 60
-        case '=': t1 = pop(); T = T == t1 ? -1 : 0;  break;  // 61
-        case '>': t1 = pop(); T = T > t1 ? -1 : 0;  break;  // 62
+        case '<': t1 = pop(); T = T < t1  ? 1 : 0;   break;  // 60
+        case '=': t1 = pop(); T = T == t1 ? 1 : 0;   break;  // 61
+        case '>': t1 = pop(); T = T > t1  ? 1 : 0;   break;  // 62
         // case '?': push(_getch());                    break;  // 63
         case '@': if ((0 <= T) && (T < MEM_SZ)) { T = MEM[T]; }
                 break;
@@ -377,27 +383,34 @@ addr run(addr pc) {
         case ']': pc = (CODE[pc] == ']') ? doWhile(pc + 1) : doNext(pc);
             break;
         case '^': t1 = pop(); T ^= t1;      break;          // 94
-        case '_':                                           // 95
+        case '_': /* FREE */                                // 95
             while (CODE[pc] && (CODE[pc] != '_')) { bMem[T++] = CODE[pc++]; }
             ++pc; bMem[T++] = 0;
             break;
-        case '`': /* FREE*/                 break;          // 96
+        case '`': /* FREE */                break;          // 96
+        case 'a': ir = CODE[pc++];
+            bp = (byte*)T;
+            if (ir == '@') { T = *bp; }
+            if (ir == '!') { *bp = N & 0xff; DROP2; }
+            break;
         case 'b': printString(" ");         break;
         case 'c': ir = CODE[pc++];
-            t1 = pop();
-            if ((0 <= t1) && (t1 < (MEM_SZ * 4))) {
-                if (ir == '@') { push(bMem[t1]); }
-                if (ir == '!') { bMem[t1] = (byte)pop(); }
+            bp = &CODE[T];
+            if ((0 <= T) && (T < MEM_SZB)) {
+                if (ir == '@') { T = *bp; }
+                if (ir == '!') { *bp = N & 0xff; DROP2; }
             }
             break;
         case 'd': ir = CODE[pc++];
-            t1 = pop();
-            if ((0 <= t1) && (t1 < CODE_SZ)) {
-                if (ir == '@') { push(CODE[t1]); }
-                if (ir == '!') { CODE[t1] = (byte)pop(); }
+            bp = &CODE[T];
+            if ((0 <= T) && (T < CODE_SZ)) {
+                if (ir == '@') { T = *bp; }
+                if (ir == '!') { *bp = N & 0xff; DROP2; }
             }
             break;
-        case 'e': rpush(pc); pc = (addr)pop();    break;
+        case 'e': rpush(pc); pc = (addr)pop();  break;
+        case 'f': T = ~T;                       break;
+        case 'g': /* FREE */                    break;
         case 'h': push(0);
             t1 = hexNum(CODE[pc]);
             while (0 <= t1) {
@@ -417,7 +430,7 @@ addr run(addr pc) {
             else { pc += FN_SZ; }
             break;
         case 'k': T *= 1000;   break;
-        case 'l': t1 = pop();               // LOAD
+        case 'l': t1 = pop();  // LOAD
 #ifdef __PC__
             if (input_fp) { fclose(input_fp); }
             sprintf_s(buf, sizeof(buf), "block.%03ld", t1);
@@ -426,22 +439,39 @@ addr run(addr pc) {
             printString("-l:pc only-");
 #endif
             break;
-        case 'm': ir = CODE[pc++]; {
-            byte* bp = (byte*)T;
+        case 'm': ir = CODE[pc++];
+            bp = (byte*)T;
             if (ir == '@') { T = *bp; }
-            if (ir == '!') { t1 = pop(); t2 = pop(); bp[t1] = (byte)t2; }
-        } break;
-        case 'n': printString("\r\n");      break;
-        case 'r':                            break;
+            if (ir == '!') {
+                t1 = N; DROP2;
+                *(bp++) = ((t1) & 0xff);
+                *(bp++) = ((t1 >> 8) & 0xff);
+                *(bp++) = ((t1 >> 16) & 0xff);
+                *(bp++) = ((t1 >> 24) & 0xff);
+            }
+            break;          // 97
+        case 'n': printString("\r\n");       break;
+        case 'o': T = -T;                    break;
+        case 'p': T++;                       break;
+        case 'q': T--;                       break;
+        case 'r': N = N >> T; DROP1;         break;
+        case 's': t2 = N; t1 = T;  // /MOD
+            if (t1 == 0) { isError = 1; }
+            else { N = (t2 / t1); T = (t2 % t1); }
+            break;
         case 't': push(millis());            break;
+        case 'u': if (T < 0) { T = -T; }     break;
+        case 'v': N = N << T; DROP1;         break;
         case 'w': delay(pop());              break;
         case 'x': pc = doExt(pc);            break;
+        case 'y': /* FREE */                 break;
+        case 'z': /* FREE */                 break;
         case '{': pc = doDefineFunction(pc); break;    // 123
         case '|': t1 = pop(); T |= t1;       break;    // 124
-        case '}': if (0 < sys.rsp) { pc = rpop(); }
+        case '}': if (0 < sys.rsp) { pc = rpop(); }    // 125
                 else { sys.rsp = 0; return pc; }
-            break;    // 125
-        case '~': T = ~T;                    break;    // 126
+            break;
+        case '~': T = (T) ? 0 : 1;           break;    // 126
         }
     }
     return 0;
