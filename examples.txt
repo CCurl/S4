@@ -37,16 +37,14 @@ S4 examples:
     NAB:301
 
 - A simple benchmark for a 100 million decrement and FOR loop:
-    {101 %%/*-}                 0(define function 101 - MODULO)
-    {102 #10<(0.).}             0(define function 103 - .w with 0 pad to 3)
-    {103 #100<(0.)j102}         0(define function 103 - .w with 0 pad to 3)
-    {105 t$-1k%%/.".":101:103}  0(define function 105 - ELAPSED)
-    {661 t$[[1-]]j105}
-    {662 t$1[]:105}
-    100kk # :661b:662
+    {a02 #a02 10<(0.).}             0(define function 103 - .w with 0 pad to 3)
+    {a03 #a03 100<(0.)ja02}         0(define function 103 - .w with 0 pad to 3)
+    {a05 t$-1ks$."."ja03}  0(define function 105 - ELAPSED)
+    100kkt$[[q]]:a05
+    100kkt$1[]:a05
 
 - One way to display the currently defined code:
-    0 H 1-[ xI d@ #, h7D=(n) ]
+    0Hq[xId@#,h7D=(n)]
 
 - To exit S4:
     xT
