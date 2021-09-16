@@ -20,6 +20,7 @@ S4 is the result of my work towards those goals.
 - The same code runs on both a Windows PC or development board via the Arduino IDE. 
 
 The reference for S4 is here:   https://github.com/CCurl/S4/blob/main/reference.txt
+
 There are examples for S4 here: https://github.com/CCurl/S4/blob/main/examples.txt
 
 # Building S4
