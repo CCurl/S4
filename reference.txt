@@ -85,7 +85,7 @@ jX## (--)         Jump to function XXX (eg - tail call optimization)
 e    (A--)        Call address A
 ;    (--)         Return from function immediately (i.e. - before reaching '}')
                   NOTE: returning while inside of a loop is not supported; behavior will be undefined.
-BROKEN: xFN  (n1--n2)     Resolve the function code address for function #n1. 0 means not defined.
+**BROKEN**   xFN  (n1--n2)     Resolve the function code address for function #n1. 0 means not defined.
 
 
 *** INPUT/OUTPUT ***
@@ -93,7 +93,8 @@ BROKEN: xFN  (n1--n2)     Resolve the function code address for function #n1. 0 
 ,     (N--)       Output N as character (Forth EMIT)
 b     (--)        Output a BLANK (32,)
 n     (--)        Output a NEWLINE (13,10,)
-?     ( --key)    Read one key, don't wait for ENTER.
+z     (A--)       Output the NULL terminated string at A.
+**BROKEN**   ?     ( --key)    Read one key, don't wait for ENTER. ()
 "     (--)        Output characters until next '"'
 _     (a1--a2)    String: copy string to address (a1) (eg - 1000_hello_)
                     Pushes address (a2) after terminating NULL

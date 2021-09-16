@@ -61,6 +61,7 @@ void vmReset() {
     MEM['N' - 'A'] = NUM_FUNCS;
     MEM['R' - 'A'] = (long)&sys.rstack[0];
     MEM['S' - 'A'] = (long)&sys.dstack[0];
+    MEM['V' - 'A'] = 104; // byte addr of first unused location
     MEM['Y' - 'A'] = (long)&sys;
     MEM['Z' - 'A'] = MEM_SZB;
 }
@@ -395,7 +396,7 @@ addr run(addr pc) {
             break;
         case 'b': printString(" ");         break;
         case 'c': ir = CODE[pc++];
-            bp = &CODE[T];
+            bp = &bMem[T];
             if ((0 <= T) && (T < MEM_SZB)) {
                 if (ir == '@') { T = *bp; }
                 if (ir == '!') { *bp = N & 0xff; DROP2; }
@@ -465,7 +466,10 @@ addr run(addr pc) {
         case 'w': delay(pop());              break;
         case 'x': pc = doExt(pc);            break;
         case 'y': /* FREE */                 break;
-        case 'z': /* FREE */                 break;
+        case 'z':  if ((0 <= T) && (T < MEM_SZB)) { 
+                bp = &bMem[pop()];
+                printString((char*)bp); }
+            break;
         case '{': pc = doDefineFunction(pc); break;    // 123
         case '|': t1 = pop(); T |= t1;       break;    // 124
         case '}': if (0 < sys.rsp) { pc = rpop(); }    // 125
