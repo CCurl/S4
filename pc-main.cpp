@@ -84,7 +84,7 @@ int main(int argc, char** argv) {
     SetConsoleMode(hStdOut, (m | ENABLE_VIRTUAL_TERMINAL_PROCESSING));
     vmInit();
     // 0(111: dump all code currently defined)
-    strToTIB(100, "{Q11 iFnn0H1-[xId@#,125=(n)]}");
+    strToTIB(100, "{a11 iFnn0Hq[xId@#,125=(n)]}");
     run(100);
 
     strcpy_s(input_fn, sizeof(input_fn), "");
