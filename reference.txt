@@ -58,15 +58,14 @@ m!    (n a--)     Store long n  to  ABSOLUTE address a
   NOTES: The registers are stored in VAR addresses [0..25]
          Register initial values:
          - C: Size of CODE area
-         - N: Size of FUNCTIONS array
-         - Z: Size of VARS area
          - D: Start of CODE area
          - F: Start of FUNCTIONS array
          - H: HERE **special**
          - M: Start of VARS area
-         - R: Start of return stack
-         - S: Start of data stack
-         - Y: Start of system structure
+         - N: Size of FUNCTIONS array
+         - S: Start of system structure
+         - V: First available VAR address (byte address)
+         - Z: Size of VARS area
          - All other registers set to 0
 X   (--n)         Push value of register X (X:[A..Z])
 X+  (--n)         Push value of register X, then increment the register by 1
@@ -85,6 +84,7 @@ jX## (--)         Jump to function XXX (eg - tail call optimization)
 e    (A--)        Call address A
 ;    (--)         Return from function immediately (i.e. - before reaching '}')
                   NOTE: returning while inside of a loop is not supported; behavior will be undefined.
+                  NOTE: outside of a function, ';' can be used fo comment out the rest of the line
 **BROKEN**   xFN  (n1--n2)     Resolve the function code address for function #n1. 0 means not defined.
 
 

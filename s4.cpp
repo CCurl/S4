@@ -56,13 +56,10 @@ void vmReset() {
     MEM['C' - 'A'] = CODE_SZ;
     MEM['D' - 'A'] = (long)&sys.code[0];
     MEM['F' - 'A'] = (long)&sys.func[0];
-    MEM['L' - 'A'] = (long)&sys.lstack[0];
     MEM['M' - 'A'] = (long)&sys.mem[0];
     MEM['N' - 'A'] = NUM_FUNCS;
-    MEM['R' - 'A'] = (long)&sys.rstack[0];
-    MEM['S' - 'A'] = (long)&sys.dstack[0];
+    MEM['S' - 'A'] = (long)&sys;
     MEM['V' - 'A'] = 104; // byte addr of first unused location
-    MEM['Y' - 'A'] = (long)&sys;
     MEM['Z' - 'A'] = MEM_SZB;
 }
 
@@ -313,7 +310,7 @@ addr run(addr pc) {
     long t1, t2;
     byte* bp;
     isError = 0;
-    while (!isError) {
+    while (!isError && (0 < pc)) {
         byte ir = CODE[pc++];
         switch (ir) {
         case 0: return -1; /* FREE */                      // 0
@@ -362,7 +359,8 @@ addr run(addr pc) {
             if ((!isError) && (FUNC[t1])) { rpush(pc+FN_SZ); pc = FUNC[t1]; }
             else { pc += FN_SZ; }
             break;
-        case ';': pc = rpop();                       break;  // 59
+        case ';': if (sys.rsp == 0) { return pc; }
+            pc = rpop();                             break;  // 59
         case '<': t1 = pop(); T = T < t1  ? 1 : 0;   break;  // 60
         case '=': t1 = pop(); T = T == t1 ? 1 : 0;   break;  // 61
         case '>': t1 = pop(); T = T > t1  ? 1 : 0;   break;  // 62

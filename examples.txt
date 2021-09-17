@@ -1,50 +1,50 @@
 S4 examples:
 
- - To enter a comment: 
+; To enter a comment: 
     0( here is a comment )
+    ; here is another comment
   
-  - if (c) { print("Yes") } else { print("No") }
-    C #("Yes"#=)0=("No")
+;   if (c) { print("Yes") } else { print("No") }
+    C #("Yes")~("No")
 
- - x = (a == b) ? c : d;
-    A B = #(C$)0=(D) X;
+ ; x = (a == b) ? c : d;
+    AB = #(C$)~(D) X;
 
- - To conditionally define a function: 
+ ; To conditionally define a function: 
     1( {xx "xx will be defined"} )
     0( {yy "yy will not be defined"} )
+    NOTE: if there is a ')' in the function, the definition may fail
 
-- To make sure F < T
+; To make sure F < T
      S4 code:             %%>($)
      Forth equivalent:    OVER OVER > IF SWAP THEN
      C equivalent:        if (f > t) { int x = f; f = t; t = x; }
 
-- To do something (in this case, call :lp) N times:
-    S4 code:             N1[:lp 1-]
+; To do something (in this case, call :lp) N times:
+    N1[:lp 1-]
 
- - To print numbers from F to T:
+; To print numbers from F to T:
     S4 code:             FT[xI.b]
     Forth equivalent:    F T FOR I . NEXT
     C equivalent:        for (int i = F; i <= T; i)) { printf("%d ", i); }
 
-- One way to copy N bytes from A to B
-    0( 300: copy bytes [n f t--])
-    {300 D;S; 1[S+ c@ D+ c!]}
-    NAB:300
+; One way to copy N bytes from A to B
+    {b00 D;S; 1[S+ c@ D+ c!]}   ; B00 (N F T--) copy bytes
+    NAB:b00
 
-- One way to copy N longs from A to B
-    0( 301: copy longs [n f t--])
-    {301 D;S; 1[S+ @ D+ !]}
-    NAB:301
+; One way to copy N longs from A to B
+    {b01 D;S; 1[S+ @ D+ !]}     ; B01 (N F T--) copy longs
+    NAB:b01
 
-- A simple benchmark for a 100 million decrement and FOR loop:
-    {a02 #a02 10<(0.).}             0(define function 103 - .w with 0 pad to 3)
-    {a03 #a03 100<(0.)ja02}         0(define function 103 - .w with 0 pad to 3)
-    {a05 t$-1ks$."."ja03}  0(define function 105 - ELAPSED)
-    100kkt$[[q]]:a05
-    100kkt$1[]:a05
+; A simple benchmark for a 100 million decrement and FOR loop:
+    {a02 #10<(0.).}             ; A02 (N--)     print N with 0 pad to 2
+    {a03 #100<(0.)ja02}         ; A03 (N--)     print N with 0 pad to 3
+    {a51 t$-1ks$."."ja03}       ; A51 (T--)     ELAPSED
+    100kkt$[[q]]:a51
+    100kkt$1[]:a51
 
-- One way to display the currently defined code:
+; One way to display the currently defined code:
     0Hq[xId@#,h7D=(n)]
 
-- To exit S4:
+; To exit S4:
     xT
