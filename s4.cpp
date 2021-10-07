@@ -184,7 +184,7 @@ void dumpFuncs() {
     for (int i = 0; i < NUM_FUNCS; i++) {
         if (FUNC[i]) {
             if (((n++) % 5) == 0) { printString("\r\n"); }
-            printStringF("%2d: %c:%5d%10s", i, i+((i>25)?'G':'A'), FUNC[i], " ");
+            printStringF("%c:%5d%10s", i+((i>25)?'G':'A'), FUNC[i], " ");
         }
     }
 }

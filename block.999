@@ -3,18 +3,14 @@
 n"Hello." 
 
 ; N:               Register for count of primes
-; P: (n l--f)      'Is Prime Number' routine
-; S:  (n1--n2)     'Number of Primes' routine
-; B: (n--)         Benchmark
+; P: (n l--f)      FUNC: 'Is Prime Number' routine
+; S:  (n1--n2)     FUNC: 'Number of Primes' routine
+; B: (n--)         FUNC: Benchmark
 
 {P%%s~(\\\0;)%<(\\1;)2+jP}
-{S 4N; 11 1[[\ #3:P(N+\) 2+%%>]]\\N}
+{S 4N; 11 1[[\#3:P(N+\)2+%%>]]\\N}
 {B n"# primes in " #. ": " t$ :S . t$- " (" . " ms)"}
 
-100 :B
-1000 :B
-10000 :B
-100000 :B
-1000000 :B
-; 5000000 :B
-10000000 :B
+256 1 13 [#+# :B ] \
+:a
+xT
