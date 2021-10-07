@@ -8,7 +8,7 @@
 
 #define STK_SZ   31
 #define HERE     (addr)MEM[7]
-#define FN_SZ    3
+#define FN_SZ    1
 
 typedef struct {
     addr pc;
@@ -83,31 +83,14 @@ int hexNum(char x) {
     return -1;
 }
 
-int funcNum(char x, int isAlpha) {
-    if ((isAlpha)  && ('A' <= x) && (x <= 'Z')) { return x - 'A'; }
-    if ((isAlpha)  && ('a' <= x) && (x <= 'z')) { return x - 'a'; }
-    if ((!isAlpha) && ('0' <= x) && (x <= '9')) { return x - '0'; }
+inline int funcNum(char x) {
+    if (('A' <= x) && (x <= 'Z')) { return x - 'A'; }
+    if (('a' <= x) && (x <= 'z')) { return x - 'a' + 26; }
     isError = 1;
     return -1;
 }
 
-addr GetFunctionNum(int pc, int msg) {
-    int f1 = funcNum(CODE[pc], 1);
-    int f2 = funcNum(CODE[pc+1], 0);
-    int f3 = funcNum(CODE[pc+2], 0);
-    if ((f1 < 0) || (f2 < 0) || (f3 < 0)) {
-        if (msg) { printStringF("-%c%c%c:BadName-", CODE[pc], CODE[pc+1], CODE[pc+2]); }
-        isError = 1;
-        return 0;
-    }
-    addr fn = (f1*100) + (f2*10) + f3;
-    if (NUM_FUNCS <= fn) {
-        if (msg) { printStringF("-%d:FN_OOB-", fn); }
-        isError = 1;
-        return 0;
-    }
-    return fn;
-}
+inline addr GetFunctionNum(int pc, int msg) { return funcNum(CODE[pc]); }
 
 addr doDefineFunction(addr pc) {
     if (pc < HERE) { return pc; }
@@ -115,8 +98,6 @@ addr doDefineFunction(addr pc) {
     if (isError) { return pc + FN_SZ; }
     CODE[HERE++] = '{';
     CODE[HERE++] = CODE[pc];
-    CODE[HERE++] = CODE[pc+1];
-    CODE[HERE++] = CODE[pc+2];
     pc += FN_SZ;
     FUNC[fn] = HERE;
     while ((pc < CODE_SZ) && CODE[pc]) {
@@ -124,7 +105,7 @@ addr doDefineFunction(addr pc) {
         if (CODE[HERE - 1] == '}') { return pc; }
     }
     isError = 1;
-    printString("-overflow-");
+    printString("-code-overflow-");
     return pc;
 }
 
@@ -202,11 +183,8 @@ void dumpFuncs() {
     int n = 0;
     for (int i = 0; i < NUM_FUNCS; i++) {
         if (FUNC[i]) {
-            int f1 = i / 100;
-            int f2 = (i % 100) / 10;
-            int f3 = (i % 10);
             if (((n++) % 5) == 0) { printString("\r\n"); }
-            printStringF("%c%d%d:%5d          ", f1+'A', f2, f3, FUNC[i]);
+            printStringF("%2d: %c:%5d%10s", i, i+((i>25)?'G':'A'), FUNC[i], " ");
         }
     }
 }
@@ -382,7 +360,7 @@ addr run(addr pc) {
         case ']': pc = (CODE[pc] == ']') ? doWhile(pc + 1) : doNext(pc);
             break;
         case '^': t1 = pop(); T ^= t1;      break;          // 94
-        case '_': /* FREE */                                // 95
+        case '_':                                           // 95
             while (CODE[pc] && (CODE[pc] != '_')) { bMem[T++] = CODE[pc++]; }
             ++pc; bMem[T++] = 0;
             break;
@@ -454,7 +432,7 @@ addr run(addr pc) {
         case 'p': T++;                       break;
         case 'q': T--;                       break;
         case 'r': N = N >> T; DROP1;         break;
-        case 's': t2 = N; t1 = T;  // /MOD
+        case 's': t2 = N; t1 = T;            // /MOD
             if (t1 == 0) { isError = 1; }
             else { N = (t2 / t1); T = (t2 % t1); }
             break;
