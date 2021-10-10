@@ -345,11 +345,11 @@ addr run(addr pc) {
         // case '?': push(_getch());                    break;  // 63
         case '@': if ((0 <= T) && (T < MEM_SZ)) { T = MEM[T]; }
                 break;
-        case 'A': case 'B': case 'C': case 'D': case 'E': case 'F':
-        case 'G': case 'H': case 'I': case 'J': case 'K': case 'L':
-        case 'M': case 'N': case 'O': case 'P': case 'Q': case 'R':
-        case 'S': case 'T': case 'U': case 'V': case 'W': case 'X':
-        case 'Y': case 'Z': ir -= 'A';
+        case 'a': case 'b': case 'c': case 'd': case 'e': case 'f':
+        case 'g': case 'h': case 'i': case 'j': case 'k': case 'l':
+        case 'm': case 'n': case 'o': case 'p': case 'q': case 'r':
+        case 's': case 't': case 'u': case 'v': case 'w': case 'x':
+        case 'y': case 'z': ir -= 'a';
             push(MEM[ir]); t1 = CODE[pc];
             if (t1 == '+') { ++pc; ++MEM[ir]; }
             if (t1 == '-') { ++pc; --MEM[ir]; }
@@ -365,49 +365,49 @@ addr run(addr pc) {
             ++pc; bMem[T++] = 0;
             break;
         case '`': /* FREE */                break;          // 96
-        case 'a': ir = CODE[pc++];
+        case 'A': ir = CODE[pc++];
             bp = (byte*)T;
             if (ir == '@') { T = *bp; }
             if (ir == '!') { *bp = N & 0xff; DROP2; }
             break;
-        case 'b': printString(" ");         break;
-        case 'c': ir = CODE[pc++];
+        case 'B': printString(" ");         break;
+        case 'C': ir = CODE[pc++];
             bp = &bMem[T];
             if ((0 <= T) && (T < MEM_SZB)) {
                 if (ir == '@') { T = *bp; }
                 if (ir == '!') { *bp = N & 0xff; DROP2; }
             }
             break;
-        case 'd': ir = CODE[pc++];
+        case 'D': ir = CODE[pc++];
             bp = &CODE[T];
             if ((0 <= T) && (T < CODE_SZ)) {
                 if (ir == '@') { T = *bp; }
                 if (ir == '!') { *bp = N & 0xff; DROP2; }
             }
             break;
-        case 'e': rpush(pc); pc = (addr)pop();  break;
-        case 'f': T = ~T;                       break;
-        case 'g': /* FREE */                    break;
-        case 'h': push(0);
+        case 'E': rpush(pc); pc = (addr)pop();  break;
+        case 'F': T = ~T;                       break;
+        case 'G': /* FREE */                    break;
+        case 'H': push(0);
             t1 = hexNum(CODE[pc]);
             while (0 <= t1) {
                 T = (T * 0x10) + t1;
                 t1 = hexNum(CODE[++pc]);
             }
             break;
-        case 'i': t1 = CODE[pc++];
+        case 'I': t1 = CODE[pc++];
             if (t1 == 'A') { dumpAll(); }
             if (t1 == 'C') { dumpCode(); }
             if (t1 == 'F') { dumpFuncs(); }
             if (t1 == 'R') { dumpRegs(); }
             if (t1 == 'S') { dumpStack(0); }
             break;
-        case 'j': t1 = GetFunctionNum(pc, 1);
+        case 'J': t1 = GetFunctionNum(pc, 1);
             if ((!isError) && (FUNC[t1])) { pc = FUNC[t1]; }
             else { pc += FN_SZ; }
             break;
-        case 'k': T *= 1000;   break;
-        case 'l': t1 = pop();  // LOAD
+        case 'K': T *= 1000;   break;
+        case 'L': t1 = pop();  // LOAD
 #ifdef __PC__
             if (input_fp) { fclose(input_fp); }
             sprintf_s(buf, sizeof(buf), "block.%03ld", t1);
@@ -416,7 +416,7 @@ addr run(addr pc) {
             printString("-l:pc only-");
 #endif
             break;
-        case 'm': ir = CODE[pc++];
+        case 'M': ir = CODE[pc++];
             bp = (byte*)T;
             if (ir == '@') { T = *bp; }
             if (ir == '!') {
@@ -427,22 +427,22 @@ addr run(addr pc) {
                 *(bp++) = ((t1 >> 24) & 0xff);
             }
             break;          // 97
-        case 'n': printString("\r\n");       break;
-        case 'o': T = -T;                    break;
-        case 'p': T++;                       break;
-        case 'q': T--;                       break;
-        case 'r': N = N >> T; DROP1;         break;
-        case 's': t2 = N; t1 = T;            // /MOD
+        case 'N': printString("\r\n");       break;
+        case 'O': T = -T;                    break;
+        case 'P': T++;                       break;
+        case 'Q': T--;                       break;
+        case 'R': N = N >> T; DROP1;         break;
+        case 'S': t2 = N; t1 = T;            // /MOD
             if (t1 == 0) { isError = 1; }
             else { N = (t2 / t1); T = (t2 % t1); }
             break;
-        case 't': push(millis());            break;
-        case 'u': if (T < 0) { T = -T; }     break;
-        case 'v': N = N << T; DROP1;         break;
-        case 'w': delay(pop());              break;
-        case 'x': pc = doExt(pc);            break;
-        case 'y': /* FREE */                 break;
-        case 'z':  if ((0 <= T) && (T < MEM_SZB)) { 
+        case 'T': push(millis());            break;
+        case 'U': if (T < 0) { T = -T; }     break;
+        case 'V': N = N << T; DROP1;         break;
+        case 'W': delay(pop());              break;
+        case 'X': pc = doExt(pc);            break;
+        case 'Y': /* FREE */                 break;
+        case 'Z':  if ((0 <= T) && (T < MEM_SZB)) { 
                 bp = &bMem[pop()];
                 printString((char*)bp); }
             break;
