@@ -1,8 +1,4 @@
-; Block.888: tests and a sandbox 
-"S4 v0.0.1 - https://github.com/CCurl/S4"
-N"Hello." 
-
-n"The Mandelbrot Set"
+N"The Mandelbrot Set"
 
 ; Registers:
 ; a: temp 1
@@ -10,7 +6,7 @@ n"The Mandelbrot Set"
 ; c: temp 3
 ; d: temp 4
 ; i: MB loop counter
-; t: # iterations
+; t: count of iterations
 ; x: Y pos
 ; y: X pos
 
