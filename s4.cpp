@@ -85,20 +85,35 @@ int hexNum(char x) {
 
 inline int funcNum(char x) {
     if (('A' <= x) && (x <= 'Z')) { return x - 'A'; }
-    if (('a' <= x) && (x <= 'z')) { return x - 'a' + 26; }
-    isError = 1;
     return -1;
 }
 
-inline addr GetFunctionNum(int pc, int msg) { return funcNum(CODE[pc]); }
+addr GetFunctionNum(addr pc, long& fn, int isDefine) { 
+    fn = funcNum(CODE[pc]);
+    if (fn < 0) { return pc; }
+    if (isDefine) {  
+        CODE[HERE++] = '{';
+        CODE[HERE++] = CODE[pc++];
+    }
+    int f2 = funcNum(CODE[++pc]);
+    if (0 <= f2) {
+        if (isDefine) { CODE[HERE++] = CODE[pc]; }
+        fn = fn * 26 + f2;
+        f2 = funcNum(CODE[++pc]);
+        if (0 <= f2) { 
+            if (isDefine) { CODE[HERE++] = CODE[pc]; }
+            fn = fn * 26 + f2;
+        }
+    }
+    if ((fn < 0) || (NUM_FUNCS <= fn)) { isError = 1; }
+    return pc;
+}
 
 addr doDefineFunction(addr pc) {
     if (pc < HERE) { return pc; }
-    int fn = GetFunctionNum(pc, 1);
+    long fn = -1;
+    pc = GetFunctionNum(pc, fn, 1);
     if (isError) { return pc + FN_SZ; }
-    CODE[HERE++] = '{';
-    CODE[HERE++] = CODE[pc];
-    pc += FN_SZ;
     FUNC[fn] = HERE;
     while ((pc < CODE_SZ) && CODE[pc]) {
         CODE[HERE++] = CODE[pc++];
@@ -286,7 +301,8 @@ addr doExt(addr pc) {
 
 addr run(addr pc) {
     long t1, t2;
-    byte* bp;
+    byte* b
+        p;
     isError = 0;
     while (!isError && (0 < pc)) {
         byte ir = CODE[pc++];
@@ -333,9 +349,8 @@ addr run(addr pc) {
                 t1 = CODE[++pc] - '0';
             }
             break;
-        case ':': t1 = GetFunctionNum(pc, 1);                // 58
-            if ((!isError) && (FUNC[t1])) { rpush(pc+FN_SZ); pc = FUNC[t1]; }
-            else { pc += FN_SZ; }
+        case ':': pc = GetFunctionNum(pc, t1, 0);                // 58
+            if ((!isError) && (FUNC[a])) { rpush(pc); pc = FUNC[t1]; }
             break;
         case ';': if (sys.rsp == 0) { return pc; }
             pc = rpop();                             break;  // 59
@@ -402,9 +417,8 @@ addr run(addr pc) {
             if (t1 == 'R') { dumpRegs(); }
             if (t1 == 'S') { dumpStack(0); }
             break;
-        case 'J': t1 = GetFunctionNum(pc, 1);
+        case 'J': t1 = GetFunctionNum(pc, t1, 0);
             if ((!isError) && (FUNC[t1])) { pc = FUNC[t1]; }
-            else { pc += FN_SZ; }
             break;
         case 'K': T *= 1000;   break;
         case 'L': t1 = pop();  // LOAD
@@ -468,8 +482,10 @@ long registerVal(int reg) {
 }
 
 addr functionAddress(const char *fn) {
+    long t1;
     CODE[HERE+0] = fn[0];
     CODE[HERE+1] = fn[1];
     CODE[HERE+2] = fn[2];
-    return GetFunctionNum(HERE, 0);
+    GetFunctionNum(HERE, t1, 0);
+    return (t1 < 0) ? -1 : FUNC[t1];
 }

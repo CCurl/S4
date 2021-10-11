@@ -1,10 +1,10 @@
 // S4 - a stack VM, inspired by Sandor Schneider's STABLE - https://w3group.de/stable.html
 
 typedef unsigned char byte;
-#define MAX_FUNC (52)
+#define MAX_FUNC (26*26*26)
 #define MAX_CODE (64*1024)
 #define MEM_SZ   (MEM_SZB/4)
-typedef unsigned short addr;
+typedef unsigned long addr;
 
 extern void vmInit();
 extern addr run(addr pc);
