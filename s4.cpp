@@ -55,6 +55,7 @@ void vmInit() {
     for (int i = 0; i < NUM_FUNCS; i++) { FUNC[i] = 0; }
     REG['F' - 'A'] = NUM_FUNCS;
     REG['G' - 'A'] = (long)&sys.reg[0];
+    REG['K' - 'A'] = 1000;
     REG['R' - 'A'] = NUM_REGS;
     REG['S' - 'A'] = (long)&sys;
     REG['U' - 'A'] = (long)&sys.user[0];
@@ -191,24 +192,6 @@ void dumpCode() {
     if (ti) { txt[ti] = 0;  printStringF(" ; %s", txt); }
 }
 
-void dumpFuncs() {
-    printStringF("\r\nFUNCTIONS: (%d available)", NUM_FUNCS);
-    int n = 0;
-    char buf[4];
-    for (int i = 0; i < NUM_FUNCS; i++) {
-        if (FUNC[i]) {
-            if (((n++) % 5) == 0) { printString("\r\n"); }
-            int f1 = i/(26*26) + 'A';
-            int f2 = (i/26)%26 + 'A';
-            int f3 = i % 26 + 'A';
-            if (f1 == 'A') { f1 = ' '; }
-            if ((f1 == ' ') && (f2 == 'A')) { f2 = ' '; }
-            sprintf(buf, "%c%c%c", f1, f2, f3);
-            printStringF("%3s: %-12d%3s", buf, FUNC[i], " ");
-        }
-    }
-}
-
 void dumpStack(int hdr) {
     if (hdr) { printStringF("\r\nSTACK: size: %d ", STK_SZ); }
     printString("(");
@@ -216,13 +199,36 @@ void dumpStack(int hdr) {
     printString(")");
 }
 
+char *RFName(char *buf, int i, char b) {
+    int f1 = i / (26 * 26) + b;
+    int f2 = (i / 26) % 26 + b;
+    int f3 = i % 26 + b;
+    if (f1 == b) { f1 = ' '; }
+    if ((f1 == ' ') && (f2 == b)) { f2 = ' '; }
+    sprintf(buf, "%c%c%c", f1, f2, f3);
+    return buf;
+}
+
+void dumpFuncs() {
+    printStringF("\r\nFUNCTIONS: (%d available)", NUM_FUNCS);
+    int n = 0;
+    char buf[4];
+    for (int i = 0; i < NUM_FUNCS; i++) {
+        if (FUNC[i]) {
+            if (((n++) % 5) == 0) { printString("\r\n"); }
+            printStringF("%3s: %-15d", RFName(buf,i,'A'), FUNC[i], " ");
+        }
+    }
+}
+
 void dumpRegs() {
     printStringF("\r\nREGISTERS: (%d available)", NUM_REGS);
     int n = 0;
-    for (int i = 0; i < 26; i++) {
-        long x = REG[i];
-        if (((n++) % 5) == 0) { printString("\r\n"); }
-        printStringF("%c: %-10ld  ", i + 'A', x);
+    for (int i = 0; i < NUM_REGS; i++) {
+        if (REG[i]) {
+            if (((n++) % 5) == 0) { printString("\r\n"); }
+            printStringF("%3s: %-15d", RFName(buf, i, 'a'), REG[i], " ");
+        }
     }
 }
 
@@ -310,8 +316,6 @@ addr doExt(addr pc) {
         break;
     case 'P': pc = doPin(pc);           break;
     case 'S': sys.dsp = 0;              break;
-    case 'T': push(millis());           break;
-    case 'W': delay(pop());             break;
     case 'R': vmInit();                 break;
     }
     return pc;
@@ -397,7 +401,10 @@ addr run(addr pc) {
             break;
         case 'I': pc = doIJK(pc, ir);                  break;
         case 'J': pc = doIJK(pc, ir);                  break;
-        case 'K': T *= 1000;                           break;
+        case 'K': ir = USER[pc++];
+            if (ir == '?') { push(charAvailable()); }
+            if (ir == 'b') { push(getChar()); }
+            break;
         case 'L': N = N << T; DROP1;                   break;
         case 'M': ir = USER[pc++];
             bp = (byte*)T;
@@ -418,10 +425,10 @@ addr run(addr pc) {
             if (t1 == 0) { isError = 1; }
             else { N = (t2 / t1); T = (t2 % t1); }
             break;
-        case 'T': /* FREE */                           break;
+        case 'T': push(millis());                      break;
         case 'U': if (T < 0) { T = -T; }               break;
         case 'V': /* FREE */                           break;
-        case 'W': /* FREE */                           break;
+        case 'W': delay(pop());                        break;
         case 'X': pc = doExt(pc);                      break;
         case 'Y': /* FREE */                           break;
         case 'Z':  printString((char*)&USER[pop()]);   break;
@@ -440,8 +447,8 @@ addr run(addr pc) {
         case 's': case 't': case 'u': case 'v': case 'w': case 'x':
         case 'y': case 'z': t1 = ir - 'a'; 
             ir = USER[pc];
-            if (('a' <= ir) && (ir <= 'z')) { t1 = (t1 * 26) + ir; ir = USER[++pc]; }
-            if (('a' <= ir) && (ir <= 'z')) { t1 = (t1 * 26) + ir; ir = USER[++pc]; }
+            if (('a' <= ir) && (ir <= 'z')) { t1 = (t1 * 26) + (ir-'a'); ir = USER[++pc]; }
+            if (('a' <= ir) && (ir <= 'z')) { t1 = (t1 * 26) + (ir-'a'); ir = USER[++pc]; }
             if (t1 < NUM_REGS) {
                 push(REG[t1]);
                 if (ir == '+') { ++pc; ++REG[t1]; }

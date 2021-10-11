@@ -18,11 +18,11 @@ N"The Mandelbrot Set"
 ; Y: loop for Y axis
 ; M: main, loop for Y axis
 
-`C t+\ a#*200/c; b#*200/d; c d + 1KK>(i m; ;) a b*100/y +b; c d -x +a; i+\;`
+`C t+\ a#*200/c; b#*200/d; c d + k#*>(i m; ;) a b*100/y +b; c d -x +a; i+\;`
 `L 0a; 0b; 0i; 200m; 1{\ :C i m <};`
 `O :L i 40+ #126>(\32),;`
 `X 490 O x; 1 190 [  :O x  4+ x;];`
 `Y 340 O y; 1  69 [N :X y 10+ y;];`
-`M 0t; XT :Y XT $- N t." iterations, " . " ms";`
+`M 0t; T :Y T $- N t." iterations, " . " ms";`
 
 :M

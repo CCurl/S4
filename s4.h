@@ -14,6 +14,8 @@ extern addr functionAddress(int fn);
 extern void printChar(const char ch);
 extern void printString(const char*);
 extern void printStringF(const char* fmt, ...);
+extern int getChar();
+extern int charAvailable();
 
 #ifdef _WIN32
 #define __PC__
@@ -29,12 +31,12 @@ extern void pinMode(int pin, int mode);
 extern void delay(unsigned long ms);
 extern FILE* input_fp;
 extern byte isBye;
-#define USER_SZ       (24*1024)
-#define NUM_FUNCS     (26*2)
-#define NUM_REGS      (26*2)
-//#define USER_SZ       (64*1024)
-//#define NUM_FUNCS     (MAX_FUNCS)
-//#define NUM_REGS      (MAX_REGS)
+//#define USER_SZ       (24*1024)
+//#define NUM_FUNCS     (26*2)
+//#define NUM_REGS      (26*2)
+#define USER_SZ       (512*1024)
+#define NUM_FUNCS     (MAX_FUNCS)
+#define NUM_REGS      (MAX_REGS)
 #else
 #define _DEV_BOARD_
 #define __SERIAL__

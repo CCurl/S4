@@ -5,6 +5,7 @@
 #include <Windows.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <conio.h>
 #include <string.h>
 #include "s4.h"
 
@@ -23,6 +24,14 @@ int digitalRead(int pin) { printStringF("-DR(%d)-", pin); return 0; }
 void digitalWrite(int pin, int val) { printStringF("-DW(%d,%d)-", pin, val); }
 void pinMode(int pin, int mode) { printStringF("-pinMode(%d,%d)-", pin, mode); }
 void delay(DWORD ms) { Sleep(ms); }
+
+int getChar() {
+    return _getch();
+}
+
+int charAvailable() {
+    return _kbhit();
+}
 
 void printString(const char* str) {
     fputs(str, stdout);
