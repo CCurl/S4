@@ -1,5 +1,7 @@
 // S4 - a stack VM, inspired by Sandor Schneider's STABLE - https://w3group.de/stable.html
 
+#define _CRT_SECURE_NO_WARNINGS
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -8,7 +10,6 @@
 
 #define STK_SZ   31
 #define HERE     (addr)REG[7]
-#define FN_SZ    1
 
 typedef struct {
     addr pc;
@@ -18,8 +19,8 @@ typedef struct {
 
 struct {
     long dsp, rsp, lsp;
-    byte user[USER_SZ];
     long reg[NUM_REGS];
+    byte user[USER_SZ];
     addr func[NUM_FUNCS];
     long dstack[STK_SZ + 1];
     addr rstack[STK_SZ + 1];
@@ -110,7 +111,7 @@ addr doDefineFunction(addr pc) {
     if (pc < HERE) { return pc; }
     long fn = -1;
     pc = GetFunctionNum(pc, fn, 1);
-    if (isError) { return pc + FN_SZ; }
+    if (isError) { return pc; }
     FUNC[fn] = HERE;
     while ((pc < USER_SZ) && USER[pc]) {
         USER[HERE++] = USER[pc++];
@@ -193,10 +194,17 @@ void dumpCode() {
 void dumpFuncs() {
     printStringF("\r\nFUNCTIONS: (%d available)", NUM_FUNCS);
     int n = 0;
+    char buf[4];
     for (int i = 0; i < NUM_FUNCS; i++) {
         if (FUNC[i]) {
             if (((n++) % 5) == 0) { printString("\r\n"); }
-            printStringF("%c:%5d%10s", i+((i>25)?'G':'A'), FUNC[i], " ");
+            int f1 = i/(26*26) + 'A';
+            int f2 = (i/26)%26 + 'A';
+            int f3 = i % 26 + 'A';
+            if (f1 == 'A') { f1 = ' '; }
+            if ((f1 == ' ') && (f2 == 'A')) { f2 = ' '; }
+            sprintf(buf, "%c%c%c", f1, f2, f3);
+            printStringF("%3s: %-12d%3s", buf, FUNC[i], " ");
         }
     }
 }
