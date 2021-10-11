@@ -1,5 +1,7 @@
 #ifdef _WIN32
 
+#define _CRT_SECURE_NO_WARNINGS
+
 #include <Windows.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -23,14 +25,12 @@ void pinMode(int pin, int mode) { printStringF("-pinMode(%d,%d)-", pin, mode); }
 void delay(DWORD ms) { Sleep(ms); }
 
 void printString(const char* str) {
-    while (*str) {
-        printChar(*(str++));
-    }
+    fputs(str, stdout);
 }
 
 void printChar(const char ch) {
-    DWORD n;
-    WriteConsoleA(hStdOut, &ch, 1, &n, 0);
+    char buf[] = {ch, 0};
+    printString(buf);
 }
 
 void ok() {
@@ -38,8 +38,7 @@ void ok() {
 }
 
 void doHistory(const char* txt) {
-    FILE* fp = NULL;
-    fopen_s(&fp, "history.txt", "at");
+    FILE* fp = fopen("history.txt", "at");
     if (fp) {
         fprintf(fp, "%s", txt);
         fclose(fp);
@@ -74,7 +73,7 @@ void process_arg(char* arg)
 {
     if ((*arg == 'i') && (*(arg + 1) == ':')) {
         arg = arg + 2;
-        strcpy_s(input_fn, sizeof(input_fn), arg);
+        strcpy(input_fn, arg);
     }
     else if (*arg == '?') {
         printString("usage s4 [args] [source-file]\n");
@@ -91,21 +90,21 @@ int main(int argc, char** argv) {
     SetConsoleMode(hStdOut, (m | ENABLE_VIRTUAL_TERMINAL_PROCESSING));
     vmInit();
     // 0(Y: dump all code currently defined)
-    strToTIB(100, "{Y XIF NN hQ 0[I C@ #, 125=? N T]}");
+    strToTIB(100, "`D XIF NN hQ 0[I C@, IQC@';= IC@96= &(N)];`");
     run(100);
 
-    strcpy_s(input_fn, sizeof(input_fn), "");
+    input_fn[0] = 0;
     input_fp = NULL;
 
     for (int i = 1; i < argc; i++)
     {
         char* cp = argv[i];
         if (*cp == '-') { process_arg(++cp); }
-        else { strcpy_s(input_fn, sizeof(input_fn), cp); }
+        else { strcpy(input_fn, cp); }
     }
 
     if (strlen(input_fn) > 0) {
-        fopen_s(&input_fp, input_fn, "rt");
+        input_fp = fopen(input_fn, "rt");
     }
 
     while (isBye == 0) { loop(); }

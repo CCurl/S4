@@ -9,7 +9,7 @@
 #include "s4.h"
 
 #define STK_SZ   31
-#define HERE     (addr)REG[7]
+#define HERE     REG[7]
 
 typedef struct {
     addr pc;
@@ -54,8 +54,8 @@ void vmInit() {
     for (int i = 0; i < USER_SZ; i++) { USER[i] = 0; }
     for (int i = 0; i < NUM_FUNCS; i++) { FUNC[i] = 0; }
     REG['F' - 'A'] = NUM_FUNCS;
-    REG['M' - 'A'] = (long)&sys.reg[0];
-    REG['F' - 'A'] = NUM_REGS;
+    REG['G' - 'A'] = (long)&sys.reg[0];
+    REG['R' - 'A'] = NUM_REGS;
     REG['S' - 'A'] = (long)&sys;
     REG['U' - 'A'] = (long)&sys.user[0];
     REG['Z' - 'A'] = USER_SZ;
@@ -82,36 +82,40 @@ inline int funcNum(char x) {
 }
 
 addr GetFunctionNum(addr pc, long& fn, int isDefine) { 
+    addr xh = HERE;
     fn = funcNum(USER[pc]);
     if (fn < 0) { isError = 1;  return pc; }
     if (isDefine) {  
-        USER[HERE++] = '{';
+        USER[HERE++] = '`';
         USER[HERE++] = USER[pc];
     }
     int f2 = funcNum(USER[++pc]);
     if (0 <= f2) {
         if (isDefine) { USER[HERE++] = USER[pc]; }
-        fn = fn * 26 + f2;
+        fn = (fn * 26) + f2;
         f2 = funcNum(USER[++pc]);
         if (0 <= f2) { 
             if (isDefine) { USER[HERE++] = USER[pc]; }
             pc++;
-            fn = fn * 26 + f2;
+            fn = (fn * 26) + f2;
         }
     }
-    if ((fn < 0) || (NUM_FUNCS <= fn)) { isError = 1; }
+    if ((fn < 0) || (NUM_FUNCS <= fn)) { 
+        HERE = xh;
+        isError = 1; 
+    }
     return pc;
 }
 
 addr doDefineFunction(addr pc) {
-    if (pc < HERE) { return pc; }
+    if (pc < (addr)HERE) { return pc; }
     long fn = -1;
     pc = GetFunctionNum(pc, fn, 1);
     if (isError) { return pc; }
     FUNC[fn] = HERE;
     while ((pc < USER_SZ) && USER[pc]) {
         USER[HERE++] = USER[pc++];
-        if (USER[HERE - 1] == '}') { return pc; }
+        if (USER[HERE - 1] == '`') { return pc; }
     }
     isError = 1;
     printString("-user-overflow-");
@@ -172,7 +176,7 @@ void dumpCode() {
     if (HERE == 0) { printString("\r\n(no user defined)"); return; }
     int ti = 0, x = HERE, npl = 20;
     char txt[32];
-    for (addr i = 0; i < HERE; i++) {
+    for (long i = 0; i < HERE; i++) {
         if ((i % npl) == 0) {
             if (ti) { txt[ti] = 0;  printStringF(" ; %s", txt); ti = 0; }
             printStringF("\n\r%05d: ", i);
@@ -286,7 +290,7 @@ addr doPin(addr pc) {
 }
 
 addr doExt(addr pc) {
-    byte ir = USER[pc++];
+    int ir = USER[pc++];
     switch (ir) {
     case 'B': isBye = 1;                break;
     case 'F': pc = doFile(pc);          break;
@@ -297,8 +301,13 @@ addr doExt(addr pc) {
         if (ir == 'R') { dumpRegs(); }
         if (ir == 'S') { dumpStack(0); }
         break;
-    case 'J': pc = doIJK(pc, 2);        break;
-    case 'K': pc = doIJK(pc, 3);        break;
+    case 'L': ir = pop();  // LOAD
+#ifdef __PC__
+        if (input_fp) { fclose(input_fp); }
+        sprintf(buf, "block.%03ld", ir);
+        input_fp = fopen(buf, "rt");
+#endif
+        break;
     case 'P': pc = doPin(pc);           break;
     case 'S': sys.dsp = 0;              break;
     case 'T': push(millis());           break;
@@ -315,10 +324,10 @@ addr run(addr pc) {
     while (!isError && (0 < pc)) {
         byte ir = USER[pc++];
         switch (ir) {
-        case 0: return -1; 
+        case 0: return -1;
         case ' ': while (USER[pc] == ' ') { pc++; } break;  // 32
         case '!': t2 = pop(); t1 = pop();                   // 33
-            *(long *)&USER[t2] = t1;
+            *(long*)&USER[t2] = t1;
             break;
         case '"': buf[1] = 0;                          // 34
             while ((pc < USER_SZ) && (USER[pc] != '"')) {
@@ -331,8 +340,11 @@ addr run(addr pc) {
         case '%': push(N);                      break;  // 37 (OVER)
         case '&': t1 = pop(); T &= t1;          break;  // 38
         case '\'': push(USER[pc++]);            break;  // 39
-        case '(': pc = doBegin(pc);             break;  // 40
-        case ')': pc = doWhile(pc);             break;  // 41
+        case '(': if (pop() == 0) {                     // 40
+            while ((pc < USER_SZ) && (USER[pc] != ')')) { ++pc; }
+            ++pc;
+        } break;
+        case ')': /* THEN */                    break;  // 41
         case '*': t1 = pop(); T *= t1;          break;  // 42
         case '+': t1 = pop(); T += t1;          break;  // 43
         case ',': printChar((char)pop());       break;  // 44
@@ -355,51 +367,25 @@ addr run(addr pc) {
             if ((!isError) && (FUNC[t1])) { rpush(pc); pc = FUNC[t1]; }
             break;
         case ';': if (sys.rsp < 1) { sys.rsp = 0;  return pc; }
-            pc = rpop();                             break;  // 59
-        case '<': t1 = pop(); T = T < t1  ? 1 : 0;   break;  // 60
-        case '=': t1 = pop(); T = T == t1 ? 1 : 0;   break;  // 61
-        case '>': t1 = pop(); T = T > t1  ? 1 : 0;   break;  // 62
-        case '?': if (pop() == 0) {                          // 63
-                while ((pc < USER_SZ) && (USER[pc] != 'T')) { ++pc; }
-                ++pc;
-            } break;
-        case '@': T = *(long *)&USER[T];              break;
-        case 'a': case 'b': case 'c': case 'd': case 'e': case 'f':
-        case 'g': case 'h': case 'i': case 'j': case 'k': case 'l':
-        case 'm': case 'n': case 'o': case 'p': case 'q': case 'r':
-        case 's': case 't': case 'u': case 'v': case 'w': case 'x':
-        case 'y': case 'z': t1 -= 'a';
-            push(REG[t1]); ir = USER[pc];
-            if (('a' <= ir) && (ir <= 'z')) {
-                t1 = (t1 * 26) + ir;
-                ir = USER[++pc];
-            }
-            if (ir == '+') { ++pc; ++REG[t1]; }
-            if (ir == '-') { ++pc; --REG[t1]; }
-            if (ir == ';') { pop(); ++pc; REG[t1] = pop(); }
-            break;
-        case '[': pc = doFor(pc);           break;          // 91
-        case '\\': DROP1;                   break;          // 92
-        case ']': pc = doNext(pc);          break;          // 93
-        case '^': t1 = pop(); T ^= t1;      break;          // 94
-        case '_':                                           // 95
-            while (USER[pc] && (USER[pc] != '_')) { USER[T++] = USER[pc++]; }
-            ++pc; USER[T++] = 0;
-            break;
-        case '`': /* FREE */                break;          // 96
+                pc = rpop();                             break;  // 59
+        case '<': t1 = pop(); T = T < t1  ? 1 : 0;       break;  // 60
+        case '=': t1 = pop(); T = T == t1 ? 1 : 0;       break;  // 61
+        case '>': t1 = pop(); T = T > t1  ? 1 : 0;       break;  // 62
+        case '?': /* FREE */                             break;  // 63
+        case '@': T = *(long*)&USER[T];                  break;  // 64
         case 'A': ir = USER[pc++];
             if (ir == '@') { T = *(byte *)T; }
             if (ir == '!') { *(byte *)T = N & 0xff; DROP2; }
             break;
-        case 'B': printChar(' ');               break;
+        case 'B': printChar(' ');                      break;
         case 'C': ir = USER[pc++];
             if (ir == '@') { T = USER[T]; }
-            if (ir == '!') { USER[T] = N & 0xff; DROP2; }
+            if (ir == '!') { USER[T] = (byte)N; DROP2; }
             break;
-        case 'D': /* FREE */                    break;
-        case 'E': /* FREE */                    break;
-        case 'F': T = ~T;                       break;
-        case 'G': GetFunctionNum(pc, t1, 0);
+        case 'D': /* FREE */                           break;
+        case 'E': /* FREE */                           break;
+        case 'F': T = ~T;                              break;
+        case 'G': pc = GetFunctionNum(pc, t1, 0);
             if ((!isError) && (FUNC[t1])) { pc = FUNC[t1]; }
             break;
         case 'H': push(0);
@@ -409,18 +395,10 @@ addr run(addr pc) {
                 t1 = hexNum(USER[++pc]);
             }
             break;
-        case 'I': pc = doIJK(pc, ir);            break;
-        case 'J': pc = doIJK(pc, ir);            break;
-        case 'K': T *= 1000;   break;
-        case 'L': t1 = pop();  // LOAD
-#ifdef __PC__
-            if (input_fp) { fclose(input_fp); }
-            sprintf_s(buf, sizeof(buf), "block.%03ld", t1);
-            fopen_s(&input_fp, buf, "rt");
-#else
-            printString("-l:pc only-");
-#endif
-            break;
+        case 'I': pc = doIJK(pc, ir);                  break;
+        case 'J': pc = doIJK(pc, ir);                  break;
+        case 'K': T *= 1000;                           break;
+        case 'L': N = N << T; DROP1;                   break;
         case 'M': ir = USER[pc++];
             bp = (byte*)T;
             if (ir == '@') { T = *(long *)bp; }
@@ -430,30 +408,52 @@ addr run(addr pc) {
                 *(bp++) = ((t1 >> 8) & 0xff);
                 *(bp++) = ((t1 >> 16) & 0xff);
                 *(bp++) = ((t1 >> 24) & 0xff);
-            }                                break;          // 97
-        case 'N': printString("\r\n");       break;
-        case 'O': T = -T;                    break;
-        case 'P': T++;                       break;
-        case 'Q': T--;                       break;
-        case 'R': N = N >> T; DROP1;         break;
-        case 'S': t2 = N; t1 = T;            // /MOD
+            }                                          break;
+        case 'N': printString("\r\n");                 break;
+        case 'O': T = -T;                              break;
+        case 'P': T++;                                 break;
+        case 'Q': T--;                                 break;
+        case 'R': N = N >> T; DROP1;                   break;
+        case 'S': t2 = N; t1 = T;                      // SLASH-MOD
             if (t1 == 0) { isError = 1; }
             else { N = (t2 / t1); T = (t2 % t1); }
             break;
-        case 'T': /* THEN */                 break;
-        case 'U': if (T < 0) { T = -T; }     break;
-        case 'V': N = N << T; DROP1;         break;
-        case 'W': /* FREE */                 break;
-        case 'X': pc = doExt(pc);            break;
-        case 'Y': /* FREE */                 break;
-        case 'Z':  printString((char*)&USER[pop()]);
+        case 'T': /* FREE */                           break;
+        case 'U': if (T < 0) { T = -T; }               break;
+        case 'V': /* FREE */                           break;
+        case 'W': /* FREE */                           break;
+        case 'X': pc = doExt(pc);                      break;
+        case 'Y': /* FREE */                           break;
+        case 'Z':  printString((char*)&USER[pop()]);   break;
+        case '[': pc = doFor(pc);                      break; // 91
+        case '\\': DROP1;                              break; // 92
+        case ']': pc = doNext(pc);                     break; // 93
+        case '^': t1 = pop(); T ^= t1;                 break; // 94
+        case '_':                                             // 95
+            while (USER[pc] && (USER[pc] != '_')) { USER[T++] = USER[pc++]; }
+            ++pc; USER[T++] = 0;
             break;
-        case '{': pc = doDefineFunction(pc); break;    // 123
-        case '|': t1 = pop(); T |= t1;       break;    // 124
-        case '}': if (0 < sys.rsp) { pc = rpop(); }    // 125
-                else { sys.rsp = 0; return pc; }
+        case '`': pc = doDefineFunction(pc); break;           // 96
+        case 'a': case 'b': case 'c': case 'd': case 'e': case 'f':
+        case 'g': case 'h': case 'i': case 'j': case 'k': case 'l':
+        case 'm': case 'n': case 'o': case 'p': case 'q': case 'r':
+        case 's': case 't': case 'u': case 'v': case 'w': case 'x':
+        case 'y': case 'z': t1 = ir - 'a'; 
+            ir = USER[pc];
+            if (('a' <= ir) && (ir <= 'z')) { t1 = (t1 * 26) + ir; ir = USER[++pc]; }
+            if (('a' <= ir) && (ir <= 'z')) { t1 = (t1 * 26) + ir; ir = USER[++pc]; }
+            if (t1 < NUM_REGS) {
+                push(REG[t1]);
+                if (ir == '+') { ++pc; ++REG[t1]; }
+                if (ir == '-') { ++pc; --REG[t1]; }
+                if (ir == ';') { pop(); ++pc; REG[t1] = pop(); }
+            }
+            else { printString("-regNum-"); isError = 1; }
             break;
-        case '~': T = (T) ? 0 : 1;           break;    // 126
+        case '{': pc = doBegin(pc);                    break;  // 123
+        case '|': t1 = pop(); T |= t1;                 break;  // 124
+        case '}': pc = doWhile(pc);                    break;  // 125
+        case '~': T = (T) ? 0 : 1;                     break;  // 126
         }
     }
     return 0;

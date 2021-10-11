@@ -1,0 +1,32 @@
+; Block.888: tests and a sandbox 
+"S4 v0.0.1 - https://github.com/CCurl/S4"
+N"Hello." 
+
+n"The Mandelbrot Set"
+
+; Registers:
+; a: temp 1
+; b: temp 2
+; c: temp 3
+; d: temp 4
+; i: MB loop counter
+; t: # iterations
+; x: Y pos
+; y: X pos
+
+; Functions:
+; C: mandelbrot calc
+; L: main MB loop 
+; O: output
+; X: loop for X axis
+; Y: loop for Y axis
+; M: main, loop for Y axis
+
+`C t+\ a#*200/c; b#*200/d; c d + 1KK>(i m; ;) a b*100/y +b; c d -x +a; i+\;`
+`L 0a; 0b; 0i; 200m; 1{\ :C i m <};`
+`O :L i 40+ #126>(\32),;`
+`X 490 O x; 1 190 [  :O x  4+ x;];`
+`Y 340 O y; 1  69 [N :X y 10+ y;];`
+`M 0t; XT :Y XT $- N t." iterations, " . " ms";`
+
+:M
