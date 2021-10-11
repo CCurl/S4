@@ -12,5 +12,5 @@ N"Hello."
 {B N"# primes in " #. ": " T$ :S . T$- " (" . " ms)"}
 
 256 1 13 [#+# :B ] \
-N:a
+N:Y
 ; XT

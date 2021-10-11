@@ -11,6 +11,7 @@ typedef unsigned char byte;
 // These are used only be the PC version
 static HANDLE hStdOut = 0;
 static char input_fn[32];
+FILE* input_fp = NULL;
 
 // These are in the <Arduino.h> file
 long millis() { return GetTickCount(); }
@@ -48,7 +49,7 @@ void strToTIB(addr loc, const char *txt) {
 
 void loop() {
     char tib[100];
-    addr nTib = CODE_SZ - 100;
+    addr nTib = USER_SZ - 100;
     FILE* fp = (input_fp) ? input_fp : stdin;
     if (fp == stdin) { ok(); }
     if (fgets(tib, 100, fp) == tib) {
@@ -83,8 +84,8 @@ int main(int argc, char** argv) {
     DWORD m; GetConsoleMode(hStdOut, &m);
     SetConsoleMode(hStdOut, (m | ENABLE_VIRTUAL_TERMINAL_PROCESSING));
     vmInit();
-    // 0(111: dump all code currently defined)
-    strToTIB(100, "{Y IFNNhQ0[XID@#,125=(N)]}");
+    // 0(Y: dump all code currently defined)
+    strToTIB(100, "{Y IFNNhQ0[XIC@#,125=(N)]}");
     run(100);
 
     strcpy_s(input_fn, sizeof(input_fn), "");
