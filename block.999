@@ -7,7 +7,7 @@ N"Hello."
 ; S:  (n1--n2)     FUNC: 'Number of Primes' routine
 ; B: (n--)         FUNC: Benchmark
 
-{P%%S~(\\\0;)%<(\\1;)2+JP}
+{P%%S~(\\~;)%<(\;)2+JP}
 {S 4n; 11 1[[\#3:P(n+\)2+%%>]]\\n}
 {B N"# primes in " #. ": " T$ :S . T$- " (" . " ms)"}
 

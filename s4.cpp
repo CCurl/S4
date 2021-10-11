@@ -90,10 +90,10 @@ inline int funcNum(char x) {
 
 addr GetFunctionNum(addr pc, long& fn, int isDefine) { 
     fn = funcNum(CODE[pc]);
-    if (fn < 0) { return pc; }
+    if (fn < 0) { isError = 1;  return pc; }
     if (isDefine) {  
         CODE[HERE++] = '{';
-        CODE[HERE++] = CODE[pc++];
+        CODE[HERE++] = CODE[pc];
     }
     int f2 = funcNum(CODE[++pc]);
     if (0 <= f2) {
@@ -102,6 +102,7 @@ addr GetFunctionNum(addr pc, long& fn, int isDefine) {
         f2 = funcNum(CODE[++pc]);
         if (0 <= f2) { 
             if (isDefine) { CODE[HERE++] = CODE[pc]; }
+            pc++;
             fn = fn * 26 + f2;
         }
     }
