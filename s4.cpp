@@ -301,8 +301,7 @@ addr doExt(addr pc) {
 
 addr run(addr pc) {
     long t1, t2;
-    byte* b
-        p;
+    byte* bp;
     isError = 0;
     while (!isError && (0 < pc)) {
         byte ir = CODE[pc++];
@@ -350,7 +349,7 @@ addr run(addr pc) {
             }
             break;
         case ':': pc = GetFunctionNum(pc, t1, 0);                // 58
-            if ((!isError) && (FUNC[a])) { rpush(pc); pc = FUNC[t1]; }
+            if ((!isError) && (FUNC[t1])) { rpush(pc); pc = FUNC[t1]; }
             break;
         case ';': if (sys.rsp == 0) { return pc; }
             pc = rpop();                             break;  // 59
