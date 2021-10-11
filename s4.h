@@ -13,6 +13,7 @@ extern void dumpStack(int hdr);
 extern void setCodeByte(addr loc, char ch);
 extern long registerVal(int reg);
 extern addr functionAddress(int fn);
+extern void printChar(const char ch);
 extern void printString(const char*);
 extern void printStringF(const char* fmt, ...);
 

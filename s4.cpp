@@ -48,7 +48,7 @@ long pop() { return (sys.dsp > 0) ? sys.dstack[sys.dsp--] : 0; }
 void rpush(addr v) { if (sys.rsp < STK_SZ) { sys.rstack[++sys.rsp] = v; } }
 addr rpop() { return (sys.rsp > 0) ? sys.rstack[sys.rsp--] : 0; }
 
-void vmReset() {
+void vmInit() {
     sys.dsp = sys.rsp = sys.lsp = 0;
     for (int i = 0; i < NUM_REGS; i++) { REG[i] = 0; }
     for (int i = 0; i < USER_SZ; i++) { USER[i] = 0; }
@@ -59,10 +59,6 @@ void vmReset() {
     REG['S' - 'A'] = (long)&sys;
     REG['U' - 'A'] = (long)&sys.user[0];
     REG['Z' - 'A'] = USER_SZ;
-}
-
-void vmInit() {
-    vmReset();
 }
 
 void printStringF(const char* fmt, ...) {
@@ -163,11 +159,11 @@ addr doNext(addr pc) {
     return pc;
 }
 
-addr doIJK(addr pc, int mode) {
+addr doIJK(addr pc, char mode) {
     push(0);
-    if ((mode == 1) && (0 < L)) { T = sys.lstack[L - 1].from; }
-    if ((mode == 2) && (0 < L)) { T = sys.lstack[L - 2].from; }
-    if ((mode == 3) && (0 < L)) { T = sys.lstack[L - 3].from; }
+    if ((mode == 'I') && (0 < L)) { T = sys.lstack[L - 1].from; }
+    if ((mode == 'J') && (0 < L)) { T = sys.lstack[L - 2].from; }
+    if ((mode == 'K') && (0 < L)) { T = sys.lstack[L - 3].from; }
     return pc;
 }
 
@@ -292,14 +288,22 @@ addr doPin(addr pc) {
 addr doExt(addr pc) {
     byte ir = USER[pc++];
     switch (ir) {
+    case 'B': isBye = 1;                break;
     case 'F': pc = doFile(pc);          break;
-    case 'I': pc = doIJK(pc, 1);        break;
+    case 'I': ir = USER[pc++];
+        if (ir == 'A') { dumpAll(); }
+        if (ir == 'C') { dumpCode(); }
+        if (ir == 'F') { dumpFuncs(); }
+        if (ir == 'R') { dumpRegs(); }
+        if (ir == 'S') { dumpStack(0); }
+        break;
     case 'J': pc = doIJK(pc, 2);        break;
     case 'K': pc = doIJK(pc, 3);        break;
     case 'P': pc = doPin(pc);           break;
     case 'S': sys.dsp = 0;              break;
-    case 'T': isBye = 1;                break;
-    case 'X': vmReset();                break;
+    case 'T': push(millis());           break;
+    case 'W': delay(pop());             break;
+    case 'R': vmInit();                 break;
     }
     return pc;
 }
@@ -322,27 +326,22 @@ addr run(addr pc) {
                 printString(buf);
             }
             ++pc; break;
-        case '#': push(T);               break;             // 35 (DUP)
-        case '$': t1 = N; N = T; T = t1; break;             // 36 (SWAP)
-        case '%': push(N);               break;             // 37 (OVER)
-        case '\\': DROP1;                break;             // 92 (DROP)
-        case '&': t1 = pop(); T &= t1;   break;             // 38
-        case '\'': push(USER[pc++]);     break;             // 39
-        case '(': if (pop() == 0) {                         // 40
-            while ((pc < USER_SZ) && (USER[pc] != ')')) { ++pc; }
-            ++pc;
-        }
-                break;
-        case ')': /*maybe ELSE?*/               break;  // 41
+        case '#': push(T);                      break;  // 35 (DUP)
+        case '$': t1 = N; N = T; T = t1;        break;  // 36 (SWAP)
+        case '%': push(N);                      break;  // 37 (OVER)
+        case '&': t1 = pop(); T &= t1;          break;  // 38
+        case '\'': push(USER[pc++]);            break;  // 39
+        case '(': pc = doBegin(pc);             break;  // 40
+        case ')': pc = doWhile(pc);             break;  // 41
         case '*': t1 = pop(); T *= t1;          break;  // 42
         case '+': t1 = pop(); T += t1;          break;  // 43
+        case ',': printChar((char)pop());       break;  // 44
         case '-': t1 = pop(); T -= t1;          break;  // 45
         case '.': printStringF("%ld", pop());   break;  // 46
         case '/': t1 = pop();                           // 47
             if (t1) { T /= t1; }
             else { isError = 1; }
             break;
-        case ',': printStringF("%c", (char)pop());  break;  // 44
         case '0': case '1': case '2': case '3': case '4':   // 48-57
         case '5': case '6': case '7': case '8': case '9':
             push(ir - '0');
@@ -360,22 +359,28 @@ addr run(addr pc) {
         case '<': t1 = pop(); T = T < t1  ? 1 : 0;   break;  // 60
         case '=': t1 = pop(); T = T == t1 ? 1 : 0;   break;  // 61
         case '>': t1 = pop(); T = T > t1  ? 1 : 0;   break;  // 62
-        // case '?': push(_getch());                    break;  // 63
+        case '?': if (pop() == 0) {                          // 63
+                while ((pc < USER_SZ) && (USER[pc] != 'T')) { ++pc; }
+                ++pc;
+            } break;
         case '@': T = *(long *)&USER[T];              break;
         case 'a': case 'b': case 'c': case 'd': case 'e': case 'f':
         case 'g': case 'h': case 'i': case 'j': case 'k': case 'l':
         case 'm': case 'n': case 'o': case 'p': case 'q': case 'r':
         case 's': case 't': case 'u': case 'v': case 'w': case 'x':
-        case 'y': case 'z': ir -= 'a';
-            push(REG[ir]); t1 = USER[pc];
-            if (t1 == '+') { ++pc; ++REG[ir]; }
-            if (t1 == '-') { ++pc; --REG[ir]; }
-            if (t1 == ';') { pop(); ++pc; REG[ir] = pop(); }
+        case 'y': case 'z': t1 -= 'a';
+            push(REG[t1]); ir = USER[pc];
+            if (('a' <= ir) && (ir <= 'z')) {
+                t1 = (t1 * 26) + ir;
+                ir = USER[++pc];
+            }
+            if (ir == '+') { ++pc; ++REG[t1]; }
+            if (ir == '-') { ++pc; --REG[t1]; }
+            if (ir == ';') { pop(); ++pc; REG[t1] = pop(); }
             break;
-        case '[': pc = (USER[pc] == '[') ? doBegin(pc+1) : doFor(pc);
-            break;
-        case ']': pc = (USER[pc] == ']') ? doWhile(pc+1) : doNext(pc);
-            break;
+        case '[': pc = doFor(pc);           break;          // 91
+        case '\\': DROP1;                   break;          // 92
+        case ']': pc = doNext(pc);          break;          // 93
         case '^': t1 = pop(); T ^= t1;      break;          // 94
         case '_':                                           // 95
             while (USER[pc] && (USER[pc] != '_')) { USER[T++] = USER[pc++]; }
@@ -386,15 +391,17 @@ addr run(addr pc) {
             if (ir == '@') { T = *(byte *)T; }
             if (ir == '!') { *(byte *)T = N & 0xff; DROP2; }
             break;
-        case 'B': printString(" ");         break;
+        case 'B': printChar(' ');               break;
         case 'C': ir = USER[pc++];
             if (ir == '@') { T = USER[T]; }
             if (ir == '!') { USER[T] = N & 0xff; DROP2; }
             break;
         case 'D': /* FREE */                    break;
-        case 'E': rpush(pc); pc = (addr)pop();  break;
+        case 'E': /* FREE */                    break;
         case 'F': T = ~T;                       break;
-        case 'G': /* FREE */                    break;
+        case 'G': GetFunctionNum(pc, t1, 0);
+            if ((!isError) && (FUNC[t1])) { pc = FUNC[t1]; }
+            break;
         case 'H': push(0);
             t1 = hexNum(USER[pc]);
             while (0 <= t1) {
@@ -402,16 +409,8 @@ addr run(addr pc) {
                 t1 = hexNum(USER[++pc]);
             }
             break;
-        case 'I': t1 = USER[pc++];
-            if (t1 == 'A') { dumpAll(); }
-            if (t1 == 'C') { dumpCode(); }
-            if (t1 == 'F') { dumpFuncs(); }
-            if (t1 == 'R') { dumpRegs(); }
-            if (t1 == 'S') { dumpStack(0); }
-            break;
-        case 'J': GetFunctionNum(pc, t1, 0);
-            if ((!isError) && (FUNC[t1])) { pc = FUNC[t1]; }
-            break;
+        case 'I': pc = doIJK(pc, ir);            break;
+        case 'J': pc = doIJK(pc, ir);            break;
         case 'K': T *= 1000;   break;
         case 'L': t1 = pop();  // LOAD
 #ifdef __PC__
@@ -441,10 +440,10 @@ addr run(addr pc) {
             if (t1 == 0) { isError = 1; }
             else { N = (t2 / t1); T = (t2 % t1); }
             break;
-        case 'T': push(millis());            break;
+        case 'T': /* THEN */                 break;
         case 'U': if (T < 0) { T = -T; }     break;
         case 'V': N = N << T; DROP1;         break;
-        case 'W': delay(pop());              break;
+        case 'W': /* FREE */                 break;
         case 'X': pc = doExt(pc);            break;
         case 'Y': /* FREE */                 break;
         case 'Z':  printString((char*)&USER[pop()]);

@@ -23,8 +23,14 @@ void pinMode(int pin, int mode) { printStringF("-pinMode(%d,%d)-", pin, mode); }
 void delay(DWORD ms) { Sleep(ms); }
 
 void printString(const char* str) {
-    DWORD n = 0, l = strlen(str);
-    if (l) { WriteConsoleA(hStdOut, str, l, &n, 0); }
+    while (*str) {
+        printChar(*(str++));
+    }
+}
+
+void printChar(const char ch) {
+    DWORD n;
+    WriteConsoleA(hStdOut, &ch, 1, &n, 0);
 }
 
 void ok() {
@@ -85,7 +91,7 @@ int main(int argc, char** argv) {
     SetConsoleMode(hStdOut, (m | ENABLE_VIRTUAL_TERMINAL_PROCESSING));
     vmInit();
     // 0(Y: dump all code currently defined)
-    strToTIB(100, "{Y IFNNhQ0[XIC@#,125=(N)]}");
+    strToTIB(100, "{Y XIF NN hQ 0[I C@ #, 125=? N T]}");
     run(100);
 
     strcpy_s(input_fn, sizeof(input_fn), "");
