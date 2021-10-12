@@ -1,7 +1,6 @@
 // S4 - a stack VM, inspired by Sandor Schneider's STABLE - https://w3group.de/stable.html
 
-#define _CRT_SECURE_NO_WARNINGS
-
+#include "config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

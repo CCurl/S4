@@ -1,17 +1,20 @@
+#include "config.h"
 #include "s4.h"
 
-#ifdef __SERIAL__
-#define mySerial SerialUSB
-int _getch() { return (mySerial.available()) ? mySerial.read() : 0; }
-void printString(const char* str) { mySerial.print(str); }
+#if __SERIAL__
+    int charAvailable() { return mySerial.available(); }
+    int getChar() { 
+        while (!charAvailable()) {}
+        return mySerial.read();
+    }
+    void printString(const char* str) { mySerial.print(str); }
 #else
-int _getch() { return 0; }
-void printString(const char* str) { }
+    int charAvailable() { return 0; }
+    int getChar() { return 0; }
+    void printString(const char* str) { }
 #endif
 
-#define TIB_SZ    80
-#define TIB      (CODE_SZ - TIB_SZ)
-int tibEnd;
+#define TIB       (USER_SZ - TIB_SZ - 1)
 
 void loadCode(const char* src) {
     int i = TIB;
@@ -26,15 +29,41 @@ void loadCode(const char* src) {
 
 void loadBaseSystem() {
     loadCode("0( MB: ManageButton )");
-    loadCode("0( SC: SetContext )");
-    loadCode("0( RD: Read pin, put val in to reg v )");
-    loadCode("0( CQ: Changed? )");
-    loadCode("0( RV: RememberValue )");
-    loadCode("0( RA: todo )");
+    loadCode("0( SC: SetContext   )");
+    loadCode("0( RD: Read pin     )");
+    loadCode("0( CQ: Changed?     )");
+    loadCode("0( RV: RememberVal  )");
+    loadCode("0( RA: todo         )");
 }
 
 void ok() {
-    printString("\r\ns4:"); dumpStack(0); printString(">");
+    printString("\r\ns4:"); 
+    dumpStack(0); 
+    printString(">");
+}
+
+void handleInput(char c) {
+    static int tibHERE = TIB;
+    if (c == 13) {
+        printString(" ");
+        setCodeByte(tibHERE, 0);
+        run(TIB);
+        tibHERE = TIB;
+        ok();
+        return;
+    }
+    if ((c == 8) && (TIB < tibHERE)) {
+        tibHERE--;
+        char b[] = {8, 32, 8, 0};
+        printString(b);
+        return;
+    }
+    if (c == 9) { c = 32; }
+    if ((32 <= c) && (tibHERE < CODE_SZ)) {
+        setCodeByte(tibHERE++, c);
+        char b[] = {c, 0};
+        printString(b);
+    }
 }
 
 void setup() {
@@ -44,7 +73,6 @@ void setup() {
     while (mySerial.available()) { char c = mySerial.read(); }
 #endif
     vmInit();
-    tibEnd = TIB;
     loadBaseSystem();
     ok();
 }
@@ -65,27 +93,8 @@ void loop() {
         nextBlink = curTm + 1111;
     }
 
-#ifdef __SERIAL__
-    while (mySerial.available()) {
-        char c = mySerial.read();
-        if (c == 9) { c = 32; }
-        if (c == 13) {
-            printString(" ");
-            if (TIB < tibEnd) {
-                setCodeByte(tibEnd, 0);
-                run(TIB);
-            }
-            ok();
-            tibEnd = TIB;
-        } else {
-            if ((32 <= c) && (tibEnd < CODE_SZ)) {
-                setCodeByte(tibEnd++, c);
-                char b[2]; b[0] = c; b[1] = 0;
-                printString(b);
-            }
-        }
-    }
-#endif
-    int addr = functionAddress(0);
-    if (addr) { run(addr); }
+    while ( charAvailable() ) { handleInput(getChar()); }
+
+    addr a = functionAddress(0);
+    if (a) { run(a); }
 }

@@ -1,41 +1,48 @@
-#ifdef _WIN32
+// pc-main.cpp - Main program for S4 when on a PC (Windows or Linux)
 
-#define _CRT_SECURE_NO_WARNINGS
+#include "config.h"
 
-#include <Windows.h>
+#ifdef __PC__
 #include <stdlib.h>
 #include <stdio.h>
 #include <conio.h>
 #include <string.h>
+#include <time.h>
 #include "s4.h"
 
-typedef unsigned char byte;
+#ifdef _WIN32
+long millis() { return (long)GetTickCount(); }
+void delay(unsigned long ms) { Sleep(ms); }
+#endif
+
+#ifdef __LINUX__
+long millis() {
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    return (long)((ts.tv_sec * 1000) + (ts.tv_nsec / 1000000));
+}
+
+void delay(UCELL ms) { 
+    struct timespec ts;
+    ts.tv_sec = ms / 1000;
+    ts.tv_nsec = (ms % 1000) * 1000000;
+    nanosleep(&ts, NULL); 
+}
+#endif
 
 // These are used only be the PC version
-static HANDLE hStdOut = 0;
 static char input_fn[32];
-FILE* input_fp = NULL;
+FILE *input_fp = NULL;
 
 // These are in the <Arduino.h> file
-long millis() { return GetTickCount(); }
 int analogRead(int pin) { printStringF("-AR(%d)-", pin); return 0; }
 void analogWrite(int pin, int val) { printStringF("-AW(%d,%d)-", pin, val); }
 int digitalRead(int pin) { printStringF("-DR(%d)-", pin); return 0; }
 void digitalWrite(int pin, int val) { printStringF("-DW(%d,%d)-", pin, val); }
 void pinMode(int pin, int mode) { printStringF("-pinMode(%d,%d)-", pin, mode); }
-void delay(DWORD ms) { Sleep(ms); }
-
-int getChar() {
-    return _getch();
-}
-
-int charAvailable() {
-    return _kbhit();
-}
-
-void printString(const char* str) {
-    fputs(str, stdout);
-}
+int getChar() { return _getch(); }
+int charAvailable() { return _kbhit(); }
+void printString(const char* str) { fputs(str, stdout); }
 
 void printChar(const char ch) {
     char buf[] = {ch, 0};
@@ -43,7 +50,9 @@ void printChar(const char ch) {
 }
 
 void ok() {
-    printString("\r\nS4:"); dumpStack(0); printString(">");
+    printString("\r\nS4:"); 
+    dumpStack(0); 
+    printString(">");
 }
 
 void doHistory(const char* txt) {
@@ -55,10 +64,12 @@ void doHistory(const char* txt) {
 }
 
 void strToTIB(addr loc, const char *txt) {
+    addr x = loc;
     while (*txt) {
-        setCodeByte(loc++, *(txt++));
+        setCodeByte(x++, *(txt++));
     }
-    setCodeByte(loc++, 0);
+    setCodeByte(x, 0);
+    run(loc);
 }
 
 void loop() {
@@ -69,7 +80,6 @@ void loop() {
     if (fgets(tib, 100, fp) == tib) {
         if (fp == stdin) { doHistory(tib); }
         strToTIB(nTib, tib);
-        run(nTib);
         return;
     }
     if (input_fp) {
@@ -94,13 +104,9 @@ void process_arg(char* arg)
 }
 
 int main(int argc, char** argv) {
-    hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-    DWORD m; GetConsoleMode(hStdOut, &m);
-    SetConsoleMode(hStdOut, (m | ENABLE_VIRTUAL_TERMINAL_PROCESSING));
     vmInit();
     // 0(Y: dump all code currently defined)
     strToTIB(100, "`D XIF NN hQ 0[I C@, IQC@';= IC@96= &(N)];`");
-    run(100);
 
     input_fn[0] = 0;
     input_fp = NULL;
