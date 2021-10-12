@@ -199,9 +199,9 @@ void dumpStack(int hdr) {
 }
 
 char *RFName(char *buf, int i, char b) {
-    int f1 = i / (26 * 26) + b;
-    int f2 = (i / 26) % 26 + b;
-    int f3 = i % 26 + b;
+    char f1 = i / (26 * 26) + b;
+    char f2 = (i / 26) % 26 + b;
+    char f3 = i % 26 + b;
     if (f1 == b) { f1 = ' '; }
     if ((f1 == ' ') && (f2 == b)) { f2 = ' '; }
     sprintf(buf, "%c%c%c", f1, f2, f3);
@@ -223,6 +223,7 @@ void dumpFuncs() {
 void dumpRegs() {
     printStringF("\r\nREGISTERS: (%d available)", NUM_REGS);
     int n = 0;
+    char buf[4];
     for (int i = 0; i < NUM_REGS; i++) {
         if (REG[i]) {
             if (((n++) % 5) == 0) { printString("\r\n"); }
@@ -247,25 +248,21 @@ addr doFile(addr pc) {
         DROP1;
         break;
     case 'O': {
-        char* md = (char*)&USER[pop()];
-        char* fn = (char*)&USER[pop()];
-        T = 0;
-        fopen_s((FILE**)&T, fn, md);
-    }
-            break;
+            char* md = (char*)&USER[pop()];
+            char* fn = (char*)&USER[pop()];
+            T = (long)fopen(fn, md);
+        } break;
     case 'R': if (T) {
-        long n = fread_s(buf, 2, 1, 1, (FILE*)T);
-        T = ((n) ? buf[0] : 0);
-        push(n);
-    }
-            break;
+            long n = fread(buf, 1, 1, (FILE*)T);
+            T = ((n) ? buf[0] : 0);
+            push(n);
+        } break;
     case 'W': if (T) {
-        FILE* fh = (FILE*)pop();
-        buf[1] = 0;
-        buf[0] = (byte)pop();
-        fwrite(buf, 1, 1, fh);
-    }
-            break;
+            FILE* fh = (FILE*)pop();
+            buf[1] = 0;
+            buf[0] = (byte)pop();
+            fwrite(buf, 1, 1, fh);
+        } break;
 #endif
     case 'N':
         if ((0 <= T) && (T < NUM_FUNCS)) { T = FUNC[T]; }
@@ -309,7 +306,7 @@ addr doExt(addr pc) {
     case 'L': ir = pop();  // LOAD
 #ifdef __PC__
         if (input_fp) { fclose(input_fp); }
-        sprintf(buf, "block.%03ld", ir);
+        sprintf(buf, "block.%03d", ir);
         input_fp = fopen(buf, "rt");
 #endif
         break;
@@ -477,6 +474,7 @@ long registerVal(int reg) {
 
 addr functionAddress(const char *fn) {
     long t1;
+    T = 0;
     USER[HERE+0] = fn[0];
     USER[HERE+1] = fn[1];
     USER[HERE+2] = fn[2];

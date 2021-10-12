@@ -5,7 +5,6 @@
 #ifdef __PC__
 #include <stdlib.h>
 #include <stdio.h>
-#include <conio.h>
 #include <string.h>
 #include <time.h>
 #include "s4.h"
@@ -16,6 +15,8 @@ void delay(unsigned long ms) { Sleep(ms); }
 #endif
 
 #ifdef __LINUX__
+#include <termios.h>
+#include <sys/ioctl.h>
 long millis() {
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts);
@@ -27,6 +28,39 @@ void delay(UCELL ms) {
     ts.tv_sec = ms / 1000;
     ts.tv_nsec = (ms % 1000) * 1000000;
     nanosleep(&ts, NULL); 
+}
+
+int _kbhit() {
+    static const int STDIN = 0;
+    static bool initialized = false;
+
+    if (! initialized) {
+        // Use termios to turn off line buffering
+        termios term;
+        tcgetattr(STDIN, &term);
+        term.c_lflag &= ~ICANON;
+        tcsetattr(STDIN, TCSANOW, &term);
+        setbuf(stdin, NULL);
+        initialized = true;
+    }
+  
+    int bytesWaiting;
+    ioctl(STDIN, FIONREAD, &bytesWaiting);
+    return bytesWaiting;
+}
+
+int _getch() {
+    static int init = 0;
+    static struct termios cur_t;
+
+    if (!init) {
+        init = 1;
+        tcgetattr( STDIN_FILENO, &cur_t);
+        cur_t.c_lflag &= ~(ICANON);          
+        tcsetattr( STDIN_FILENO, TCSANOW, &cur_t);
+
+    }
+    return getchar();
 }
 #endif
 

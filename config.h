@@ -13,6 +13,7 @@
 	#ifdef _WIN32
 		#define _CRT_SECURE_NO_WARNINGS
 		#include <Windows.h>
+		#include <conio.h>
 	#else
 		#define __LINUX__
 		#include <unistd.h>
