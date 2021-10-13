@@ -294,7 +294,6 @@ addr doPin(addr pc) {
 addr doExt(addr pc) {
     int ir = USER[pc++];
     switch (ir) {
-    case 'B': isBye = 1;                break;
     case 'F': pc = doFile(pc);          break;
     case 'I': ir = USER[pc++];
         if (ir == 'A') { dumpAll(); }
@@ -312,6 +311,7 @@ addr doExt(addr pc) {
         break;
     case 'P': pc = doPin(pc);           break;
     case 'S': sys.dsp = 0;              break;
+    case 'T': isBye = 1;                break;
     case 'R': vmInit();                 break;
     }
     return pc;
@@ -436,7 +436,14 @@ addr run(addr pc) {
             while (USER[pc] && (USER[pc] != '_')) { USER[T++] = USER[pc++]; }
             ++pc; USER[T++] = 0;
             break;
-        case '`': pc = doDefineFunction(pc); break;           // 96
+        case '`': if (USER[pc] == ir) {                       // 96
+                pc++; 
+                if (USER[HERE-1] == ir) { HERE--; }
+                while ((USER[pc]) && (USER[pc] != ir)) { USER[HERE++] = USER[pc++]; }
+                USER[HERE++] = ir;
+                pc++;
+            } else { pc = doDefineFunction(pc); }
+            break;
         case 'a': case 'b': case 'c': case 'd': case 'e': case 'f':
         case 'g': case 'h': case 'i': case 'j': case 'k': case 'l':
         case 'm': case 'n': case 'o': case 'p': case 'q': case 'r':
