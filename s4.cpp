@@ -21,7 +21,7 @@ struct {
     long reg[NUM_REGS];
     byte user[USER_SZ];
     addr func[NUM_FUNCS];
-    long dstack[STK_SZ + 1];
+    CELL dstack[STK_SZ + 1];
     addr rstack[STK_SZ + 1];
     LOOP_ENTRY_T lstack[4];
 } sys;
@@ -41,8 +41,8 @@ extern FILE *input_fp;
 #define DROP1    pop()
 #define DROP2    pop(); pop()
 
-void push(long v) { if (sys.dsp < STK_SZ) { sys.dstack[++sys.dsp] = v; } }
-long pop() { return (sys.dsp > 0) ? sys.dstack[sys.dsp--] : 0; }
+void push(CELL v) { if (sys.dsp < STK_SZ) { sys.dstack[++sys.dsp] = v; } }
+CELL pop() { return (sys.dsp > 0) ? sys.dstack[sys.dsp--] : 0; }
 
 void rpush(addr v) { if (sys.rsp < STK_SZ) { sys.rstack[++sys.rsp] = v; } }
 addr rpop() { return (sys.rsp > 0) ? sys.rstack[sys.rsp--] : 0; }
@@ -72,81 +72,42 @@ void printStringF(const char* fmt, ...) {
 #define BetweenI(n, x, y) ((x <= n) && (n <= y))
 
 int hexNum(char x) {
-    if (('0' <= x) && (x <= '9')) { return x - '0'; }
-    if (('A' <= x) && (x <= 'F')) { return x - 'A' + 10; }
-    if (('a' <= x) && (x <= 'f')) { return x - 'a' + 10; }
+    if (BetweenI(x, '0', '9')) { return x - '0'; }
+    if (BetweenI(x, 'A', 'Z')) { return x - 'A'; }
+    if (BetweenI(x, 'a', 'z')) { return x - 'a'; }
     return -1;
 }
 
-int getNum3(addr pc, int st, int en, int& num) {
-    int i = 0;
-    for (i = 0; i < 3; i++) {
-        byte c1 = USER[pc+i];
-        byte f1 = BetweenI(c1, st, en) ? c1-st : -1;
-        if (f1 < 0) { break; }
-        if (num < 0) { num = 0; }
-        num = (num * 26) + f1;
-    }
-    return i;
-}
-
-addr defineFunction(addr pc) {
-    int fn = 0;
-    int nc = getNum3(pc, 'A', 'Z', fn);
-    if (nc == 0) { isError = 1; return pc; }
-    USER[HERE++] = '`';
-    FUNC[fn] = HERE+nc;
-    while (USER[pc] && (USER[pc] != '`')) {
-        USER[HERE++] = USER[pc++];
-    }
-    USER[HERE++] = USER[pc++];
-    return pc;
-}
-
-inline int funcNum(char x) {
-    if (('A' <= x) && (x <= 'Z')) { return x - 'A'; }
-    return -1;
-}
-
-addr GetFunctionNum(addr pc, long& fn, int isDefine) {
-    addr xh = HERE;
-    fn = funcNum(USER[pc]);
-    if (fn < 0) { isError = 1;  return pc; }
-    if (isDefine) {  
-        USER[HERE++] = '`';
-        USER[HERE++] = USER[pc];
-    }
-    int f2 = funcNum(USER[++pc]);
-    if (0 <= f2) {
-        if (isDefine) { USER[HERE++] = USER[pc]; }
-        fn = (fn * 26) + f2;
-        f2 = funcNum(USER[++pc]);
-        if (0 <= f2) { 
-            if (isDefine) { USER[HERE++] = USER[pc]; }
-            pc++;
-            fn = (fn * 26) + f2;
-        }
-    }
-    if ((fn < 0) || (NUM_FUNCS <= fn)) { 
-        HERE = xh;
-        isError = 1; 
-    }
-    return pc;
+int getNum3(addr pc, char st, char en, CELL& num) {
+    addr oldPC = pc;
+    byte ir = USER[pc];
+    num = 0;
+    if (BetweenI(ir, st, en)) { num =              (ir-st); ir = USER[++pc]; }
+    if (BetweenI(ir, st, en)) { num = (num * 26) + (ir-st); ir = USER[++pc]; }
+    if (BetweenI(ir, st, en)) { num = (num * 26) + (ir-st); ir = USER[++pc]; }
+    if (pc == oldPC) { isError = 1; }
+    return pc - oldPC;
 }
 
 addr doDefineFunction(addr pc) {
-    if (pc < (addr)HERE) { return pc; }
-    long fn = -1;
-    pc = GetFunctionNum(pc, fn, 1);
+    CELL fn = 0;
+    int nc = getNum3(pc, 'A', 'Z', fn);
     if (isError) { return pc; }
-    FUNC[fn] = HERE;
+    USER[HERE++] = '`';
+    FUNC[fn] = HERE+nc;
     while ((pc < USER_SZ) && USER[pc]) {
         USER[HERE++] = USER[pc++];
         if (USER[HERE - 1] == '`') { return pc; }
     }
     isError = 1;
-    printString("-user-overflow-");
-    return pc;
+    printString("-dfErr-");
+    return -1;
+}
+
+addr getRegFuncNum(addr pc, char st, char en, CELL& num) {
+    int nc = getNum3(pc, st, en, num);
+    if (isError) { return pc; }
+    return pc + nc;
 }
 
 addr doBegin(addr pc) {
@@ -345,7 +306,7 @@ addr doExt(addr pc) {
 }
 
 addr run(addr pc) {
-    long t1, t2;
+    CELL t1, t2;
     byte* bp;
     isError = 0;
     while (!isError && (0 < pc)) {
@@ -390,16 +351,16 @@ addr run(addr pc) {
                 t1 = USER[++pc] - '0';
             }
             break;
-        case ':': pc = GetFunctionNum(pc, t1, 0);                // 58
+        case ':': pc = getRegFuncNum(pc, 'A', 'Z', t1);          // 58
             if ((!isError) && (FUNC[t1])) { rpush(pc); pc = FUNC[t1]; }
             break;
         case ';': if (sys.rsp < 1) { sys.rsp = 0;  return pc; }
-                pc = rpop();                             break;  // 59
-        case '<': t1 = pop(); T = T < t1  ? 1 : 0;       break;  // 60
-        case '=': t1 = pop(); T = T == t1 ? 1 : 0;       break;  // 61
-        case '>': t1 = pop(); T = T > t1  ? 1 : 0;       break;  // 62
-        case '?': /* FREE */                             break;  // 63
-        case '@': T = *(long*)&USER[T];                  break;  // 64
+                pc = rpop();                           break;  // 59
+        case '<': t1 = pop(); T = T < t1  ? 1 : 0;     break;  // 60
+        case '=': t1 = pop(); T = T == t1 ? 1 : 0;     break;  // 61
+        case '>': t1 = pop(); T = T > t1  ? 1 : 0;     break;  // 62
+        case '?': /* FREE */                           break;  // 63
+        case '@': T = *(long*)&USER[T];                break;  // 64
         case 'A': ir = USER[pc++];
             if (ir == '@') { T = *(byte *)T; }
             if (ir == '!') { *(byte *)T = N & 0xff; DROP2; }
@@ -412,7 +373,7 @@ addr run(addr pc) {
         case 'D': /* FREE */                           break;
         case 'E': /* FREE */                           break;
         case 'F': T = ~T;                              break;
-        case 'G': pc = GetFunctionNum(pc, t1, 0);
+        case 'G': pc = getRegFuncNum(pc, 'A', 'Z', t1);
             if ((!isError) && (FUNC[t1])) { pc = FUNC[t1]; }
             break;
         case 'H': push(0);
@@ -455,15 +416,15 @@ addr run(addr pc) {
         case 'X': pc = doExt(pc);                      break;
         case 'Y': /* FREE */                           break;
         case 'Z':  printString((char*)&USER[pop()]);   break;
-        case '[': pc = doFor(pc);                      break; // 91
-        case '\\': DROP1;                              break; // 92
-        case ']': pc = doNext(pc);                     break; // 93
-        case '^': t1 = pop(); T ^= t1;                 break; // 94
-        case '_':                                             // 95
-            while (USER[pc] && (USER[pc] != '_')) { USER[T++] = USER[pc++]; }
+        case '[': pc = doFor(pc);                      break;  //  91
+        case '\\': DROP1;                              break;  //  92
+        case ']': pc = doNext(pc);                     break;  //  93
+        case '^': t1 = pop(); T ^= t1;                 break;  //  94
+        case '_':                                              //  95
+            while (USER[pc] && (USER[pc] != ir)) { USER[T++] = USER[pc++]; }
             ++pc; USER[T++] = 0;
             break;
-        case '`': if (USER[pc] == ir) {                       // 96
+        case '`': if (USER[pc] == ir) {                        //  96
                 pc++; 
                 if (USER[HERE-1] == ir) { HERE--; }
                 while ((USER[pc]) && (USER[pc] != ir)) { USER[HERE++] = USER[pc++]; }
@@ -476,11 +437,10 @@ addr run(addr pc) {
         case 'm': case 'n': case 'o': case 'p': case 'q': case 'r':
         case 's': case 't': case 'u': case 'v': case 'w': case 'x':
         case 'y': case 'z': t1 = ir - 'a'; 
-            ir = USER[pc];
-            if (('a' <= ir) && (ir <= 'z')) { t1 = (t1 * 26) + (ir-'a'); ir = USER[++pc]; }
-            if (('a' <= ir) && (ir <= 'z')) { t1 = (t1 * 26) + (ir-'a'); ir = USER[++pc]; }
+            pc = getRegFuncNum(pc-1, 'a', 'z', t1);
             if (t1 < NUM_REGS) {
                 push(REG[t1]);
+                ir = USER[pc];
                 if (ir == '+') { ++pc; ++REG[t1]; }
                 if (ir == '-') { ++pc; --REG[t1]; }
                 if (ir == ';') { pop(); ++pc; REG[t1] = pop(); }
@@ -493,25 +453,19 @@ addr run(addr pc) {
         case '~': T = (T) ? 0 : 1;                     break;  // 126
         }
     }
-    return 0;
+    if (isError && ((CELL)pc < HERE)) { REG[4] = pc; }
+    return pc;
 }
 
 void setCodeByte(addr loc, char ch) {
     if ((0 <= loc) && (loc < USER_SZ)) { USER[loc] = ch; }
 }
 
-long registerVal(int reg) {
-    if ((0 <= 'A') && (reg <= 'Z')) { return USER[reg - 'A']; }
-    if ((0 <= 'a') && (reg <= 'z')) { return USER[reg - 'a']; }
-    return 0;
-}
-
 addr functionAddress(const char *fn) {
     long t1;
-    T = 0;
     USER[HERE+0] = fn[0];
     USER[HERE+1] = fn[1];
     USER[HERE+2] = fn[2];
-    GetFunctionNum(HERE, t1, 0);
+    getRegFuncNum(HERE, 'A', 'Z', t1);
     return (t1 < 0) ? -1 : FUNC[t1];
 }

@@ -6,13 +6,13 @@
 #define MAX_FUNCS (26*26*26)
 typedef unsigned char byte;
 typedef unsigned long addr;
-typedef unsigned long UCELL;
+#define CELL long
+#define UCELL unsigned long
 
 extern void vmInit();
 extern addr run(addr pc);
 extern void dumpStack(int hdr);
 extern void setCodeByte(addr loc, char ch);
-extern long registerVal(int reg);
 extern void printChar(const char ch);
 extern void printString(const char*);
 extern void printStringF(const char* fmt, ...);
