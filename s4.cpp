@@ -365,7 +365,12 @@ addr run(addr pc) {
             if (ir == '@') { T = USER[T]; }
             if (ir == '!') { USER[T] = (byte)N; DROP2; }
             break;
-        case 'D': /* FREE */                           break;
+        case 'D': t2 = pop();  t1 = pop(); // Open block file
+#ifdef __PC__
+            sprintf(buf, "block.%03ld", t1);
+            push((CELL)fopen(buf, t2 ? "wt" : "rt"));
+#endif
+            break;
         case 'E': t1 = pop();  // LOAD
 #ifdef __PC__
             if (input_fp) { fclose(input_fp); }
