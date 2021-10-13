@@ -249,7 +249,7 @@ addr doFile(addr pc) {
         break;
     case 'O': {
             char* md = (char*)&USER[pop()];
-            char* fn = (char*)&USER[pop()];
+            char* fn = (char*)&USER[T];
             T = (long)fopen(fn, md);
         } break;
     case 'R': if (T) {
