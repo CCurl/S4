@@ -292,13 +292,6 @@ addr doExt(addr pc) {
         if (ir == 'R') { dumpRegs(); }
         if (ir == 'S') { dumpStack(0); }
         break;
-    case 'L': ir = pop();  // LOAD
-#ifdef __PC__
-        if (input_fp) { fclose(input_fp); }
-        sprintf(buf, "block.%03d", ir);
-        input_fp = fopen(buf, "rt");
-#endif
-        break;
     case 'P': pc = doPin(pc);           break;
     case 'S': sys.dsp = 0;              break;
     case 'T': isBye = 1;                break;
@@ -373,7 +366,13 @@ addr run(addr pc) {
             if (ir == '!') { USER[T] = (byte)N; DROP2; }
             break;
         case 'D': /* FREE */                           break;
-        case 'E': /* FREE */                           break;
+        case 'E': t1 = pop();  // LOAD
+#ifdef __PC__
+            if (input_fp) { fclose(input_fp); }
+            sprintf(buf, "block.%03ld", t1);
+            input_fp = fopen(buf, "rt");
+#endif
+            break;
         case 'F': T = ~T;                              break;
         case 'G': pc = getRegFuncNum(pc, 'A', 'Z', t1);
             if ((!isError) && (FUNC[t1])) { pc = FUNC[t1]; }
