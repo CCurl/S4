@@ -69,6 +69,8 @@ void printStringF(const char* fmt, ...) {
     printString(buf);
 }
 
+#define BetweenI(n, x, y) ((x <= n) && (n <= y))
+
 int hexNum(char x) {
     if (('0' <= x) && (x <= '9')) { return x - '0'; }
     if (('A' <= x) && (x <= 'F')) { return x - 'A' + 10; }
@@ -76,12 +78,37 @@ int hexNum(char x) {
     return -1;
 }
 
+int getNum3(addr pc, int st, int en, int& num) {
+    int i = 0;
+    for (i = 0; i < 3; i++) {
+        byte c1 = USER[pc+i];
+        byte f1 = BetweenI(c1, st, en) ? c1-st : -1;
+        if (f1 < 0) { break; }
+        if (num < 0) { num = 0; }
+        num = (num * 26) + f1;
+    }
+    return i;
+}
+
+addr defineFunction(addr pc) {
+    int fn = 0;
+    int nc = getNum3(pc, 'A', 'Z', fn);
+    if (nc == 0) { isError = 1; return pc; }
+    USER[HERE++] = '`';
+    FUNC[fn] = HERE+nc;
+    while (USER[pc] && (USER[pc] != '`')) {
+        USER[HERE++] = USER[pc++];
+    }
+    USER[HERE++] = USER[pc++];
+    return pc;
+}
+
 inline int funcNum(char x) {
     if (('A' <= x) && (x <= 'Z')) { return x - 'A'; }
     return -1;
 }
 
-addr GetFunctionNum(addr pc, long& fn, int isDefine) { 
+addr GetFunctionNum(addr pc, long& fn, int isDefine) {
     addr xh = HERE;
     fn = funcNum(USER[pc]);
     if (fn < 0) { isError = 1;  return pc; }
