@@ -95,13 +95,15 @@ addr doDefineFunction(addr pc) {
     if (isError) { return pc; }
     USER[HERE++] = '`';
     FUNC[fn] = HERE+nc;
-    while ((pc < USER_SZ) && USER[pc]) {
+    while (USER[pc] && USER[pc] !='`') { USER[HERE++] = USER[pc++]; }
+    if (USER[pc] == '`') { 
         USER[HERE++] = USER[pc++];
-        if (USER[HERE - 1] == '`') { return pc; }
+        while (USER[FUNC[fn]] == ' ') { ++FUNC[fn]; }
+        return pc;
     }
     isError = 1;
     printString("-dfErr-");
-    return -1;
+    return 0;
 }
 
 addr getRegFuncNum(addr pc, char st, char en, CELL& num) {
