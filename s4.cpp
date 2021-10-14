@@ -230,8 +230,11 @@ void dumpAll() {
 }
 
 addr doFile(addr pc) {
-    int ir = USER[pc++];
+    long ir = USER[pc++];
     switch (ir) {
+    case 'A': pc += getNum3(pc, 'A', 'Z', ir);
+        push(FUNC[ir]);
+        break;
 #ifdef __PC__
     case 'C':
         if (T) { fclose((FILE*)T); }
@@ -266,9 +269,9 @@ addr doPin(addr pc) {
     int ir = USER[pc++];
     long pin = pop(), val = 0;
     switch (ir) {
-    case 'I': pinMode(pin, INPUT); break;
-    case 'U': pinMode(pin, INPUT_PULLUP); break;
-    case 'O': pinMode(pin, OUTPUT); break;
+    case 'I': pinMode(pin, INPUT);         break;
+    case 'U': pinMode(pin, INPUT_PULLUP);  break;
+    case 'O': pinMode(pin, OUTPUT);        break;
     case 'R': ir = USER[pc++];
         if (ir == 'D') { push(digitalRead(pin)); }
         if (ir == 'A') { push(analogRead(pin)); }
@@ -284,6 +287,9 @@ addr doPin(addr pc) {
 addr doExt(addr pc) {
     int ir = USER[pc++];
     switch (ir) {
+    case 'C': ir = pop();
+        if (BetweenI(ir, 1, USER_SZ)) { rpush(pc); pc = ir; }
+        break;
     case 'F': pc = doFile(pc);          break;
     case 'I': ir = USER[pc++];
         if (ir == 'A') { dumpAll(); }
@@ -291,6 +297,9 @@ addr doExt(addr pc) {
         if (ir == 'F') { dumpFuncs(); }
         if (ir == 'R') { dumpRegs(); }
         if (ir == 'S') { dumpStack(0); }
+        break;
+    case 'G': ir = pop();
+        if (BetweenI(ir, 1, USER_SZ)) { pc = ir; } 
         break;
     case 'P': pc = doPin(pc);           break;
     case 'S': sys.dsp = 0;              break;
@@ -365,19 +374,20 @@ addr run(addr pc) {
             if (ir == '@') { T = USER[T]; }
             if (ir == '!') { USER[T] = (byte)N; DROP2; }
             break;
-        case 'D': t2 = pop();  t1 = pop(); // Open block file
 #ifdef __PC__
+        case 'D': t2 = pop();  t1 = pop(); // Open block file
             sprintf(buf, "block.%03ld", t1);
             push((CELL)fopen(buf, t2 ? "wt" : "rt"));
-#endif
             break;
         case 'E': t1 = pop();  // LOAD
-#ifdef __PC__
             if (input_fp) { fclose(input_fp); }
             sprintf(buf, "block.%03ld", t1);
             input_fp = fopen(buf, "rt");
-#endif
             break;
+#else
+        case 'D': /* FREE */                           break;  // 63
+        case 'E': /* FREE */                           break;  // 63
+#endif
         case 'F': T = ~T;                              break;
         case 'G': pc = getRegFuncNum(pc, 'A', 'Z', t1);
             if ((!isError) && (FUNC[t1])) { pc = FUNC[t1]; }
