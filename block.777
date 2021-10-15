@@ -1,5 +1,7 @@
 ; Block.777
 
+777cp=(N"-Count of Primes already loaded.-" XLA)
+
 N"Count of primes"
 
 ; c:              Register for count of primes
@@ -13,4 +15,5 @@ N"Count of primes"
    ``T$ :C . T$- " (" . " ms)";`
 `L 256$ 1[#+# :B]\;`
 
-14:L
+10:L N
+777cp;

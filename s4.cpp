@@ -300,6 +300,9 @@ addr doExt(addr pc) {
     case 'G': ir = pop();
         if (BetweenI(ir, 1, USER_SZ)) { pc = ir; } 
         break;
+    case 'L': ir = USER[pc++];
+        if (ir == 'A' && (input_fp != stdin)) { fclose(input_fp); input_fp = input_pop(); }
+        break;
     case 'P': pc = doPin(pc);           break;
     case 'S': sys.dsp = 0;              break;
     case 'T': isBye = 1;                break;

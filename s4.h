@@ -33,4 +33,5 @@ extern int charAvailable();
 	extern FILE *input_fp;
 	extern byte isBye, isError;
 	extern void input_push(FILE* fp);
+	extern FILE *input_pop();
 #endif // __PC__
