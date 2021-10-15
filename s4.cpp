@@ -28,7 +28,7 @@ struct {
 
 byte isBye = 0, isError = 0;
 char buf[100];
-extern FILE *input_fp;
+FILE *input_fp;
 
 #define REG        sys.reg
 #define USER       sys.user
@@ -231,35 +231,34 @@ void dumpAll() {
 addr doFile(addr pc) {
     long ir = USER[pc++];
     switch (ir) {
-    case 'A': pc += getNum3(pc, 'A', 'Z', ir);
+    case 'A': pc += getNum3(pc, 'A', 'Z', ir);          // Function Address (NOT FILE!)
         push(FUNC[ir]);
         break;
-#ifdef __PC__
     case 'C':
         if (T) { fclose((FILE*)T); }
         DROP1;
         break;
-    case 'O': {
+    case 'L':  ir = pop();                              // File Load
+        if (input_fp) { input_push(input_fp); }
+        sprintf(buf, "block.%03ld", ir);
+        input_fp = fopen(buf, "rt");
+        break;
+    case 'O': {                                         // File Open
             char* md = (char*)&USER[pop()];
             char* fn = (char*)&USER[T];
             T = (long)fopen(fn, md);
         } break;
-    case 'R': if (T) {
+    case 'R': if (T) {                                  // File Read
             long n = fread(buf, 1, 1, (FILE*)T);
             T = ((n) ? buf[0] : 0);
             push(n);
         } break;
-    case 'W': if (T) {
+    case 'W': if (T) {                                  // File Write
             FILE* fh = (FILE*)pop();
             buf[1] = 0;
             buf[0] = (byte)pop();
             fwrite(buf, 1, 1, fh);
         } break;
-#endif
-    case 'N':
-        if ((0 <= T) && (T < NUM_FUNCS)) { T = FUNC[T]; }
-        else { T = 0; }
-        break;
     }
     return pc;
 }
@@ -286,27 +285,27 @@ addr doPin(addr pc) {
 addr doExt(addr pc) {
     int ir = USER[pc++];
     switch (ir) {
-    case 'C': ir = pop();
-        if (BetweenI(ir, 1, USER_SZ)) { rpush(pc); pc = ir; }
-        break;
-    case 'F': pc = doFile(pc);          break;
-    case 'I': ir = USER[pc++];
+    case 'C': ir = pop();                                            // Call
+        if (BetweenI(ir, 1, USER_SZ)) { 
+            rpush(pc);   pc = ir; 
+        } break;
+    case 'F': pc = doFile(pc);                      break;           // File
+    case 'I': ir = USER[pc++];                                       // Info
         if (ir == 'A') { dumpAll(); }
         if (ir == 'C') { dumpCode(); }
         if (ir == 'F') { dumpFuncs(); }
         if (ir == 'R') { dumpRegs(); }
         if (ir == 'S') { dumpStack(0); }
         break;
-    case 'G': ir = pop();
-        if (BetweenI(ir, 1, USER_SZ)) { pc = ir; } 
+    case 'G': ir = pop();                                            // Goto
+        if (BetweenI(ir, 1, USER_SZ)) { pc = ir; }  break;
+    case 'L':  ir = USER[pc++];                                      // Load Abort
+        if (ir == 'A' && input_fp) { fclose(input_fp); input_fp = input_pop(); } 
         break;
-    case 'L': ir = USER[pc++];
-        if (ir == 'A' && (input_fp != stdin)) { fclose(input_fp); input_fp = input_pop(); }
-        break;
-    case 'P': pc = doPin(pc);           break;
-    case 'S': sys.dsp = 0;              break;
-    case 'T': isBye = 1;                break;
-    case 'R': vmInit();                 break;
+    case 'P': pc = doPin(pc);                       break;           // Pins
+    case 'S': sys.dsp = 0;                          break;           // Stack reset
+    case 'T': isBye = 1;                            break;           // exiT
+    case 'R': vmInit();                             break;           // Reset
     }
     return pc;
 }
@@ -376,20 +375,11 @@ addr run(addr pc) {
             if (ir == '@') { T = USER[T]; }
             if (ir == '!') { USER[T] = (byte)N; DROP2; }
             break;
-#ifdef __PC__
         case 'D': t2 = pop();  t1 = pop(); // Open block file
             sprintf(buf, "block.%03ld", t1);
             push((CELL)fopen(buf, t2 ? "wt" : "rt"));
             break;
-        case 'E': t1 = pop();  // LOAD
-            if (input_fp) { input_push(input_fp); }
-            sprintf(buf, "block.%03ld", t1);
-            input_fp = fopen(buf, "rt");
-            break;
-#else
-        case 'D': /* FREE */                           break;  // 63
-        case 'E': /* FREE */                           break;  // 63
-#endif
+        case 'E': /* FREE */                           break;
         case 'F': T = ~T;                              break;
         case 'G': pc = getRegFuncNum(pc, 'A', 'Z', t1);
             if ((!isError) && (FUNC[t1])) { pc = FUNC[t1]; }

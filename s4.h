@@ -18,6 +18,9 @@ extern void printString(const char*);
 extern void printStringF(const char* fmt, ...);
 extern int getChar();
 extern int charAvailable();
+extern void input_push(FILE* fp);
+extern FILE *input_pop();
+extern FILE *input_fp;
 
 #ifdef __PC__
 	#define INPUT 0
@@ -30,8 +33,5 @@ extern int charAvailable();
 	extern void digitalWrite(int pin, int val);
 	extern void pinMode(int pin, int mode);
 	extern long millis();
-	extern FILE *input_fp;
 	extern byte isBye, isError;
-	extern void input_push(FILE* fp);
-	extern FILE *input_pop();
 #endif // __PC__

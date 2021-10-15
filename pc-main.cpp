@@ -67,7 +67,6 @@ int _getch() {
 // These are used only be the PC version
 #define INPUT_STACK_SZ 15
 static char input_fn[32];
-FILE* input_fp = NULL;
 int input_sp = 0;
 FILE *input_stack[INPUT_STACK_SZ+1];
 
@@ -81,14 +80,14 @@ int getChar() { return _getch(); }
 int charAvailable() { return _kbhit(); }
 void printString(const char* str) { fputs(str, stdout); }
 
-void input_push(FILE* fp) {
+void input_push(FILE *fp) {
     if (input_sp < INPUT_STACK_SZ) { input_stack[++input_sp] = fp; }
     else { printString("-input stack-full-"); isError = 1; }
 }
 
-FILE* input_pop() {
+FILE *input_pop() {
     if (0 < input_sp) { return input_stack[input_sp--]; }
-    else { return stdin; }
+    else { return NULL; }
 }
 
 void printChar(const char ch) {
