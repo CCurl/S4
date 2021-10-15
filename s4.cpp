@@ -17,12 +17,12 @@ typedef struct {
 } LOOP_ENTRY_T;
 
 struct {
-    long dsp, rsp, lsp;
-    long reg[NUM_REGS];
-    byte user[USER_SZ];
-    addr func[NUM_FUNCS];
-    CELL dstack[STK_SZ + 1];
-    addr rstack[STK_SZ + 1];
+    UCELL dsp, rsp, lsp;
+    CELL  reg[NUM_REGS];
+    byte  user[USER_SZ];
+    addr  func[NUM_FUNCS];
+    CELL  dstack[STK_SZ + 1];
+    addr  rstack[STK_SZ + 1];
     LOOP_ENTRY_T lstack[4];
 } sys;
 
@@ -33,19 +33,18 @@ extern FILE *input_fp;
 #define REG        sys.reg
 #define USER       sys.user
 #define FUNC       sys.func
+#define T          sys.dstack[sys.dsp]
+#define N          sys.dstack[sys.dsp-1]
+#define R          sys.rstack[sys.rsp]
+#define L          sys.lsp
+#define DROP1      pop()
+#define DROP2      pop(); pop()
 
-#define T        sys.dstack[sys.dsp]
-#define N        sys.dstack[sys.dsp-1]
-#define R        sys.rstack[sys.rsp]
-#define L        sys.lsp
-#define DROP1    pop()
-#define DROP2    pop(); pop()
-
-void push(CELL v) { if (sys.dsp < STK_SZ) { sys.dstack[++sys.dsp] = v; } }
-CELL pop() { return (sys.dsp > 0) ? sys.dstack[sys.dsp--] : 0; }
+inline void push(CELL v) { if (sys.dsp < STK_SZ) { sys.dstack[++sys.dsp] = v; } }
+inline CELL pop() { return (sys.dsp) ? sys.dstack[sys.dsp--] : 0; }
 
 void rpush(addr v) { if (sys.rsp < STK_SZ) { sys.rstack[++sys.rsp] = v; } }
-addr rpop() { return (sys.rsp > 0) ? sys.rstack[sys.rsp--] : 0; }
+addr rpop() { return (sys.rsp) ? sys.rstack[sys.rsp--] : 0; }
 
 void vmInit() {
     sys.dsp = sys.rsp = sys.lsp = 0;
@@ -184,7 +183,7 @@ void dumpCode() {
 void dumpStack(int hdr) {
     if (hdr) { printStringF("\r\nSTACK: size: %d ", STK_SZ); }
     printString("(");
-    for (int i = 1; i <= sys.dsp; i++) { printStringF("%s%ld", (i > 1 ? " " : ""), sys.dstack[i]); }
+    for (UCELL i = 1; i <= sys.dsp; i++) { printStringF("%s%ld", (i > 1 ? " " : ""), sys.dstack[i]); }
     printString(")");
 }
 
@@ -380,7 +379,7 @@ addr run(addr pc) {
             push((CELL)fopen(buf, t2 ? "wt" : "rt"));
             break;
         case 'E': t1 = pop();  // LOAD
-            if (input_fp) { fclose(input_fp); }
+            if (input_fp) { input_push(input_fp); }
             sprintf(buf, "block.%03ld", t1);
             input_fp = fopen(buf, "rt");
             break;

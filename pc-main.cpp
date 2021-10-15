@@ -65,8 +65,11 @@ int _getch() {
 #endif
 
 // These are used only be the PC version
+#define INPUT_STACK_SZ 15
 static char input_fn[32];
-FILE *input_fp = NULL;
+FILE* input_fp = NULL;
+int input_sp = 0;
+FILE *input_stack[INPUT_STACK_SZ+1];
 
 // These are in the <Arduino.h> file
 int analogRead(int pin) { printStringF("-AR(%d)-", pin); return 0; }
@@ -77,6 +80,16 @@ void pinMode(int pin, int mode) { printStringF("-pinMode(%d,%d)-", pin, mode); }
 int getChar() { return _getch(); }
 int charAvailable() { return _kbhit(); }
 void printString(const char* str) { fputs(str, stdout); }
+
+void input_push(FILE* fp) {
+    if (input_sp < INPUT_STACK_SZ) { input_stack[++input_sp] = fp; }
+    else { printString("-input stack-full-"); isError = 1; }
+}
+
+FILE* input_pop() {
+    if (0 < input_sp) { return input_stack[input_sp--]; }
+    else { return stdin; }
+}
 
 void printChar(const char ch) {
     char buf[] = {ch, 0};
@@ -97,7 +110,7 @@ void doHistory(const char* txt) {
     }
 }
 
-void strToTIB(addr loc, const char *txt) {
+void executeString(addr loc, const char *txt) {
     addr x = loc;
     while (*txt) {
         setCodeByte(x++, *(txt++));
@@ -113,12 +126,12 @@ void loop() {
     if (fp == stdin) { ok(); }
     if (fgets(tib, 100, fp) == tib) {
         if (fp == stdin) { doHistory(tib); }
-        strToTIB(nTib, tib);
+        executeString(nTib, tib);
         return;
     }
     if (input_fp) {
         fclose(input_fp);
-        input_fp = NULL;
+        input_fp = input_pop();
     }
 }
 
@@ -140,7 +153,7 @@ void process_arg(char* arg)
 int main(int argc, char** argv) {
     vmInit();
     // 0(Y: dump all code currently defined)
-    strToTIB(100, "`D XIF NN hQ 0[I C@, IQC@';= IC@96= &(N)];`");
+    executeString(100, "`D XIF NN hQ 0[I C@, IQC@';= IC@96= &(N)];`");
 
     input_fn[0] = 0;
     input_fp = NULL;

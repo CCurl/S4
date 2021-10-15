@@ -31,5 +31,6 @@ extern int charAvailable();
 	extern void pinMode(int pin, int mode);
 	extern long millis();
 	extern FILE *input_fp;
-	extern byte isBye;
+	extern byte isBye, isError;
+	extern void input_push(FILE* fp);
 #endif // __PC__
