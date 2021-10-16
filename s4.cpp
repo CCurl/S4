@@ -229,14 +229,13 @@ void dumpAll() {
 }
 
 addr doFile(addr pc) {
-    long ir = USER[pc++];
+    CELL ir = USER[pc++];
     switch (ir) {
     case 'A': pc += getNum3(pc, 'A', 'Z', ir);          // Function Address (NOT FILE!)
-        push(FUNC[ir]);
+        push(isError ? 0 : FUNC[ir]);
         break;
-    case 'C':
-        if (T) { fclose((FILE*)T); }
-        DROP1;
+    case 'C': ir = pop();                               // File Close
+        if (ir) { fclose((FILE*)ir); }
         break;
     case 'L':  ir = pop();                              // File Load
         if (input_fp) { input_push(input_fp); }

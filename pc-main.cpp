@@ -152,7 +152,7 @@ void process_arg(char* arg)
 int main(int argc, char** argv) {
     vmInit();
     // 0(Y: dump all code currently defined)
-    executeString(100, "`D XIF NN hQ 0[I C@, IQC@';= IC@96= &(N)];`");
+    executeString(100, "`DC XIF NNhQ0[I C@,I QC@';=I C@96=&(N)];`");
 
     input_fn[0] = 0;
     input_fp = NULL;
