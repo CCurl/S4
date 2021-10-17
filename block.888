@@ -24,5 +24,4 @@ N"The Mandelbrot Set"
 `X 490V x; 1  95 [  :O x  8+ x;];`
 `Y 340V y; 1  35 [N :X y 20+ y;];`
 `M 0t; T :Y T $- N t." iterations, " . " ms";`
-200s;
-:M
+200s;:M

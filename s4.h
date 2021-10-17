@@ -16,13 +16,14 @@ extern void setCodeByte(addr loc, char ch);
 extern void printChar(const char ch);
 extern void printString(const char*);
 extern void printStringF(const char* fmt, ...);
+extern addr functionAddress(const char* fn);
 extern int getChar();
 extern int charAvailable();
 extern void input_push(FILE* fp);
 extern FILE *input_pop();
 extern FILE *input_fp;
 
-#ifdef __PC__
+#if __PC__
 	#define INPUT 0
 	#define INPUT_PULLUP 1
 	#define OUTPUT 2
