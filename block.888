@@ -21,8 +21,7 @@ N"The Mandelbrot Set"
 `C t+\ a#*s/c; b#*s/d; c d + k#*>(i m; ;) a b*100/y +b; c d -x +a; i+\;`
 `L 0a; 0b; 0i; s m; 1{\ :C i m <};`
 `O :L i 40+ #126>(\32),;`
-`X 490 O x; 1  95 [  :O x  8+ x;];`
-`Y 340 O y; 1  35 [N :X y 20+ y;];`
+`X 490V x; 1  95 [  :O x  8+ x;];`
+`Y 340V y; 1  35 [N :X y 20+ y;];`
 `M 0t; T :Y T $- N t." iterations, " . " ms";`
-200s;
-:M
+200s;:M

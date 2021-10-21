@@ -60,6 +60,21 @@ void vmInit() {
     REG['Z' - 'A'] = USER_SZ;
 }
 
+void setCell(byte *to, CELL val) {
+    *(to++) = (val)       & 0xff;
+    *(to++) = (val >>  8) & 0xff;
+    *(to++) = (val >> 16) & 0xff;
+    *(to)   = (val >> 24) & 0xff;
+}
+
+CELL getCell(byte *from) {
+    CELL val = *(from++);
+    val |= (*from++) <<  8;
+    val |= (*from++) << 16;
+    val |= (*from)   << 24;
+    return val;
+}
+
 void printStringF(const char* fmt, ...) {
     va_list args;
     va_start(args, fmt);
@@ -229,14 +244,17 @@ void dumpAll() {
 }
 
 addr doFile(addr pc) {
-    long ir = USER[pc++];
+    CELL ir = USER[pc++];
     switch (ir) {
     case 'A': pc += getNum3(pc, 'A', 'Z', ir);          // Function Address (NOT FILE!)
-        push(FUNC[ir]);
+        push(isError ? 0 : FUNC[ir]);
         break;
-    case 'C':
-        if (T) { fclose((FILE*)T); }
-        DROP1;
+    case 'B': ir = pop();                               // Open block file
+        sprintf(buf, "block.%03ld", T);
+        T = (CELL)fopen(buf, ir ? "wt" : "rt");
+        break;
+    case 'C': ir = pop();                               // File Close
+        if (ir) { fclose((FILE*)ir); }
         break;
     case 'L':  ir = pop();                              // File Load
         if (input_fp) { input_push(input_fp); }
@@ -303,26 +321,24 @@ addr doExt(addr pc) {
         if (ir == 'A' && input_fp) { fclose(input_fp); input_fp = input_pop(); } 
         break;
     case 'P': pc = doPin(pc);                       break;           // Pins
+    case 'R': vmInit();                             break;           // Reset
     case 'S': sys.dsp = 0;                          break;           // Stack reset
     case 'T': isBye = 1;                            break;           // exiT
-    case 'R': vmInit();                             break;           // Reset
     }
     return pc;
 }
 
 addr run(addr pc) {
     CELL t1, t2;
-    byte* bp;
     isError = 0;
     while (!isError && (0 < pc)) {
         byte ir = USER[pc++];
         switch (ir) {
         case 0: return -1;
         case ' ': while (USER[pc] == ' ') { pc++; } break;  // 32
-        case '!': t2 = pop(); t1 = pop();                   // 33
-            *(long*)&USER[t2] = t1;
-            break;
-        case '"': buf[1] = 0;                          // 34
+        case '!': t2 = pop();                               // 33
+            setCell(&USER[t2], pop());              break;
+        case '"': buf[1] = 0;                               // 34
             while ((pc < USER_SZ) && (USER[pc] != '"')) {
                 buf[0] = USER[pc++];
                 printString(buf);
@@ -345,18 +361,18 @@ addr run(addr pc) {
         case '.': printStringF("%ld", pop());   break;  // 46
         case '/': t1 = pop();                           // 47
             if (t1) { T /= t1; }
-            else { isError = 1; }
+            else { printString("-zeroDiv-"); isError = 1; }
             break;
         case '0': case '1': case '2': case '3': case '4':   // 48-57
         case '5': case '6': case '7': case '8': case '9':
             push(ir - '0');
             t1 = USER[pc] - '0';
-            while ((0 <= t1) && (t1 <= 9)) {
+            while (BetweenI(t1, 0, 9)) {
                 T = (T * 10) + t1;
                 t1 = USER[++pc] - '0';
             }
             break;
-        case ':': pc = getRegFuncNum(pc, 'A', 'Z', t1);          // 58
+        case ':': pc = getRegFuncNum(pc, 'A', 'Z', t1);        // 58
             if ((!isError) && (FUNC[t1])) { rpush(pc); pc = FUNC[t1]; }
             break;
         case ';': if (sys.rsp < 1) { sys.rsp = 0;  return pc; }
@@ -365,7 +381,7 @@ addr run(addr pc) {
         case '=': t1 = pop(); T = T == t1 ? 1 : 0;     break;  // 61
         case '>': t1 = pop(); T = T > t1  ? 1 : 0;     break;  // 62
         case '?': /* FREE */                           break;  // 63
-        case '@': T = *(long*)&USER[T];                break;  // 64
+        case '@': T = getCell(&USER[T]);               break;  // 64
         case 'A': ir = USER[pc++];
             if (ir == '@') { T = *(byte *)T; }
             if (ir == '!') { *(byte *)T = N & 0xff; DROP2; }
@@ -375,10 +391,7 @@ addr run(addr pc) {
             if (ir == '@') { T = USER[T]; }
             if (ir == '!') { USER[T] = (byte)N; DROP2; }
             break;
-        case 'D': t2 = pop();  t1 = pop(); // Open block file
-            sprintf(buf, "block.%03ld", t1);
-            push((CELL)fopen(buf, t2 ? "wt" : "rt"));
-            break;
+        case 'D': T--;                                 break;
         case 'E': /* FREE */                           break;
         case 'F': T = ~T;                              break;
         case 'G': pc = getRegFuncNum(pc, 'A', 'Z', t1);
@@ -395,31 +408,25 @@ addr run(addr pc) {
         case 'J': pc = doIJK(pc, ir);                  break;
         case 'K': ir = USER[pc++];
             if (ir == '?') { push(charAvailable()); }
-            if (ir == 'b') { push(getChar()); }
+            else { --pc; push(getChar()); }
             break;
-        case 'L': N = N << T; DROP1;                   break;
-        case 'M': ir = USER[pc++];
-            bp = (byte*)T;
-            if (ir == '@') { T = *(long *)bp; }
-            if (ir == '!') {
-                t1 = N; DROP2;
-                *(bp++) = ((t1) & 0xff);
-                *(bp++) = ((t1 >> 8) & 0xff);
-                *(bp++) = ((t1 >> 16) & 0xff);
-                *(bp++) = ((t1 >> 24) & 0xff);
-            }                                          break;
+        case 'L': t1 = pop(); T = T << t1;             break;
+        case 'M': t2 = T;  ir = USER[pc++];
+            if (ir == '@') { T = getCell((byte *)t2); }
+            if (ir == '!') { DROP1; setCell((byte *)t2, pop()); }
+            break;
         case 'N': printString("\r\n");                 break;
-        case 'O': T = -T;                              break;
+        case 'O': /* FREE */                           break;
         case 'P': T++;                                 break;
-        case 'Q': T--;                                 break;
-        case 'R': N = N >> T; DROP1;                   break;
+        case 'Q': /* FREE */                           break;
+        case 'R': t1 = pop(); T = T >> t1;             break;
         case 'S': t2 = N; t1 = T;                      // SLASH-MOD
             if (t1 == 0) { isError = 1; }
             else { N = (t2 / t1); T = (t2 % t1); }
             break;
         case 'T': push(millis());                      break;
         case 'U': if (T < 0) { T = -T; }               break;
-        case 'V': /* FREE */                           break;
+        case 'V': T = -T;                              break;
         case 'W': delay(pop());                        break;
         case 'X': pc = doExt(pc);                      break;
         case 'Y': /* FREE */                           break;

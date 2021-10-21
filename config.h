@@ -2,22 +2,22 @@
 
 #define __PC__      1
 #define PICO        0
-#define XIAO        0
+#define XIAO        1
 #define __SERIAL__  1
 #define TIB_SZ     80
 
-#ifdef __PC__
+#if __PC__
 	#define USER_SZ       (512*1024)
 	#define NUM_FUNCS     (MAX_FUNCS)
 	#define NUM_REGS      (MAX_REGS)
 	#ifdef _WIN32
-		#define _CRT_SECURE_NO_WARNINGS
-		#include <Windows.h>
-		#include <conio.h>
-	#else
-		#define __LINUX__
-		#include <unistd.h>
-	#endif
+			#define _CRT_SECURE_NO_WARNINGS
+			#include <Windows.h>
+			#include <conio.h>
+		#else
+			#define __LINUX__
+			#include <unistd.h>
+		#endif
 #else
 	#include <Arduino.h>
 	#if PICO

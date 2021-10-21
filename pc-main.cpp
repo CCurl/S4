@@ -2,7 +2,7 @@
 
 #include "config.h"
 
-#ifdef __PC__
+#if __PC__
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -152,7 +152,7 @@ void process_arg(char* arg)
 int main(int argc, char** argv) {
     vmInit();
     // 0(Y: dump all code currently defined)
-    executeString(100, "`D XIF NN hQ 0[I C@, IQC@';= IC@96= &(N)];`");
+    executeString(100, "`CD hD0[IC@#,96=IDC@';=&(N)];`");
 
     input_fn[0] = 0;
     input_fp = NULL;

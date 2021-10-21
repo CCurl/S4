@@ -5,46 +5,41 @@ S4 examples:
     ; here is another comment
   
 ;   if (c) { print("Yes") } else { print("No") }
-    C #("Yes")~("No")
+    c#("Yes")~("No")
 
  ; x = (a == b) ? c : d;
-    AB = #(C$)~(D) X;
-
- ; To conditionally define a function: 
-    1( {xx "xx will be defined"} )
-    0( {yy "yy will not be defined"} )
-    NOTE: if there is a ')' in the function, the definition may fail
+    a b = #(c$)~(d) x;
 
 ; To make sure F < T
      S4 code:             %%>($)
      Forth equivalent:    OVER OVER > IF SWAP THEN
      C equivalent:        if (f > t) { int x = f; f = t; t = x; }
 
-; To do something (in this case, call :lp) N times:
-    N1[:lp 1-]
+; To do something (in this case, call :LP) n times:
+    n 1[:LP]
 
 ; To print numbers from F to T:
-    S4 code:             FT[xI.b]
-    Forth equivalent:    F T FOR I . NEXT
+    S4 code:             f t[I.B]
+    Forth equivalent:    f t FOR I . NEXT
     C equivalent:        for (int i = F; i <= T; i)) { printf("%d ", i); }
 
 ; One way to copy N bytes from A to B
-    {b00 D;S; 1[S+ c@ D+ c!]}   ; B00 (N F T--) copy bytes
-    NAB:b00
+    `CPY d;s; 1[s+ C@ d+ C!];`   ; Define function CPY
+    n a b :CPY
 
-; One way to copy N longs from A to B
-    {b01 D;S; 1[S+ @ D+ !]}     ; B01 (N F T--) copy longs
-    NAB:b01
+; One way to copy N longs from A to B (N A B--)
+    `CPY d;s; 1[s @ d ! s4+s; d4+d;];`   ; Define function CPY
+    n a b :CPY
 
 ; A simple benchmark for a 100 million decrement and FOR loop:
-    {a02 #10<(0.).}             ; A02 (N--)     print N with 0 pad to 2
-    {a03 #100<(0.)ja02}         ; A03 (N--)     print N with 0 pad to 3
-    {a51 t$-1ks$."."ja03}       ; A51 (T--)     ELAPSED
-    100kkt$[[q]]:a51
-    100kkt$1[]:a51
+    `NB 0(n--)#10<(0.).;`             ; print N with 0 pad to 2
+    `NC 0(n--)#100<(0.)GNB;`          ; print N with 0 pad to 3
+    `EL 0(T--)T$-kS$."."GNC;`         ; ELAPSED
+    100 k k * * T$ {D}:EL
+    100 k k * * T$ 1[]:EL
 
-; One way to display the currently defined code:
-    0Hq[xId@#,h7D=(n)]
+; Define a function to display the currently defined code:
+    `DC hD0[IC@#,96=IDC@';=&(N)];`
 
 ; To exit S4:
-    xT
+    XT

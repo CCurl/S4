@@ -7,33 +7,37 @@
         while (!charAvailable()) {}
         return mySerial.read();
     }
+    void printChar(char c) { mySerial.print(c); }
     void printString(const char* str) { mySerial.print(str); }
 #else
     int charAvailable() { return 0; }
     int getChar() { return 0; }
     void printString(const char* str) { }
+    void printChar(char c) { }
 #endif
 
-#define TIB       (USER_SZ - TIB_SZ - 1)
+static int tib = (USER_SZ - 100);
 
 void loadCode(const char* src) {
-    int i = TIB;
+    int i = tib;
     while (*src) { setCodeByte(i++, *(src++)); }
     setCodeByte(i, 0);
-    run(TIB);
+    run(tib);
 }
+
+void input_push(FILE *fp) { }
+FILE *input_pop() { return NULL; }
 
 // ********************************************
 // * HERE is where you load your default code *
 // ********************************************
 
 void loadBaseSystem() {
-    loadCode("0( MB: ManageButton )");
-    loadCode("0( SC: SetContext   )");
-    loadCode("0( RD: Read pin     )");
-    loadCode("0( CQ: Changed?     )");
-    loadCode("0( RV: RememberVal  )");
-    loadCode("0( RA: todo         )");
+    loadCode("`CD hD0[IC@#,96=IDC@';=&(N)];`");
+    loadCode("`I %%S~(\\\\~;)%<(\\;)PPGI;`");
+    loadCode("`C 4c; 11 1{\\ #3 :I (c+\\) PP %% >}\\\\c ;`");
+    loadCode("`B N\"# primes in \" #. \": \"T$ :C . T$- \" (\" . \" ms)\";`");
+    loadCode("`L 256$ 1[#+# :B]\\;`");
 }
 
 void ok() {
@@ -43,23 +47,23 @@ void ok() {
 }
 
 void handleInput(char c) {
-    static int tibHERE = TIB;
+    static int tibHERE = tib;
     if (c == 13) {
         printString(" ");
         setCodeByte(tibHERE, 0);
-        run(TIB);
-        tibHERE = TIB;
+        run(tib);
+        tibHERE = tib;
         ok();
         return;
     }
-    if ((c == 8) && (TIB < tibHERE)) {
+    if ((c == 8) && (tib < tibHERE)) {
         tibHERE--;
         char b[] = {8, 32, 8, 0};
         printString(b);
         return;
     }
     if (c == 9) { c = 32; }
-    if ((32 <= c) && (tibHERE < CODE_SZ)) {
+    if ((32 <= c) && (tibHERE < USER_SZ)) {
         setCodeByte(tibHERE++, c);
         char b[] = {c, 0};
         printString(b);
@@ -95,6 +99,6 @@ void loop() {
 
     while ( charAvailable() ) { handleInput(getChar()); }
 
-    addr a = functionAddress(0);
+    addr a = functionAddress("AAR");
     if (a) { run(a); }
 }

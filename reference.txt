@@ -7,21 +7,20 @@
 -  (a b--a-b)     subtraction
 *  (a b--a*b)     multiplication
 /  (a b--a/b)     division
-k  (T--n)         multiply TOS by 1000
-o  (T--n)         set TOS to (-T)
-p  (T--n)         increment TOS by 1
-q  (T--n)         decrement TOS by 1
-s  (a n--q r)     q: a/n, r: a MODULO n (/MOD)
-u  (T--n)         set TOS the absolute value of T
+O  (T--n)         n: -T (NEGATE)
+P  (T--n)         n: T+1 (increment)
+Q  (T--n)         n: T-1 (decrement)
+S  (a n--q r)     q: a/n, r: a MODULO n (/MOD)
+U  (T--n)         n: ABS(T) (absolute)
 
 
 *** BIT MANIPULATION ***
 &  (a b--n)       and
 |  (a b--n)       or
 ^  (a b--n)       xor
-f  (n1--n2)       flip bits: (one's complement) (e.e - 1011 => 0100)
-r  (v n--t)       t: v SHIFT-RIGHT n
-v  (v n--t)       t: v SHIFT-LEFT n
+F  (n1--n2)       flip bits: (one's complement) (e.e - 1011 => 0100)
+R  (v n--t)       t: v RIGHT-SHIFT n
+L  (v n--t)       t: v LEFT-SHIFT n
 
 
 *** STACK ***
@@ -29,126 +28,119 @@ v  (v n--t)       t: v SHIFT-LEFT n
 \  (a b--a)       Drop TOS                               (Forth DROP)
 $  (a b--b a)     Swap top 2 stack items                 (Forth SWAP)
 %  (a b--a b a)   Push 2nd                               (Forth OVER)
-xS (?--)          Clear the stack, remove all entries    (Forth 0SP)
+XS (?--)          Clear the stack, remove all entries    (Forth 0SP)
 
 
 *** MEMORY ***
-  NOTEs: There are 3 address spaces, CODE, VAR, and ABSOLUTE
-         CODE and MEMORY addresses are indexes into that specific area of memory
+  NOTEs: There are 2 address spaces, USER and ABSOLUTE
+         USER addresses are indexes into USER area of memory
          ABSOLUTE addresses are the addresses of the entire machine
 
-          ** these use 8-bit indexing **
-       E.G. - '7 4 * c@' returns the lowest byte of HERE
-c@    (a--n)      Fetch byte n from VAR address a
-c!    (n a--)     Store byte n  to  VAR address a
-d@    (a--n)      Fetch byte n from CODE address a
-d!    (n a--)     Store byte n  to  CODE address a
-a@    (a--n)      Fetch byte n from ABSOLUTE address a
-a!    (n a--)     Store byte n  to  ABSOLUTE address a
-m@    (a--n)      Fetch long n from ABSOLUTE address a
-m!    (n a--)     Store long n  to  ABSOLUTE address a
-
-          **these use 32-bit indexing **
-       E.G. - '7 @' returns the value of HERE
-@     (a--n)      Fetch long from VAR address a
-!     (n a--)     Store long n to VAR address a
+C@    (a--n)      Fetch byte n from USER address a
+C!    (n a--)     Store byte n  to  USER address a
+@     (a--n)      Fetch CELL from USER address a
+!     (n a--)     Store CELL n to USER address a
+A@    (a--n)      Fetch byte n from ABSOLUTE address a
+A!    (n a--)     Store byte n  to  ABSOLUTE address a
+M@    (a--n)      Fetch CELL n from ABSOLUTE address a
+M!    (n a--)     Store CELL n  to  ABSOLUTE address a
 
 
 *** REGISTERS ***
-  NOTES: The registers are stored in VAR addresses [0..25]
-         Register initial values:
-         - C: Size of CODE area
-         - D: Start of CODE area
-         - F: Start of FUNCTIONS array
-         - H: HERE **special**
-         - M: Start of VARS area
-         - N: Size of FUNCTIONS array
-         - S: Start of system structure
-         - V: First available VAR address (byte address)
-         - Z: Size of VARS area
-         - All other registers set to 0
-X   (--n)         Push value of register X (X:[A..Z])
-X+  (--n)         Push value of register X, then increment the register by 1
-X-  (--n)         Push value of register X, then decrement the register by 1
-X;  (n--)         Set register X value to n
+  NOTES: A register name is be 1-3 lowercase characters: [a..zzz]
+      Register initial values:
+         - f: Number of available functions
+         - g: Start of register memory (ABSOLUTE)
+         - h: HERE **special**
+         - k: 1000
+         - r: Number of available registers
+         - s: Start of system structure (ABSOLUTE)
+         - u: Start of USER memory (ABSOLUTE)
+         - z: Size of USER area
+         - All other registers are set to 0
+x   (--n)         Push value of register X
+x+  (--n)         Push value of register X, then increment the register by 1
+x-  (--n)         Push value of register X, then decrement the register by 1
+x;  (n--)         Set register X value to n
 
 
 *** FUNCTIONS ***
-  NOTES: 1) Function names are exactly 3 characters: X##
-         2) A function cannot have '}' embedded in it (eg - {273 "TE}ST"} will not compile correctly)
+  NOTES: 1) Function names are 1 to 3 uppercase characters: [A.ZZZ]
+         2) A function cannot have '`' embedded in it (eg - {273 "TE}ST"} will not compile correctly)
             Use {273 "TE"125,"ST"} instead
-{X## (--)         Define function XXX (XX:[000..999])
-}    (--)         End of function definition
-:X## (--)         Call function XXX
-jX## (--)         Jump to function XXX (eg - tail call optimization)
-e    (A--)        Call address A
-;    (--)         Return from function immediately (i.e. - before reaching '}')
+`XXX (--)         Begin function definition. Copy chars to HERE++ until next '`'
+``   (--)         Remove last '`'. Copy chars to HERE++ until next '`'
+:XXX (--)         Call function XXX
+;    (--)         Return from routine: PC = rpop()
                   NOTE: returning while inside of a loop is not supported; behavior will be undefined.
-                  NOTE: outside of a function, ';' can be used fo comment out the rest of the line
-**BROKEN**   xFN  (n1--n2)     Resolve the function code address for function #n1. 0 means not defined.
+                  NOTE: outside of ``, ';' can be used to comment out the rest of the line
+GXXX (--)         Goto to function XXX (a simple tail call optimization)
+XFNXXX (--n)      n: the code address for function XXX. n=0 means not defined.
 
 
 *** INPUT/OUTPUT ***
 .     (N--)       Output N as decimal number
 ,     (N--)       Output N as character (Forth EMIT)
-b     (--)        Output a BLANK (32,)
-n     (--)        Output a NEWLINE (13,10,)
-z     (A--)       Output the NULL terminated string at A.
-**BROKEN**   ?     ( --key)    Read one key, don't wait for ENTER. ()
-"     (--)        Output characters until next '"'
+B     (--)        Output a BLANK (32,)
+N     (--)        Output a NEWLINE (13,10,)
+Z     (A--)       Output the NULL terminated string at A.
+K?    (--n)       n: 1=> a char is available, 0=>no char available
+K     (--b)       b: [1..255]. Read one char, do not wait for ENTER.
+"     (--)        Output characters until the next '"'
 _     (a1--a2)    String: copy string to address (a1) (eg - 1000_hello_)
-                    Pushes address (a2) after terminating NULL
-hX    (--n)       Scan HEX number X until non hex-digit (not case-sensitive, h3Da0 == h3dA0 )
+                    a2: address after terminating NULL
+Hxxx  (--n)       Scan HEX number x until non hex-digit (not case-sensitive, h3Da0 == h3dA0 )
 0..9  (--n)       Scan DECIMAL number until non digit
                      to specify multiple values, separate them by space (4711 3333)
-                     to enter a negative number, use 'o' (eg - '32o')
-'x   (--n)        Push the ascii value of x (x: [any char possible])
+                     to enter a negative number, use 'V' (eg - '490V')
+'x    (--n)       n: the ASCII value of x
 
 
-*** CONDITIONS/FLOW CONTROL ***
+*** CONDITIONS/LOOPS/FLOW CONTROL ***
 <   (a b--f)      f: (a < b) ? 1 : 0;
 =   (a b--f)      f: (a = b) ? 1 : 0;
 >   (a b--f)      f: (a > b) ? 1 : 0;
 ~   (x--f)        f: (x = 0) ? 1 : 0;
 (   (f--)         if (f != 0), execute code in '()', else skip until ')'
           NOTES: 1. You can NOT nest IFs
-                 2. '()' cannot have ')' embedded in in (EG - a@("TE)ST"1-) fails when a=0)
-                    USE a@("TE"41,"ST") instead
-[   (F T --)     FOR: start a For/Next loop. if (T < F), swap F and T 
-]   ( -- )       NEXT: increment index (xI) and loop if (xI < T)
+                 2. For an IF inside another IF, put the inner IF into a function.
+                 3. '()' cannot have ')' embedded in in (EG - A@("TE)ST"1-) fails when a=0)
+                    USE A@("TE"41,"ST") instead. Sorry.
+[   (S E --)     FOR: start a For/Next loop. if (E < S), swap E and S
+]   ( -- )       NEXT: increment index (I) and loop if (I < E)
           NOTE: For loops CAN be nested
-xI  ( -- n)      Index: push the index of the current FOR loop
-xJ  ( -- n)      Index: push the index of the 1st inner FOR loop
-xK  ( -- n)      Index: push the index of the 2nd inner FOR loop
-j   (X##--)      Jump to function X##
-[[  (f--f)        Begin WHILE loop. If (f==0), skip code until ']]'
-]]  (f--)         if (f != 0), repeat the loop, else drop f and continue.
+I  ( -- n)        n: the index of the current FOR loop
+J  ( -- n)        n: the index of the 1st inner FOR loop
+XC   (A--)        Call address A
+XG   (A--)        Goto address A
+{    (f--f)       Begin WHILE loop. If (f==0), skip code until '}'
+}    (f--)         if (f != 0), repeat the loop, else drop f and continue.
           NOTES: 1. You can NOT nest LOOPs
-                 2. '[[]]' cannot have a ']' embedded in it (EG - X[["TE]ST"1-]] fails when a=0)
-                    USE X[["TE"93,"ST"1-]] instead.
-                 3. To put a FOR loop in a WHILE loop, put it into a function.
+                 2. '{}' cannot have a '}' embedded in it (EG - A@{"TE]ST"1-} fails when A=0)
+                    USE A@{"TE"93,"ST"1-} instead. Sorry.
 
 
 *** OTHER ***
-iA    (--)         Info: All (CFMRS)
-iC    (--)         Info: Code
-iF    (--)         Info: Functions
-iM    (--)         Info: Memory
-iR    (--)         Info: Registers
-iS    (--)         Info: Stack
-l     (n--)        Load code from block (block.nnn)
-t     (--n)        Time (Arduino: millis(), Windows: GetTickCount())
-w     (n--)        Wait (Arduino: delay(),  Windows: Sleep())
-xFO   (fn md--fh)  PC-File: open (fn/md: addr of name/mode, use `S"")
-xFR   (fh--c n)    PC-File: read 1 char (n=0 means EOF)
-xFW   (c fh--)     PC-File: write 1 char
-xFC   (fh--)       PC-File: close
-xPI   (p--)        Arduino: pin input  (pinMode(p, INPUT))
-xPU   (p--)        Arduino: pin pullup (pinMode(p, INPUT_PULLUP))
-xPO   (p--)        Arduino: pin output (pinMode(p, OUTPUT)
-xPRA  (p--n)       Arduino: pin read analog  (n = analogRead(p))
-xPRD  (p--n)       Arduino: pin read digital (n = digitalRead(p))
-xPWA  (n p--)      Arduino: pin write analog  (analogWrite(p, n))
-xPWD  (n p--)      Arduino: pin write digital (digitalWrite(p, n))
-xT    (--)         Exit S4
-xX    (--)         Reset S4 to initial state
+XIA   (--)         Info: All (CFMRS)
+XIC   (--)         Info: Code
+XIF   (--)         Info: Functions
+XIR   (--)         Info: Registers
+XIS   (--)         Info: Stack
+XFL   (n--)        Load code from block (block.nnn)
+XLA   (--)         Load Abort: to stop loading a block (eg - if the block has already been loaded)
+T     (--n)        Time (Arduino: millis(), Windows: GetTickCount())
+W     (n--)        Wait (Arduino: delay(),  Windows: Sleep())
+XFO   (fn md--fh)  PC-File: open (fn/md: addr of name/mode, use N#_Name_#_Mode_\)
+XFR   (fh--c n)    PC-File: read 1 char (n=0 means EOF)
+XFW   (c fh--)     PC-File: write 1 char
+XFC   (fh--)       PC-File: close
+XFC   (N f--fh)    PC-File: open block file N (block.NNN) f: 0=>Read, else Write
+XPI   (p--)        Arduino: pin input  (pinMode(p, INPUT))
+XPU   (p--)        Arduino: pin pullup (pinMode(p, INPUT_PULLUP))
+XPO   (p--)        Arduino: pin output (pinMode(p, OUTPUT)
+XPRA  (p--n)       Arduino: pin read analog  (n = analogRead(p))
+XPRD  (p--n)       Arduino: pin read digital (n = digitalRead(p))
+XPWA  (n p--)      Arduino: pin write analog  (analogWrite(p, n))
+XPWD  (n p--)      Arduino: pin write digital (digitalWrite(p, n))
+XT    (--)         Exit S4
+XR    (--)         Reset S4 to initial state
