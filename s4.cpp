@@ -72,8 +72,8 @@ void printStringF(const char* fmt, ...) {
 
 int hexNum(char x) {
     if (BetweenI(x, '0', '9')) { return x - '0'; }
-    if (BetweenI(x, 'A', 'Z')) { return x - 'A'; }
-    if (BetweenI(x, 'a', 'z')) { return x - 'a'; }
+    if (BetweenI(x, 'A', 'Z')) { return x - 'A' + 10; }
+    if (BetweenI(x, 'a', 'z')) { return x - 'a' + 10; }
     return -1;
 }
 
