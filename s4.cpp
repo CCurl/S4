@@ -12,8 +12,9 @@
 
 typedef struct {
     addr pc;
-    long from;
-    long to;
+    CELL from;
+    CELL to;
+    addr end;
 } LOOP_ENTRY_T;
 
 struct {
@@ -129,7 +130,7 @@ addr getRegFuncNum(addr pc, char st, char en, CELL& num) {
 addr doBegin(addr pc) {
     rpush(pc);
     if (T == 0) {
-        while ((pc < USER_SZ) && (USER[pc] != ']')) { pc++; }
+        while ((pc < USER_SZ) && (USER[pc] != '}')) { pc++; }
     }
     return pc;
 }
@@ -147,6 +148,7 @@ addr doFor(addr pc) {
         x->pc = pc;
         x->to = pop();
         x->from = pop();
+        x->end = 0;
         if (x->to < x->from) {
             push(x->to);
             x->to = x->from;
@@ -160,6 +162,7 @@ addr doNext(addr pc) {
     if (L < 1) { L = 0; }
     else {
         LOOP_ENTRY_T* x = &sys.lstack[L - 1];
+        x->end = pc;
         ++x->from;
         if (x->from <= x->to) { pc = x->pc; }
         else { L--; }
@@ -180,7 +183,7 @@ void dumpCode() {
     if (HERE == 0) { printString("\r\n(no user defined)"); return; }
     int ti = 0, x = HERE, npl = 20;
     char txt[32];
-    for (long i = 0; i < HERE; i++) {
+    for (addr i = 0; (CELL)i < HERE; i++) {
         if ((i % npl) == 0) {
             if (ti) { txt[ti] = 0;  printStringF(" ; %s", txt); ti = 0; }
             printStringF("\n\r%05d: ", i);
@@ -283,7 +286,7 @@ addr doFile(addr pc) {
 
 addr doPin(addr pc) {
     int ir = USER[pc++];
-    long pin = pop(), val = 0;
+    CELL pin = pop(), val = 0;
     switch (ir) {
     case 'I': pinMode(pin, INPUT);         break;
     case 'U': pinMode(pin, INPUT_PULLUP);  break;
@@ -342,8 +345,7 @@ addr run(addr pc) {
             while ((pc < USER_SZ) && (USER[pc] != '"')) {
                 buf[0] = USER[pc++];
                 printString(buf);
-            }
-            ++pc; break;
+            } ++pc; break;
         case '#': push(T);                      break;  // 35 (DUP)
         case '$': t1 = N; N = T; T = t1;        break;  // 36 (SWAP)
         case '%': push(N);                      break;  // 37 (OVER)
@@ -370,8 +372,7 @@ addr run(addr pc) {
             while (BetweenI(t1, 0, 9)) {
                 T = (T * 10) + t1;
                 t1 = USER[++pc] - '0';
-            }
-            break;
+            } break;
         case ':': pc = getRegFuncNum(pc, 'A', 'Z', t1);        // 58
             if ((!isError) && (FUNC[t1])) { rpush(pc); pc = FUNC[t1]; }
             break;
@@ -392,7 +393,10 @@ addr run(addr pc) {
             if (ir == '!') { USER[T] = (byte)N; DROP2; }
             break;
         case 'D': T--;                                 break;
-        case 'E': /* FREE */                           break;
+        case 'E': if (0 < L) {
+            LOOP_ENTRY_T* x = &sys.lstack[--L];
+            if (x->end) { pc = x->end; }
+        } break;
         case 'F': T = ~T;                              break;
         case 'G': pc = getRegFuncNum(pc, 'A', 'Z', t1);
             if ((!isError) && (FUNC[t1])) { pc = FUNC[t1]; }
@@ -402,13 +406,11 @@ addr run(addr pc) {
             while (0 <= t1) {
                 T = (T * 0x10) + t1;
                 t1 = hexNum(USER[++pc]);
-            }
-            break;
+            } break;
         case 'I': pc = doIJK(pc, ir);                  break;
         case 'J': pc = doIJK(pc, ir);                  break;
-        case 'K': ir = USER[pc++];
-            if (ir == '?') { push(charAvailable()); }
-            else { --pc; push(getChar()); }
+        case 'K': if (USER[pc] == '?') { ++pc; push(charAvailable()); }
+            else { push(getChar()); }
             break;
         case 'L': t1 = pop(); T = T << t1;             break;
         case 'M': t2 = T;  ir = USER[pc++];
