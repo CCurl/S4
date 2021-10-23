@@ -7,8 +7,9 @@
 #include <stdarg.h>
 #include "s4.h"
 
-#define STK_SZ   31
-#define HERE     REG[7]
+#define STK_SZ      31
+#define LSTACK_SZ    8
+#define HERE        REG[7]
 
 typedef struct {
     addr pc;
@@ -24,7 +25,7 @@ struct {
     addr  func[NUM_FUNCS];
     CELL  dstack[STK_SZ + 1];
     addr  rstack[STK_SZ + 1];
-    LOOP_ENTRY_T lstack[4];
+    LOOP_ENTRY_T lstack[LSTACK_SZ];
 } sys;
 
 byte isBye = 0, isError = 0;
@@ -128,21 +129,27 @@ addr getRegFuncNum(addr pc, char st, char en, CELL& num) {
 }
 
 addr doBegin(addr pc) {
-    rpush(pc);
     if (T == 0) {
         while ((pc < USER_SZ) && (USER[pc] != '}')) { pc++; }
+        return pc;
+    }
+    if (L < LSTACK_SZ) {
+        LOOP_ENTRY_T* x = &sys.lstack[L++];
+        x->pc = pc;
+        x->end = x->from = x->to = 0;
     }
     return pc;
 }
 
 addr doWhile(addr pc) {
-    if (T) { pc = R; }
-    else { DROP1;  rpop(); }
+    if (L < 1) { L = 0;  return pc; }
+    if (T) { pc = sys.lstack[L - 1].pc; }
+    else { L--; DROP1; }
     return pc;
 }
 
 addr doFor(addr pc) {
-    if (L < 4) {
+    if (L < LSTACK_SZ) {
         LOOP_ENTRY_T* x = &sys.lstack[L];
         L++;
         x->pc = pc;
@@ -159,14 +166,11 @@ addr doFor(addr pc) {
 }
 
 addr doNext(addr pc) {
-    if (L < 1) { L = 0; }
-    else {
-        LOOP_ENTRY_T* x = &sys.lstack[L - 1];
-        x->end = pc;
-        ++x->from;
-        if (x->from <= x->to) { pc = x->pc; }
-        else { L--; }
-    }
+    if (L < 1) { L = 0; return pc; }
+    LOOP_ENTRY_T* x = &sys.lstack[L-1];
+    ++x->from;
+    if (x->from <= x->to) { x->end = pc; pc = x->pc; }
+    else { L--; }
     return pc;
 }
 
