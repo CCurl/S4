@@ -110,7 +110,7 @@ addr doDefineFunction(addr pc) {
     int nc = getNum3(pc, 'A', 'Z', fn);
     if (isError) { return pc; }
     USER[HERE++] = '`';
-    FUNC[fn] = HERE+nc;
+    FUNC[fn] = (addr)HERE+nc;
     while (USER[pc] && USER[pc] !='`') { USER[HERE++] = USER[pc++]; }
     if (USER[pc] == '`') { 
         USER[HERE++] = USER[pc++];
@@ -342,10 +342,9 @@ addr run(addr pc) {
         byte ir = USER[pc++];
         switch (ir) {
         case 0: return -1;
-        case ' ': while (USER[pc] == ' ') { pc++; } break;  // 32
-        case '!': t2 = pop();                               // 33
-            setCell(&USER[t2], pop());              break;
-        case '"': buf[1] = 0;                               // 34
+        case ' ': while (USER[pc] == ' ') { pc++; }      break;  // 32
+        case '!': t2 = pop(); setCell(&USER[t2], pop()); break;  // 33
+        case '"': buf[1] = 0;                                    // 34
             while ((pc < USER_SZ) && (USER[pc] != '"')) {
                 buf[0] = USER[pc++];
                 printString(buf);
@@ -487,6 +486,6 @@ addr functionAddress(const char *fn) {
     USER[HERE+0] = fn[0];
     USER[HERE+1] = fn[1];
     USER[HERE+2] = fn[2];
-    getRegFuncNum(HERE, 'A', 'Z', t1);
+    getRegFuncNum((addr)HERE, 'A', 'Z', t1);
     return (t1 < 0) ? -1 : FUNC[t1];
 }

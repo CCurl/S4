@@ -120,7 +120,7 @@ void executeString(addr loc, const char *txt) {
 
 void loop() {
     char tib[100];
-    addr nTib = USER_SZ - 100;
+    addr nTib = (addr)USER_SZ - 100;
     FILE* fp = (input_fp) ? input_fp : stdin;
     if (fp == stdin) { ok(); }
     if (fgets(tib, 100, fp) == tib) {

@@ -5,7 +5,11 @@
 #define MAX_REGS  (26*26*26)
 #define MAX_FUNCS (26*26*26)
 typedef unsigned char byte;
+#if USER_SZ <= 0x10000
+typedef unsigned short addr;
+#else
 typedef unsigned long addr;
+#endif
 #define CELL long
 #define UCELL unsigned long
 
