@@ -40,10 +40,10 @@ C@    (a--n)      Fetch byte n from USER address a
 C!    (n a--)     Store byte n  to  USER address a
 @     (a--n)      Fetch CELL from USER address a
 !     (n a--)     Store CELL n to USER address a
-A@    (a--n)      Fetch byte n from ABSOLUTE address a
-A!    (n a--)     Store byte n  to  ABSOLUTE address a
-M@    (a--n)      Fetch CELL n from ABSOLUTE address a
-M!    (n a--)     Store CELL n  to  ABSOLUTE address a
+AC@   (a--n)      Fetch byte n from ABSOLUTE address a
+AC!   (n a--)     Store byte n  to  ABSOLUTE address a
+A@    (a--n)      Fetch CELL n from ABSOLUTE address a
+A!    (n a--)     Store CELL n  to  ABSOLUTE address a
 
 
 *** REGISTERS ***
@@ -75,7 +75,7 @@ x;  (n--)         Set register X value to n
                   NOTE: returning while inside of a loop is not supported; behavior will be undefined.
                   NOTE: outside of ``, ';' can be used to comment out the rest of the line
 GXXX (--)         Goto to function XXX (a simple tail call optimization)
-XFNXXX (--n)      n: the code address for function XXX. n=0 means not defined.
+XFNXXX (--n)      n: the code address for function XXX. n=0 means undefined.
 
 
 *** INPUT/OUTPUT ***
@@ -97,28 +97,28 @@ Hxxx  (--n)       Scan HEX number x until non hex-digit (not case-sensitive, h3D
 
 
 *** CONDITIONS/LOOPS/FLOW CONTROL ***
-<   (a b--f)      f: (a < b) ? 1 : 0;
-=   (a b--f)      f: (a = b) ? 1 : 0;
->   (a b--f)      f: (a > b) ? 1 : 0;
-~   (x--f)        f: (x = 0) ? 1 : 0;
-(   (f--)         if (f != 0), execute code in '()', else skip until ')'
+<   (a b--f)     f: (a < b) ? 1 : 0;
+=   (a b--f)     f: (a = b) ? 1 : 0;
+>   (a b--f)     f: (a > b) ? 1 : 0;
+~   (x--f)       f: (x = 0) ? 1 : 0;
+[   (F T--)      FOR: start a For/Next loop. if (T < F), swap T and F
+]   (--)         NEXT: increment index (I) and loop if (I <= T)
+             NOTE: For loops CAN be nested
+I   (--n)        n: the index of the current FOR loop
+J   (--n)        n: the index of the 1st inner FOR loop
+E   (--)         Exit the current FOR or WHILE loop
+{   (f--f)       Begin WHILE loop. If (f == 0), skip code until '}'
+}   (f--)        End WHILE loop. If (f != 0), repeat the loop, else drop f and continue.
+             NOTES: 1. You can NOT nest WHILE LOOPs
+                    2. '{}' cannot have '}' embedded in it (EG - a{"TE}ST"1-} fails when A=0)
+                       USE a{"TE"93,"ST"1-} instead. Sorry.
+(   (f--)        if (f != 0), execute code in '()', else skip until ')'
              NOTES: 1. You can NOT nest IFs
                     2. For an IF inside another IF, put the inner IF into a function.
                     3. '()' cannot have ')' embedded in in (EG - a("TE)ST"1-) fails when a=0)
                     USE a("TE"41,"ST") instead. Sorry.
-[   (F T--)      FOR: start a For/Next loop. if (T < F), swap T and F
-]   (--)         NEXT: increment index (I) and loop if (I < T)
-             NOTE: For loops CAN be nested
-I   (--n)         n: the index of the current FOR loop
-J   (--n)         n: the index of the 1st inner FOR loop
-E   (--)          Exit the current FOR or WHILE loop
-XC  (A--)         Call address A
-XG  (A--)         Goto address A
-{   (f--f)        Begin WHILE loop. If (f == 0), skip code until '}'
-}   (f--)         End WHILE loop. If (f != 0), repeat the loop, else drop f and continue.
-             NOTES: 1. You can NOT nest WHILE LOOPs
-                    2. '{}' cannot have '}' embedded in it (EG - a{"TE}ST"1-} fails when A=0)
-                       USE a{"TE"93,"ST"1-} instead. Sorry.
+XC  (A--)        Call address A
+XG  (A--)        Goto address A
 
 
 *** OTHER ***
@@ -127,7 +127,7 @@ XIC   (--)         Info: Code
 XIF   (--)         Info: Functions
 XIR   (--)         Info: Registers
 XIS   (--)         Info: Stack
-XFL   (n--)        Load code from block (block.nnn)
+XFL   (n--)        Load code from block (block.nnn). XFL can be nested.
 XLA   (--)         Load Abort: to stop loading a block (eg - if the block has already been loaded)
 T     (--n)        Time (Arduino: millis(), Windows: GetTickCount())
 W     (n--)        Wait (Arduino: delay(),  Windows: Sleep())
