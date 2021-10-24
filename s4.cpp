@@ -387,9 +387,14 @@ addr run(addr pc) {
         case '?': /* FREE */                           break;  // 63
         case '@': T = getCell(&USER[T]);               break;  // 64
         case 'A': ir = USER[pc++];
-            if (ir == '@') { T = *(byte *)T; }
-            if (ir == '!') { *(byte *)T = N & 0xff; DROP2; }
-            break;
+            if (ir == 'C') {
+                ir = USER[pc++];
+                if (ir == '@') { T = *(byte*)T; }
+                if (ir == '!') { *(byte*)T = N & 0xff; DROP2; }
+            } else {
+                if (ir == '@') { T = getCell((byte*)T); }
+                if (ir == '!') { setCell((byte*)T, N); DROP2; }
+            } break;
         case 'B': printChar(' ');                      break;
         case 'C': ir = USER[pc++];
             if (ir == '@') { T = USER[T]; }
@@ -399,6 +404,7 @@ addr run(addr pc) {
         case 'E': if (0 < L) {
             LOOP_ENTRY_T* x = &sys.lstack[--L];
             if (x->end) { pc = x->end; }
+            else { while ((USER[pc-1] != ']') && (USER[pc-1] != '}')) { ++pc; } }
         } break;
         case 'F': T = ~T;                              break;
         case 'G': pc = getRegFuncNum(pc, 'A', 'Z', t1);
@@ -416,10 +422,7 @@ addr run(addr pc) {
             else { push(getChar()); }
             break;
         case 'L': t1 = pop(); T = T << t1;             break;
-        case 'M': t2 = T;  ir = USER[pc++];
-            if (ir == '@') { T = getCell((byte *)t2); }
-            if (ir == '!') { DROP1; setCell((byte *)t2, pop()); }
-            break;
+        case 'M': /* FREE */                           break;
         case 'N': printString("\r\n");                 break;
         case 'O': /* FREE */                           break;
         case 'P': T++;                                 break;

@@ -102,22 +102,23 @@ Hxxx  (--n)       Scan HEX number x until non hex-digit (not case-sensitive, h3D
 >   (a b--f)      f: (a > b) ? 1 : 0;
 ~   (x--f)        f: (x = 0) ? 1 : 0;
 (   (f--)         if (f != 0), execute code in '()', else skip until ')'
-          NOTES: 1. You can NOT nest IFs
-                 2. For an IF inside another IF, put the inner IF into a function.
-                 3. '()' cannot have ')' embedded in in (EG - A@("TE)ST"1-) fails when a=0)
-                    USE A@("TE"41,"ST") instead. Sorry.
-[   (S E --)     FOR: start a For/Next loop. if (E < S), swap E and S
-]   ( -- )       NEXT: increment index (I) and loop if (I < E)
-          NOTE: For loops CAN be nested
-I  ( -- n)        n: the index of the current FOR loop
-J  ( -- n)        n: the index of the 1st inner FOR loop
-XC   (A--)        Call address A
-XG   (A--)        Goto address A
-{    (f--f)       Begin WHILE loop. If (f==0), skip code until '}'
-}    (f--)         if (f != 0), repeat the loop, else drop f and continue.
-          NOTES: 1. You can NOT nest LOOPs
-                 2. '{}' cannot have a '}' embedded in it (EG - A@{"TE]ST"1-} fails when A=0)
-                    USE A@{"TE"93,"ST"1-} instead. Sorry.
+             NOTES: 1. You can NOT nest IFs
+                    2. For an IF inside another IF, put the inner IF into a function.
+                    3. '()' cannot have ')' embedded in in (EG - a("TE)ST"1-) fails when a=0)
+                    USE a("TE"41,"ST") instead. Sorry.
+[   (F T--)      FOR: start a For/Next loop. if (T < F), swap T and F
+]   (--)         NEXT: increment index (I) and loop if (I < T)
+             NOTE: For loops CAN be nested
+I   (--n)         n: the index of the current FOR loop
+J   (--n)         n: the index of the 1st inner FOR loop
+E   (--)          Exit the current FOR or WHILE loop
+XC  (A--)         Call address A
+XG  (A--)         Goto address A
+{   (f--f)        Begin WHILE loop. If (f == 0), skip code until '}'
+}   (f--)         End WHILE loop. If (f != 0), repeat the loop, else drop f and continue.
+             NOTES: 1. You can NOT nest WHILE LOOPs
+                    2. '{}' cannot have '}' embedded in it (EG - a{"TE}ST"1-} fails when A=0)
+                       USE a{"TE"93,"ST"1-} instead. Sorry.
 
 
 *** OTHER ***
