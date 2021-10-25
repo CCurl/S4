@@ -143,7 +143,7 @@ addr doBegin(addr pc) {
 
 addr doWhile(addr pc) {
     if (L < 1) { L = 0;  return pc; }
-    if (T) { pc = sys.lstack[L - 1].pc; }
+    if (T) { sys.lstack[L-1].end = pc; pc = sys.lstack[L-1].pc; }
     else { L--; DROP1; }
     return pc;
 }
