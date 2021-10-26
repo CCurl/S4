@@ -273,10 +273,9 @@ addr doFile(addr pc) {
             char* fn = (char*)&USER[T];
             T = (long)fopen(fn, md);
         } break;
-    case 'R': if (T) {                                  // File Read
-            long n = fread(buf, 1, 1, (FILE*)T);
-            T = ((n) ? buf[0] : 0);
-            push(n);
+    case 'R': push(0); if (N) {                         // File Read
+            T = fread(buf, 1, 1, (FILE*)N);
+            N = ((T) ? buf[0] : 0);
         } break;
     case 'W': if (T) {                                  // File Write
             FILE* fh = (FILE*)pop();
