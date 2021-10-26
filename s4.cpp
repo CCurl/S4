@@ -136,7 +136,8 @@ addr doBegin(addr pc) {
     if (L < LSTACK_SZ) {
         LOOP_ENTRY_T* x = &sys.lstack[L++];
         x->pc = pc;
-        x->end = x->from = x->to = 0;
+        x->from = x->to = 0;
+        x->end = 0;
     }
     return pc;
 }
