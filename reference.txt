@@ -132,10 +132,10 @@ XLA   (--)         Load Abort: to stop loading a block (eg - if the block has al
 T     (--n)        Time (Arduino: millis(), Windows: GetTickCount())
 W     (n--)        Wait (Arduino: delay(),  Windows: Sleep())
 XFO   (fn md--fh)  PC-File: open (fn/md: addr of name/mode, use N#_Name_#_Mode_\)
-XFR   (fh--c n)    PC-File: read 1 char (n=0 means EOF)
+XFR   (fh--c n)    PC-File: read 1 char (n=0 means EOF). When n=0, c=0
 XFW   (c fh--)     PC-File: write 1 char
 XFC   (fh--)       PC-File: close
-XFC   (N f--fh)    PC-File: open block file N (block.NNN) f: 0=>Read, else Write
+XFB   (N f--fh)    PC-File: open block file N (block.NNN) f: 0=>Read, else Write
 XPI   (p--)        Arduino: pin input  (pinMode(p, INPUT))
 XPU   (p--)        Arduino: pin pullup (pinMode(p, INPUT_PULLUP))
 XPO   (p--)        Arduino: pin output (pinMode(p, OUTPUT)
