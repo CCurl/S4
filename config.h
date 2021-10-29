@@ -2,7 +2,8 @@
 
 #define __PC__      1
 #define PICO        0
-#define XIAO        1
+#define XIAO        0
+#define LEONARDO    1
 #define __SERIAL__  1
 #define TIB_SZ     80
 
@@ -26,12 +27,20 @@
 		#define NUM_FUNCS    (26*26)
 		#define NUM_REGS     (26*26)
 		#define ILED          25
-	#elif XIAO
-		#define mySerial SerialUSB
-		#define USER_SZ      (24*1024)
-		#define NUM_FUNCS    (26*3)
-		#define NUM_REGS     (26*3)
-		#define ILED          13
+  #elif XIAO
+    #define mySerial SerialUSB
+    #define USER_SZ      (24*1024)
+    #define NUM_FUNCS    (26*3)
+    #define NUM_REGS     (26*3)
+    #define ILED          13
+  #elif LEONARDO
+    #define mySerial Serial
+    #define USER_SZ      (4*256)
+    #define NUM_FUNCS    (26*1)
+    #define NUM_REGS     (26*1)
+    #define STK_SZ         8
+    #define LSTACK_SZ      2
+    #define ILED          13
 	#endif
 #endif // __PC__
 

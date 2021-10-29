@@ -7,8 +7,12 @@
 #include <stdarg.h>
 #include "s4.h"
 
-#define STK_SZ      31
-#define LSTACK_SZ    8
+#ifndef STK_SZ
+  #define STK_SZ      31
+#endif
+#ifndef LSTACK_SZ
+  #define LSTACK_SZ    8
+#endif
 #define HERE        REG[7]
 
 typedef struct {
@@ -54,11 +58,11 @@ void vmInit() {
     for (int i = 0; i < USER_SZ; i++) { USER[i] = 0; }
     for (int i = 0; i < NUM_FUNCS; i++) { FUNC[i] = 0; }
     REG['F' - 'A'] = NUM_FUNCS;
-    REG['G' - 'A'] = (long)&sys.reg[0];
+    REG['G' - 'A'] = (CELL)&sys.reg[0];
     REG['K' - 'A'] = 1000;
     REG['R' - 'A'] = NUM_REGS;
-    REG['S' - 'A'] = (long)&sys;
-    REG['U' - 'A'] = (long)&sys.user[0];
+    REG['S' - 'A'] = (CELL)&sys;
+    REG['U' - 'A'] = (CELL)&sys.user[0];
     REG['Z' - 'A'] = USER_SZ;
 }
 
@@ -257,6 +261,7 @@ addr doFile(addr pc) {
     case 'A': pc += getNum3(pc, 'A', 'Z', ir);          // Function Address (NOT FILE!)
         push(isError ? 0 : FUNC[ir]);
         break;
+#if __PC__
     case 'B': ir = pop();                               // Open block file
         sprintf(buf, "block.%03ld", T);
         T = (CELL)fopen(buf, ir ? "wt" : "rt");
@@ -284,6 +289,7 @@ addr doFile(addr pc) {
             buf[0] = (byte)pop();
             fwrite(buf, 1, 1, fh);
         } break;
+#endif
     }
     return pc;
 }
@@ -492,3 +498,5 @@ addr functionAddress(const char *fn) {
     getRegFuncNum((addr)HERE, 'A', 'Z', t1);
     return (t1 < 0) ? -1 : FUNC[t1];
 }
+
+CELL regVal(int regNum) { return REG[regNum]; }

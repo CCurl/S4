@@ -33,7 +33,7 @@ FILE *input_pop() { return NULL; }
 // ********************************************
 
 void loadBaseSystem() {
-    loadCode("`CD hD0[IC@#,96=IDC@';=&(N)];`");
+    loadCode("`D hD0[IC@#,96=IDC@';=&(N)];`");
     loadCode("`I %%S~(\\\\~;)%<(\\;)PPGI;`");
     loadCode("`C 4c; 11 1{\\ #3 :I (c+\\) PP %% >}\\\\c ;`");
     loadCode("`B N\"# primes in \" #. \": \"T$ :C . T$- \" (\" . \" ms)\";`");
@@ -83,9 +83,9 @@ void setup() {
 
 void loop() {
     static int iLed = 0;
-    static ulong nextBlink = 0;
+    static long nextBlink = 0;
     static int ledState = LOW;
-    ulong curTm = millis();
+    long curTm = millis();
     
     if (iLed == 0) {
         iLed = ILED;
@@ -99,6 +99,6 @@ void loop() {
 
     while ( charAvailable() ) { handleInput(getChar()); }
 
-    addr a = functionAddress("AAR");
+    addr a = functionAddress("R");
     if (a) { run(a); }
 }
