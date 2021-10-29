@@ -21,6 +21,7 @@ extern void printChar(const char ch);
 extern void printString(const char*);
 extern void printStringF(const char* fmt, ...);
 extern addr functionAddress(const char* fn);
+extern CELL regVal(int regNum);
 extern int getChar();
 extern int charAvailable();
 extern void input_push(FILE* fp);

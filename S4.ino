@@ -16,9 +16,10 @@
     void printChar(char c) { }
 #endif
 
-static int tib = (USER_SZ - 100);
+int genTib() { return regVal(7) + 10; }
 
 void loadCode(const char* src) {
+    int tib = genTib();
     int i = tib;
     while (*src) { setCodeByte(i++, *(src++)); }
     setCodeByte(i, 0);
@@ -32,12 +33,14 @@ FILE *input_pop() { return NULL; }
 // * HERE is where you load your default code *
 // ********************************************
 
+
 void loadBaseSystem() {
     loadCode("`D hD0[IC@#,96=IDC@';=&(N)];`");
     loadCode("`I %%S~(\\\\~;)%<(\\;)PPGI;`");
     loadCode("`C 4c; 11 1{\\ #3 :I (c+\\) PP %% >}\\\\c ;`");
     loadCode("`B N\"# primes in \" #. \": \"T$ :C . T$- \" (\" . \" ms)\";`");
     loadCode("`L 256$ 1[#+# :B]\\;`");
+    loadCode("D");
 }
 
 void ok() {
@@ -46,25 +49,30 @@ void ok() {
     printString(">");
 }
 
+
 void handleInput(char c) {
-    static int tibHERE = tib;
+    static int tib = 0, HERE1 = 0;
+    if (tib == 0) { 
+        tib = genTib(); 
+        HERE1 = tib; 
+    }
     if (c == 13) {
         printString(" ");
-        setCodeByte(tibHERE, 0);
+        setCodeByte(HERE1, 0);
         run(tib);
-        tibHERE = tib;
+        tib = 0;
         ok();
         return;
     }
-    if ((c == 8) && (tib < tibHERE)) {
-        tibHERE--;
+    if ((c == 8) && (tib < HERE1)) {
+        HERE1--;
         char b[] = {8, 32, 8, 0};
         printString(b);
         return;
     }
     if (c == 9) { c = 32; }
-    if ((32 <= c) && (tibHERE < USER_SZ)) {
-        setCodeByte(tibHERE++, c);
+    if ((32 <= c) && (HERE1 < USER_SZ)) {
+        setCodeByte(HERE1++, c);
         char b[] = {c, 0};
         printString(b);
     }
@@ -99,6 +107,6 @@ void loop() {
 
     while ( charAvailable() ) { handleInput(getChar()); }
 
-    addr a = functionAddress("R");
-    if (a) { run(a); }
+    // addr a = functionAddress("R");
+    // if (a) { run(a); }
 }
