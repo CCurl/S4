@@ -163,6 +163,7 @@ addr run(addr start) {
         case '&': t1 = pop(); T &= t1;                  break;  // 38
         case '\'': push(*(pc++));                       break;  // 39
         case '(': doIf();                               break;  // 40
+        case ')': /* endIf() */                         break;  // 41
         case '*': t1 = pop(); T *= t1;                  break;  // 42
         case '+': t1 = pop(); T += t1;                  break;  // 43
         case ',': printChar((char)pop());               break;  // 44
@@ -229,9 +230,9 @@ addr run(addr start) {
             isError = (t1 < NUM_REGS) ? 0 : 1;
             if (isError) { printString("-regNum-"); }
             else { push((CELL)&REG[t1]); }              break;
-        case '{':                                       break;  // 123
+        case '{': /* FREE */                            break;  // 123
         case '|': t1 = pop(); T |= t1;                  break;  // 124
-        case '}':                                       break;  // 125
+        case '}': /* FREE */                            break;  // 125
         case '~': T = ~T;                               break;  // 126
         }
     }
