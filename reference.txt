@@ -31,7 +31,8 @@ $  (a b--b a)     Swap top 2 stack items                 (Forth SWAP)
 
 
 *** REGISTERS ***
-  NOTES: A register name is 1 lowercase character: [a..z]
+  NOTES: 1) Register names are 1 to 3 lowercase characters: [a..zzz]
+         2) The number of registers is controlled by the NUM_REGS #define in "s4.h"
       Register initial values:
          - f: Start of function memory (ABSOLUTE)
          - h: HERE **special**
@@ -41,16 +42,17 @@ $  (a b--b a)     Swap top 2 stack items                 (Forth SWAP)
          - u: Start of USER memory (ABSOLUTE)
          - z: Size of USER area
          - All other registers are set to 0
-x   (--n)         Push address of register X
+xxx  (--n)        Push address of register X
 
 
 *** FUNCTIONS ***
-  NOTES: 1) Function names are 1 to 2 uppercase characters: [A.ZZ]
-:   (--)         Define function. Copy chars to (HERE++) until closing ';'.
-XX  (--)         Call function XX
-;   (--)         Return from routine: PC = rpop()
-         NOTE: returning while inside of a loop is not supported; behavior will be undefined.
-         NOTE: outside of ':;', ';' can be used to comment out the rest of the line
+        NOTES: 1) Function names are 1 to 3 uppercase characters: [A..ZZZ]
+               2) The number of functions is controlled by the NUM_FUNCS #define in "s4.h"
+:     (--)        Define function. Copy chars to (HERE++) until closing ';'.
+XXX   (--)        Call function XXX
+;     (--)        Return from routine: PC = rpop()
+        NOTE: returning while inside of a loop is not supported; behavior will be undefined.
+        NOTE: outside of ':;', ';' can be used to comment out the rest of the line
 
 
 *** INPUT/OUTPUT ***
@@ -59,7 +61,7 @@ XX  (--)         Call function XX
 "     (--)        Output characters until the next '"'
 0..9  (--n)       Scan DECIMAL number until non digit
                      to specify multiple values, separate them by space (4711 3333)
-                     to enter a negative number, use 'V' (eg - '490~1+')
+                     to enter a negative number, use '~1+' (eg - '490~1+')
 'x    (--n)       n: the ASCII value of x
 
 

@@ -20,7 +20,9 @@ void vmInit() {
     for (int i = 0; i < USER_SZ; i++) { USER[i] = 0; }
     for (int i = 0; i < NUM_FUNCS; i++) { FUNC[i] = 0; }
     REG['f' - 'a'] = (CELL)&sys.func[0];
+    REG['g' - 'a'] = NUM_REGS;
     REG['h' - 'a'] = (CELL)&sys.user[0];
+    REG['n' - 'a'] = NUM_FUNCS;
     REG['r' - 'a'] = (CELL)&sys.reg[0];
     REG['s' - 'a'] = (CELL)&sys;
     REG['u' - 'a'] = (CELL)&sys.user[0];
@@ -60,21 +62,6 @@ void printStringF(const char* fmt, ...) {
     printString(buf);
 }
 
-void skipToO(byte to, byte nest) {
-    byte c = 1, qc = '"', inQt = 0;
-    while (*pc) {
-        if (*pc == to) { --c; }
-        if (c == 0) { return; }
-        if ((nest) && (*pc == nest)) { ++c; }
-        if (*pc == qc) {
-            inQt = inQt ? 0 : 1;
-            inQt ? ++c : --c;
-        }
-        ++pc;
-    }
-    isError = 1;
-}
-
 void skipTo(byte to) {
     while (*pc) {
         ir = *(pc++);
@@ -88,17 +75,21 @@ void skipTo(byte to) {
     isError = 1;
 }
 
+int AddIt(CELL n, char c, char f, int m) {
+    n = (n * 26) + (c - f);
+    if (m <= n) { isError = 1; }
+    return n;
+}
+
 void doDefineFunction() {
     CELL fn = ir - 'A';
     if (BetweenI(*pc, 'A', 'Z')) {
-        ir = *(pc++);
-        fn = (fn * 26) + (ir - 'A');
-        if (NUM_FUNCS <= fn) {
-            isError = 1;
-            if (isError) { printString("-funcNum-"); }
-            return;
+        fn = AddIt(fn, *(pc++), 'A', NUM_FUNCS);
+        if (BetweenI(*pc, 'A', 'Z')) {
+            fn = AddIt(fn, *(pc++), 'A', NUM_FUNCS);
         }
     }
+    if (isError) { printString("-funcNum-"); return; }
     FUNC[fn] = pc;
     skipTo(';');
     if (isError) { printString("-dfErr-"); }
@@ -147,6 +138,7 @@ void doExt() {
     switch (ir) {
     case '!': *(byte*)T = (byte)N; DROP2;          return;
     case '@': T = *(byte*)T;                       return;
+    case 'r': vmInit(); printString("-reset-");    return;
     case '`': isBye = 1;                           return;
     default:
         pc = doCustom(ir, pc);
@@ -204,8 +196,11 @@ addr run(addr start) {
         case 'Q': case 'R': case 'S': case 'T': case 'U':
         case 'V': case 'W': case 'X': case 'Y': case 'Z':
             t1 = ir - 'A';
-            if (BetweenI(*pc, 'A', 'Z')) {
-                t1 = (t1 * 26) + (*(pc++) - 'A');
+            if (BetweenI(*pc, 'A', 'Z') && (26 < NUM_FUNCS)) {
+                t1 = AddIt(t1, *(pc++), 'A', NUM_FUNCS);
+                if (BetweenI(*pc, 'A', 'Z') && ((26*26) < NUM_FUNCS)) {
+                    t1 = AddIt(t1, *(pc++), 'A', NUM_FUNCS);
+                }
             }
             isError = (t1 < NUM_FUNCS) ? 0 : 1;
             if (isError) { printString("-funcNum-"); }
@@ -224,7 +219,16 @@ addr run(addr start) {
         case 'k': case 'l': case 'm': case 'n': case 'o': case 'p': 
         case 'q': case 'r': case 's': case 't': case 'u': 
         case 'v': case 'w': case 'x': case 'y': case 'z': 
-            push((CELL)&REG[ir - 'a']);                 break;
+            t1 = ir - 'a';
+            if (BetweenI(*pc, 'a', 'z') && (26 < NUM_REGS)) {
+                t1 = AddIt(t1, *(pc++), 'a', NUM_REGS);
+                if (BetweenI(*pc, 'a', 'z') && ((26*26) < NUM_REGS)) {
+                    t1 = AddIt(t1, *(pc++), 'a', NUM_REGS);
+                }
+            }
+            isError = (t1 < NUM_REGS) ? 0 : 1;
+            if (isError) { printString("-regNum-"); }
+            else { push((CELL)&REG[t1]); }              break;
         case '{':                                       break;  // 123
         case '|': t1 = pop(); T |= t1;                  break;  // 124
         case '}':                                       break;  // 125

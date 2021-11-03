@@ -1,15 +1,19 @@
-0(tests)
+:N13,10,;
+"S4 - v0.0.2 - Chris Curl"N
+"This system has "g@." registers, "n@." functions, and "z@." bytes user memory."N
+"Hello"N
 u@h!
+0(tests)
 :CDu@h@1-[i@`@#58=(N),];
 :B32,;
 :N13,10,;
-:QQ@.;
-:Q`@.;
+:QW@.;
+:QB`@.;
 :RG0 25[i@#4*r@+@T];
 :T#0=0=#(\N$'a+,58,B.1)0=(\\);
 2`BL
 N"testing 1 2 3"
-:D[i@QB];
-:D[i@QQBi@4+i!];
+:DB[i@QB B];
+:DW[i@QW Bi@4+i!];
 :DC[i@`@,];
 CD RG

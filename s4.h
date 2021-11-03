@@ -37,7 +37,7 @@ typedef struct {
 } LOOP_ENTRY_T;
 
 typedef struct {
-    ushort dsp, rsp, lsp;
+    ushort dsp, rsp, lsp, u1;
     CELL   reg[NUM_REGS];
     byte   user[USER_SZ];
     addr   func[NUM_FUNCS];
