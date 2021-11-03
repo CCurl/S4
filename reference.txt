@@ -7,20 +7,13 @@
 -  (a b--a-b)     subtraction
 *  (a b--a*b)     multiplication
 /  (a b--a/b)     division
-O  (T--n)         n: -T (NEGATE)
-P  (T--n)         n: T+1 (increment)
-Q  (T--n)         n: T-1 (decrement)
-S  (a n--q r)     q: a/n, r: a MODULO n (/MOD)
-U  (T--n)         n: ABS(T) (absolute)
 
 
 *** BIT MANIPULATION ***
 &  (a b--n)       and
 |  (a b--n)       or
 ^  (a b--n)       xor
-F  (n1--n2)       flip bits: (one's complement) (e.e - 1011 => 0100)
-R  (v n--t)       t: v RIGHT-SHIFT n
-L  (v n--t)       t: v LEFT-SHIFT n
+~  (n1--n2)       one's complement (e.e - 1011 => 0100)
 
 
 *** STACK ***
@@ -28,71 +21,45 @@ L  (v n--t)       t: v LEFT-SHIFT n
 \  (a b--a)       Drop TOS                               (Forth DROP)
 $  (a b--b a)     Swap top 2 stack items                 (Forth SWAP)
 %  (a b--a b a)   Push 2nd                               (Forth OVER)
-XS (?--)          Clear the stack, remove all entries    (Forth 0SP)
 
 
 *** MEMORY ***
-  NOTEs: There are 2 address spaces, USER and ABSOLUTE
-         USER addresses are indexes into USER area of memory
-         ABSOLUTE addresses are the addresses of the entire machine
-
-C@    (a--n)      Fetch byte n from USER address a
-C!    (n a--)     Store byte n  to  USER address a
-@     (a--n)      Fetch CELL from USER address a
-!     (n a--)     Store CELL n to USER address a
-AC@   (a--n)      Fetch byte n from ABSOLUTE address a
-AC!   (n a--)     Store byte n  to  ABSOLUTE address a
-A@    (a--n)      Fetch CELL n from ABSOLUTE address a
-A!    (n a--)     Store CELL n  to  ABSOLUTE address a
+`@    (a--n)      Fetch byte n from address a
+`!    (n a--)     Store byte n  to  address a
+@     (a--n)      Fetch CELL n from address a
+!     (n a--)     Store CELL n  to  address a
 
 
 *** REGISTERS ***
-  NOTES: A register name is be 1-3 lowercase characters: [a..zzz]
+  NOTES: A register name is 1 lowercase character: [a..z]
       Register initial values:
-         - f: Number of available functions
-         - g: Start of register memory (ABSOLUTE)
+         - f: Start of function memory (ABSOLUTE)
          - h: HERE **special**
-         - k: 1000
-         - r: Number of available registers
+         - i: Loop index **special**
+         - r: Start of register memory (ABSOLUTE)
          - s: Start of system structure (ABSOLUTE)
          - u: Start of USER memory (ABSOLUTE)
          - z: Size of USER area
          - All other registers are set to 0
-x   (--n)         Push value of register X
-x+  (--n)         Push value of register X, then increment the register by 1
-x-  (--n)         Push value of register X, then decrement the register by 1
-x;  (n--)         Set register X value to n
+x   (--n)         Push address of register X
 
 
 *** FUNCTIONS ***
-  NOTES: 1) Function names are 1 to 3 uppercase characters: [A.ZZZ]
-         2) A function cannot have '`' embedded in it (eg - {273 "TE}ST"} will not compile correctly)
-            Use {273 "TE"125,"ST"} instead
-`XXX (--)         Begin function definition. Copy chars to HERE++ until next '`'
-``   (--)         Remove last '`'. Copy chars to HERE++ until next '`'
-:XXX (--)         Call function XXX
-;    (--)         Return from routine: PC = rpop()
-                  NOTE: returning while inside of a loop is not supported; behavior will be undefined.
-                  NOTE: outside of ``, ';' can be used to comment out the rest of the line
-GXXX (--)         Goto to function XXX (a simple tail call optimization)
-XFNXXX (--n)      n: the code address for function XXX. n=0 means undefined.
+  NOTES: 1) Function names are 1 to 2 uppercase characters: [A.ZZ]
+:   (--)         Define function. Copy chars to (HERE++) until closing ';'.
+XX  (--)         Call function XX
+;   (--)         Return from routine: PC = rpop()
+         NOTE: returning while inside of a loop is not supported; behavior will be undefined.
+         NOTE: outside of ':;', ';' can be used to comment out the rest of the line
 
 
 *** INPUT/OUTPUT ***
 .     (N--)       Output N as decimal number
 ,     (N--)       Output N as character (Forth EMIT)
-B     (--)        Output a BLANK (32,)
-N     (--)        Output a NEWLINE (13,10,)
-Z     (A--)       Output the NULL terminated string at A.
-K?    (--n)       n: 1=> a char is available, 0=>no char available
-K     (--b)       b: [1..255]. Read one char, do not wait for ENTER.
 "     (--)        Output characters until the next '"'
-_     (a1--a2)    String: copy string to address (a1) (eg - 1000_hello_)
-                    a2: address after terminating NULL
-Hxxx  (--n)       Scan HEX number x until non hex-digit (not case-sensitive, h3Da0 == h3dA0 )
 0..9  (--n)       Scan DECIMAL number until non digit
                      to specify multiple values, separate them by space (4711 3333)
-                     to enter a negative number, use 'V' (eg - '490V')
+                     to enter a negative number, use 'V' (eg - '490~1+')
 'x    (--n)       n: the ASCII value of x
 
 
@@ -100,48 +67,27 @@ Hxxx  (--n)       Scan HEX number x until non hex-digit (not case-sensitive, h3D
 <   (a b--f)     f: (a < b) ? 1 : 0;
 =   (a b--f)     f: (a = b) ? 1 : 0;
 >   (a b--f)     f: (a > b) ? 1 : 0;
-~   (x--f)       f: (x = 0) ? 1 : 0;
+_   (x--f)       f: (x = 0) ? 1 : 0; (logical NOT)
 [   (F T--)      FOR: start a For/Next loop. if (T < F), swap T and F
 ]   (--)         NEXT: increment index (I) and loop if (I <= T)
              NOTE: For loops CAN be nested
-I   (--n)        n: the index of the current FOR loop
-J   (--n)        n: the index of the 1st inner FOR loop
-E   (--)         Exit the current FOR or WHILE loop
-{   (f--f)       Begin WHILE loop. If (f == 0), skip code until '}'
-}   (f--)        End WHILE loop. If (f != 0), repeat the loop, else drop f and continue.
-             NOTES: 1. You can NOT nest WHILE LOOPs
-                    2. '{}' cannot have '}' embedded in it (EG - a{"TE}ST"1-} fails when A=0)
-                       USE a{"TE"93,"ST"1-} instead. Sorry.
-(   (f--)        if (f != 0), execute code in '()', else skip until ')'
-             NOTES: 1. You can NOT nest IFs
-                    2. For an IF inside another IF, put the inner IF into a function.
-                    3. '()' cannot have ')' embedded in in (EG - a("TE)ST"1-) fails when a=0)
-                    USE a("TE"41,"ST") instead. Sorry.
-XC  (A--)        Call address A
-XG  (A--)        Goto address A
+i@  (--n)        n: the index of the current FOR loop
+(   (f--)        if (f != 0), execute code in '()', else skip until matching ')'
 
 
 *** OTHER ***
-XIA   (--)         Info: All (CFMRS)
-XIC   (--)         Info: Code
-XIF   (--)         Info: Functions
-XIR   (--)         Info: Registers
-XIS   (--)         Info: Stack
-XFL   (n--)        Load code from block (block.nnn). XFL can be nested.
-XLA   (--)         Load Abort: to stop loading a block (eg - if the block has already been loaded)
-T     (--n)        Time (Arduino: millis(), Windows: GetTickCount())
-W     (n--)        Wait (Arduino: delay(),  Windows: Sleep())
-XFO   (fn md--fh)  PC-File: open (fn/md: addr of name/mode, use N#_Name_#_Mode_\)
-XFR   (fh--c n)    PC-File: read 1 char (n=0 means EOF). When n=0, c=0
-XFW   (c fh--)     PC-File: write 1 char
-XFC   (fh--)       PC-File: close
-XFB   (N f--fh)    PC-File: open block file N (block.NNN) f: 0=>Read, else Write
-XPI   (p--)        Arduino: pin input  (pinMode(p, INPUT))
-XPU   (p--)        Arduino: pin pullup (pinMode(p, INPUT_PULLUP))
-XPO   (p--)        Arduino: pin output (pinMode(p, OUTPUT)
-XPRA  (p--n)       Arduino: pin read analog  (n = analogRead(p))
-XPRD  (p--n)       Arduino: pin read digital (n = digitalRead(p))
-XPWA  (n p--)      Arduino: pin write analog  (analogWrite(p, n))
-XPWD  (n p--)      Arduino: pin write digital (digitalWrite(p, n))
-XT    (--)         Exit S4
-XR    (--)         Reset S4 to initial state
+`BL   (n--)        PC: Load code from file (block-nnn.src). This can be nested.
+`BC   (h--)        PC: Block close
+`BO   (--h)        PC: Block open (write)
+`Bo   (--h)        PC: Block open (read)
+`LA   (--)         PC: Load Abort: to stop loading a block (eg - if the block has already been loaded)
+`PI   (p--)        Arduino: pin input  (pinMode(p, INPUT))
+`PU   (p--)        Arduino: pin pullup (pinMode(p, INPUT_PULLUP))
+`PO   (p--)        Arduino: pin output (pinMode(p, OUTPUT)
+`PRA  (p--n)       Arduino: pin read analog  (n = analogRead(p))
+`PRD  (p--n)       Arduino: pin read digital (n = digitalRead(p))
+`PWA  (n p--)      Arduino: pin write analog  (analogWrite(p, n))
+`PWD  (n p--)      Arduino: pin write digital (digitalWrite(p, n))
+`T     (--n)       Time (Arduino: millis(), Windows: GetTickCount())
+`W     (n--)       Wait (Arduino: delay(),  Windows: Sleep())
+``    (--)         Exit S4

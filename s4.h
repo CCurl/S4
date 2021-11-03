@@ -1,43 +1,61 @@
-// S4 - a stack VM, inspired by Sandor Schneider's STABLE - https://w3group.de/stable.html
+// MINT - A Minimal Interpreter - for details, see https://github.com/monsonite/MINT
 
-#include "config.h"
+#include <stdio.h>
+#include <stdarg.h>
 
-#define MAX_REGS  (26*26*26)
-#define MAX_FUNCS (26*26*26)
-typedef unsigned char byte;
-#if USER_SZ <= 0x10000
-typedef unsigned short addr;
-#else
-typedef unsigned long addr;
-#endif
-#define CELL long
-#define UCELL unsigned long
+#define STK_SZ        8
+#define LSTACK_SZ     4
+#define USER_SZ     (16*1024)
+#define NUM_REGS     26
+#define NUM_FUNCS    26*26
+
+#define CELL        long
+#define UCELL       unsigned CELL
+#define CELL_SZ     4
+#define ushort      unsigned short
+#define byte        unsigned char
+#define addr        byte *
+
+#define REG        sys.reg
+#define USER       sys.user
+#define FUNC       sys.func
+#define HERE       REG[7]
+#define INDEX      REG[8]
+#define T          sys.dstack[sys.dsp]
+#define N          sys.dstack[sys.dsp-1]
+#define R          sys.rstack[sys.rsp]
+#define LSP        sys.lsp
+#define DROP1      pop()
+#define DROP2      pop(); pop()
+#define BetweenI(n, x, y) ((x <= n) && (n <= y))
+
+typedef struct {
+    addr start;
+    CELL from;
+    CELL to;
+    addr end;
+} LOOP_ENTRY_T;
+
+typedef struct {
+    ushort dsp, rsp, lsp;
+    CELL   reg[NUM_REGS];
+    byte   user[USER_SZ];
+    addr   func[NUM_FUNCS];
+    CELL   dstack[STK_SZ + 1];
+    addr   rstack[STK_SZ + 1];
+    LOOP_ENTRY_T lstack[LSTACK_SZ];
+} SYS_T;
+
+extern SYS_T sys;
+extern byte isBye;
+extern byte isError;
 
 extern void vmInit();
-extern addr run(addr pc);
-extern void dumpStack(int hdr);
-extern void setCodeByte(addr loc, char ch);
-extern void printChar(const char ch);
+extern CELL pop();
+extern void push(CELL);
+extern addr run(addr);
+extern addr doCustom(byte, addr);
+extern void printChar(const char);
 extern void printString(const char*);
-extern void printStringF(const char* fmt, ...);
-extern addr functionAddress(const char* fn);
-extern CELL regVal(int regNum);
-extern int getChar();
-extern int charAvailable();
-extern void input_push(FILE* fp);
-extern FILE *input_pop();
-extern FILE *input_fp;
-
-#if __PC__
-	#define INPUT 0
-	#define INPUT_PULLUP 1
-	#define OUTPUT 2
-	extern int  analogRead(int pin);
-	extern void analogWrite(int pin, int val);
-	extern void delay(unsigned long ms);
-	extern int  digitalRead(int pin);
-	extern void digitalWrite(int pin, int val);
-	extern void pinMode(int pin, int mode);
-	extern long millis();
-	extern byte isBye, isError;
-#endif // __PC__
+extern void printStringF(const char*, ...);
+extern void dumpStack();

@@ -151,6 +151,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore" />
+    <None Include="block-001.s4" />
     <None Include="block.777" />
     <None Include="block.888" />
     <None Include="LICENSE" />
@@ -164,7 +165,6 @@
     <Text Include="reference.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="config.h" />
     <ClInclude Include="s4.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
