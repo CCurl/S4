@@ -134,6 +134,13 @@ void doExt() {
     ir = *(pc++);
     switch (ir) {
     case '!': *(byte*)T = (byte)N; DROP2;          return;
+    case '-': T = -T;                              return;
+    case '/': if (T) { N /= T; DROP1; }
+        else { isError = 1; printString("-0div-"); }
+        return;
+    case '%': if (T) { N %= T; DROP1; }
+        else { isError = 1; printString("-0div-"); }
+        return;
     case '@': T = *(byte*)T;                       return;
     case 'r': vmInit(); printString("-reset-");    return;
     case '`': isBye = 1;                           return;
@@ -168,7 +175,7 @@ addr run(addr start) {
         case '.': printStringF("%ld", (long)pop());     break;  // 46
         case '/': t1 = pop(); t2 = pop();                       // 47
             if (t1) { push(t2 / t1); push(t2 % t1); }
-            else { printString("-zeroDiv-"); isError = 1; }
+            else { printString("-0div-"); isError = 1; }
             break;
         case '0': case '1': case '2': case '3': case '4':       // 48-57
         case '5': case '6': case '7': case '8': case '9':

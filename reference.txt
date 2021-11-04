@@ -3,17 +3,19 @@
 ************************************
 
 *** ARITHMETIC ***
-+  (a b--a+b)     addition
--  (a b--a-b)     subtraction
-*  (a b--a*b)     multiplication
-/  (a b--a/b)     division
++   (a b--n)      n: a+b - addition
+-   (a b--n)      n: a-b: subtraction
+*   (a b--n)      n: a*b - multiplication
+/   (a b--q r)    q: div(a,b), r: modulo(a,b) - /MOD
+'/  (a b--q)      q: a/b - division
+'%  (a b--r)      r: a%b - modulo
 
 
 *** BIT MANIPULATION ***
 &  (a b--n)       and
 |  (a b--n)       or
 ^  (a b--n)       xor
-~  (n1--n2)       one's complement (e.e - 1011 => 0100)
+~  (n1--n2)       not (e.g - 1011 => 0100)
 
 
 *** STACK ***
@@ -66,16 +68,16 @@ XXX   (--)        Call function XXX
 
 
 *** CONDITIONS/LOOPS/FLOW CONTROL ***
-<   (a b--f)      f: (a < b) ? 1 : 0;
-=   (a b--f)      f: (a = b) ? 1 : 0;
->   (a b--f)      f: (a > b) ? 1 : 0;
-_   (x--f)        f: (x = 0) ? 1 : 0; (logical NOT)
-[   (F T--)       FOR: start a For/Next loop. if (T < F), swap T and F
-]   (--)          NEXT: increment index (I) and loop if (I <= T)
-{   (f--f)        BEGIN: if (f == 0) skip to matching }
-}   (f--f?)       WHILE: if (f != 0) jump to matching {, else drop f and continue
-i@  (--n)         n: the index of the current FOR loop
-(   (f--)         if (f != 0), execute code in '()', else skip to matching ')'
+<     (a b--f)    f: (a < b) ? 1 : 0;
+=     (a b--f)    f: (a = b) ? 1 : 0;
+>     (a b--f)    f: (a > b) ? 1 : 0;
+_     (x--f)      f: (x = 0) ? 1 : 0; (logical NOT)
+[     (F T--)     FOR: start a For/Next loop. if (T < F), swap T and F
+]     (--)        NEXT: increment index (I) and loop if (I <= T)
+{     (f--f)      BEGIN: if (f == 0) skip to matching }
+}     (f--f?)     WHILE: if (f != 0) jump to matching { else drop f and continue
+i@    (--n)       n: the index of the current FOR loop
+(     (f--)       if (f != 0), execute code in '()', else skip to matching ')'
 
 
 *** OTHER ***
@@ -91,6 +93,6 @@ i@  (--n)         n: the index of the current FOR loop
 `PRD  (p--n)      Arduino: pin read digital (n = digitalRead(p))
 `PWA  (n p--)     Arduino: pin write analog  (analogWrite(p, n))
 `PWD  (n p--)     Arduino: pin write digital (digitalWrite(p, n))
-`T     (--n)      Time (Arduino: millis(), Windows: GetTickCount())
-`W     (n--)      Wait (Arduino: delay(),  Windows: Sleep())
+`T    (--n)       Time (Arduino: millis(), Windows: GetTickCount())
+`W    (n--)       Wait (Arduino: delay(),  Windows: Sleep())
 ``    (--)        Exit S4
