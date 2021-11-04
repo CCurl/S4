@@ -66,30 +66,31 @@ XXX   (--)        Call function XXX
 
 
 *** CONDITIONS/LOOPS/FLOW CONTROL ***
-<   (a b--f)     f: (a < b) ? 1 : 0;
-=   (a b--f)     f: (a = b) ? 1 : 0;
->   (a b--f)     f: (a > b) ? 1 : 0;
-_   (x--f)       f: (x = 0) ? 1 : 0; (logical NOT)
-[   (F T--)      FOR: start a For/Next loop. if (T < F), swap T and F
-]   (--)         NEXT: increment index (I) and loop if (I <= T)
-             NOTE: For loops CAN be nested
-i@  (--n)        n: the index of the current FOR loop
-(   (f--)        if (f != 0), execute code in '()', else skip until matching ')'
+<   (a b--f)      f: (a < b) ? 1 : 0;
+=   (a b--f)      f: (a = b) ? 1 : 0;
+>   (a b--f)      f: (a > b) ? 1 : 0;
+_   (x--f)        f: (x = 0) ? 1 : 0; (logical NOT)
+[   (F T--)       FOR: start a For/Next loop. if (T < F), swap T and F
+]   (--)          NEXT: increment index (I) and loop if (I <= T)
+{   (f--f)        BEGIN: if (f == 0) skip to matching }
+}   (f--f?)       WHILE: if (f != 0) jump to matching {, else drop f and continue
+i@  (--n)         n: the index of the current FOR loop
+(   (f--)         if (f != 0), execute code in '()', else skip to matching ')'
 
 
 *** OTHER ***
-`BL   (n--)        PC: Load code from file (block-nnn.src). This can be nested.
-`BC   (h--)        PC: Block close
-`BO   (--h)        PC: Block open (write)
-`Bo   (--h)        PC: Block open (read)
-`LA   (--)         PC: Load Abort: to stop loading a block (eg - if the block has already been loaded)
-`PI   (p--)        Arduino: pin input  (pinMode(p, INPUT))
-`PU   (p--)        Arduino: pin pullup (pinMode(p, INPUT_PULLUP))
-`PO   (p--)        Arduino: pin output (pinMode(p, OUTPUT)
-`PRA  (p--n)       Arduino: pin read analog  (n = analogRead(p))
-`PRD  (p--n)       Arduino: pin read digital (n = digitalRead(p))
-`PWA  (n p--)      Arduino: pin write analog  (analogWrite(p, n))
-`PWD  (n p--)      Arduino: pin write digital (digitalWrite(p, n))
-`T     (--n)       Time (Arduino: millis(), Windows: GetTickCount())
-`W     (n--)       Wait (Arduino: delay(),  Windows: Sleep())
-``    (--)         Exit S4
+`BL   (n--)       PC: Load code from file (block-nnn.src). This can be nested.
+`BC   (h--)       PC: Block close
+`BO   (--h)       PC: Block open (write)
+`Bo   (--h)       PC: Block open (read)
+`LA   (--)        PC: Load Abort: to stop loading a block (eg - if the block has already been loaded)
+`PI   (p--)       Arduino: pin input  (pinMode(p, INPUT))
+`PU   (p--)       Arduino: pin pullup (pinMode(p, INPUT_PULLUP))
+`PO   (p--)       Arduino: pin output (pinMode(p, OUTPUT)
+`PRA  (p--n)      Arduino: pin read analog  (n = analogRead(p))
+`PRD  (p--n)      Arduino: pin read digital (n = digitalRead(p))
+`PWA  (n p--)     Arduino: pin write analog  (analogWrite(p, n))
+`PWD  (n p--)     Arduino: pin write digital (digitalWrite(p, n))
+`T     (--n)      Time (Arduino: millis(), Windows: GetTickCount())
+`W     (n--)      Wait (Arduino: delay(),  Windows: Sleep())
+``    (--)        Exit S4

@@ -5,10 +5,10 @@ S4 examples:
     ; here is another comment
   
 ;   if (c) { print("Yes") } else { print("No") }
-    c@ #("Yes") _ ("No")
+    c@#("Yes")_("No")
 
  ; x = (a == b) ? c : d;
-    a@ b@ = #(c@$)_(d@) x!;
+    a@b@=#(c@$)_(d@)x!;
 
 ; To make sure F < T
      S4 code:             %%>($)
@@ -25,16 +25,19 @@ S4 examples:
 
 ; One way to copy N bytes from A to B
     :PP 0(a--)$%@1+$!;
-    :CPY d! s! 1[s@ `@ d@ `! s PP d PP];     ; Define function CPY
+    :CPY d! s! 1[s@ `@ d@ `! sPP dPP];     ; Define function CPY
     n@ a@ b@ CPY
 
 ; One way to copy N longs from A to B (N A B--)
     :PS 0(n a--)$%@+$!;
-    :CPY d! s! 1[s@ @ d@ ! 4 s PS 4 d PS];   ; Define function CPY
+    :CPY d! s! 1[s@@ d@! 4sPS 4dPS];       ; Define function CPY
     n@ a@ b@ :CPY
 
 ; A simple benchmark for a 100 million FOR loop:
     100 1000#** `T$ 1[] `T$-." ms"
+
+; A simple benchmark for a 100 million WHILE loop:
+    100 1000#** `T$ {1-} `T$-." ms"
 
 ; Define a function to display the currently defined code:
     :DC u@h@1-[i@`@#58=(13,10,),];
