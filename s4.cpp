@@ -6,7 +6,7 @@ SYS_T sys;
 byte ir, isBye = 0, isError = 0;
 static char buf[100];
 addr pc;
-CELL t1, t2;
+CELL t1;
 
 inline void push(CELL v) { if (sys.dsp < STK_SZ) { sys.dstack[++sys.dsp] = v; } }
 inline CELL pop() { return (sys.dsp) ? sys.dstack[sys.dsp--] : 0; }
@@ -173,17 +173,15 @@ addr run(addr start) {
         case ',': printChar((char)pop());               break;  // 44
         case '-': t1 = pop(); T -= t1;                  break;  // 45
         case '.': printStringF("%ld", (long)pop());     break;  // 46
-        case '/': t1 = pop(); t2 = pop();                       // 47
-            if (t1) { push(t2 / t1); push(t2 % t1); }
-            else { printString("-0div-"); isError = 1; }
-            break;
+        case '/': isError = (T == 0);                           // 47
+            if (isError) { printString("-0div-"); }
+            else { t1 = T; T = N % t1; N /= t1; }       break;
         case '0': case '1': case '2': case '3': case '4':       // 48-57
         case '5': case '6': case '7': case '8': case '9':
-            push(ir - '0');
-            t1 = *(pc)-'0';
-            while (BetweenI(t1, 0, 9)) {
-                T = (T * 10) + t1;
-                t1 = *(++pc) - '0';
+            push(ir - '0'); ir = *(pc);
+            while (BetweenI(ir, '0', '9')) {
+                T = (T * 10) + (ir - '0');
+                ir = *(++pc);
             } break;
         case ':': ir = *(pc++);                                 // 58
             if (BetweenI(ir, 'A', 'Z')) { doDefineFunction(); }
@@ -207,7 +205,7 @@ addr run(addr start) {
                     t1 = AddIt(t1, *(pc++), 'A', NUM_FUNCS);
                 }
             }
-            isError = (t1 < NUM_FUNCS) ? 0 : 1;
+            isError = (NUM_FUNCS <= t1);
             if (isError) { printString("-funcNum-"); }
             else if (FUNC[t1]) {
                 rpush(pc);
