@@ -43,7 +43,7 @@ typedef struct {
     addr   func[NUM_FUNCS];
     CELL   dstack[STK_SZ + 1];
     addr   rstack[STK_SZ + 1];
-    LOOP_ENTRY_T lstack[LSTACK_SZ];
+    LOOP_ENTRY_T lstack[LSTACK_SZ+1];
 } SYS_T;
 
 extern SYS_T sys;

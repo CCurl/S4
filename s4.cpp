@@ -11,8 +11,12 @@ CELL t1, t2;
 inline void push(CELL v) { if (sys.dsp < STK_SZ) { sys.dstack[++sys.dsp] = v; } }
 inline CELL pop() { return (sys.dsp) ? sys.dstack[sys.dsp--] : 0; }
 
-void rpush(addr v) { if (sys.rsp < STK_SZ) { sys.rstack[++sys.rsp] = v; } }
-addr rpop() { return (sys.rsp) ? sys.rstack[sys.rsp--] : 0; }
+inline void rpush(addr v) { if (sys.rsp < STK_SZ) { sys.rstack[++sys.rsp] = v; } }
+inline addr rpop() { return (sys.rsp) ? sys.rstack[sys.rsp--] : 0; }
+
+#define lAt() (&sys.lstack[LSP])
+inline LOOP_ENTRY_T* lpush() { if (LSP < STK_SZ) { ++LSP; } return lAt(); }
+inline LOOP_ENTRY_T *ldrop() { if (0 < LSP) { --LSP; } return lAt(); }
 
 void vmInit() {
     sys.dsp = sys.rsp = sys.lsp = 0;
@@ -108,28 +112,21 @@ void doFor() {
     CELL t = (N < T) ? T : N;
     CELL f = (N < T) ? N : T;
     DROP2;
-    if (LSP < LSTACK_SZ) {
-        LOOP_ENTRY_T* x = &sys.lstack[LSP++];
-        x->start = pc;
-        INDEX = x->from = f;
-        x->to = t;
-        x->end = 0;
-    }
+    LOOP_ENTRY_T *x = lpush();
+    x->start = pc;
+    INDEX = x->from = f;
+    x->to = t;
+    x->end = 0;
 }
 
 void doNext() {
-    if (LSP < 1) {
-        LSP = 0;
-        return;
-    }
-    LOOP_ENTRY_T* x = &sys.lstack[LSP - 1];
+    LOOP_ENTRY_T* x = lAt();
     x->from = ++INDEX;
     if (x->from <= x->to) {
         x->end = pc;
         pc = x->start;
     } else {
-        LSP--;
-        if (0 < LSP) { INDEX = sys.lstack[LSP - 1].from; }
+        INDEX = ldrop()->from;
     }
 }
 
@@ -230,9 +227,13 @@ addr run(addr start) {
             isError = (t1 < NUM_REGS) ? 0 : 1;
             if (isError) { printString("-regNum-"); }
             else { push((CELL)&REG[t1]); }              break;
-        case '{': /* FREE */                            break;  // 123
+        case '{': if (T) { lpush()->start = pc; }               // 123
+                else { DROP1;  skipTo('}'); }
+            break;
         case '|': t1 = pop(); T |= t1;                  break;  // 124
-        case '}': /* FREE */                            break;  // 125
+        case '}': if (!T) { ldrop(); DROP1; }                   // 125
+                else { lAt()->end = pc; pc = lAt()->start; }
+            break;
         case '~': T = ~T;                               break;  // 126
         }
     }

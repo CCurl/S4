@@ -5,41 +5,39 @@ S4 examples:
     ; here is another comment
   
 ;   if (c) { print("Yes") } else { print("No") }
-    c#("Yes")~("No")
+    c@ #("Yes") _ ("No")
 
  ; x = (a == b) ? c : d;
-    a b = #(c$)~(d) x;
+    a@ b@ = #(c@$)_(d@) x!;
 
 ; To make sure F < T
      S4 code:             %%>($)
      Forth equivalent:    OVER OVER > IF SWAP THEN
      C equivalent:        if (f > t) { int x = f; f = t; t = x; }
 
-; To do something (in this case, call :LP) n times:
-    n 1[:LP]
+; To do something (in this case, execute LP) n times:
+    n@ 1[LP]
 
 ; To print numbers from F to T:
-    S4 code:             f t[I.B]
+    S4 code:             1 10[i@.32,]
     Forth equivalent:    f t FOR I . NEXT
     C equivalent:        for (int i = F; i <= T; i)) { printf("%d ", i); }
 
 ; One way to copy N bytes from A to B
-    `CPY d;s; 1[s+ C@ d+ C!];`   ; Define function CPY
-    n a b :CPY
+    :PP 0(a--)$%@1+$!;
+    :CPY d! s! 1[s@ `@ d@ `! s PP d PP];     ; Define function CPY
+    n@ a@ b@ CPY
 
 ; One way to copy N longs from A to B (N A B--)
-    `CPY d;s; 1[s @ d ! s4+s; d4+d;];`   ; Define function CPY
-    n a b :CPY
+    :PS 0(n a--)$%@+$!;
+    :CPY d! s! 1[s@ @ d@ ! 4 s PS 4 d PS];   ; Define function CPY
+    n@ a@ b@ :CPY
 
-; A simple benchmark for a 100 million decrement and FOR loop:
-    `NB 0(n--)#10<(0.).;`             ; print N with 0 pad to 2
-    `NC 0(n--)#100<(0.)GNB;`          ; print N with 0 pad to 3
-    `EL 0(T--)T$-kS$."."GNC;`         ; ELAPSED
-    100 k k * * T$ {D}:EL
-    100 k k * * T$ 1[]:EL
+; A simple benchmark for a 100 million FOR loop:
+    100 1000#** `T$ 1[] `T$-." ms"
 
 ; Define a function to display the currently defined code:
-    `DC hD0[IC@#,96=IDC@';=&(N)];`
+    :DC u@h@1-[i@`@#58=(13,10,),];
 
 ; To exit S4:
-    XT
+    ``
