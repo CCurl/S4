@@ -145,26 +145,25 @@
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsCpp</CompileAs>
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsCpp</CompileAs>
     </ClCompile>
+    <Text Include="history.txt" />
     <Text Include="S4.ino">
       <FileType>Document</FileType>
     </Text>
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore" />
-    <None Include="block.777" />
-    <None Include="block.888" />
+    <None Include="block-001.s4" />
+    <None Include="block-002.s4" />
+    <None Include="block-777.s4" />
+    <None Include="block-888.s4" />
     <None Include="LICENSE" />
     <None Include="README.md" />
-    <Text Include="block.999">
-      <FileType>Document</FileType>
-    </Text>
   </ItemGroup>
   <ItemGroup>
     <Text Include="examples.txt" />
     <Text Include="reference.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="config.h" />
     <ClInclude Include="s4.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

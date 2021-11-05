@@ -1,0 +1,17 @@
+; Block.777
+
+1`BL
+N"Count of primes"
+
+; c:              Register for count of primes
+; P: (n l--f)     Is Prime Number routine
+; C: (n1--n2)     Count of Primes routine
+; B: (n--)        Benchmark routine
+; L: (n--)        Loop for multiple benchmarks
+
+:P%%/_(\\_;)%<(\;)2+P;
+:C 4c! 11[i@3P(c@1+c!)i@1+i!]c@;
+:B N"# primes in "#." - "`T$C.`T$- " (" . " ms)";
+:L 256$1[#+#B]\;
+
+10 L
