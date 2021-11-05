@@ -9,12 +9,12 @@
 
 FILE* input_fp;
 byte fdsp = 0;
-FILE* fstack[STK_SZ];
+FILE* fstack[STK_SZ+1];
 static char buf[256];
 static CELL t1;
 
-inline void fpush(FILE* v) { if (fdsp < STK_SZ) { fstack[++fdsp] = v; } }
-inline FILE* fpop() { return (fdsp) ? fstack[fdsp--] : 0; }
+void fpush(FILE* v) { if (fdsp < STK_SZ) { fstack[++fdsp] = v; } }
+FILE* fpop() { return (fdsp) ? fstack[fdsp--] : 0; }
 
 void printChar(const char c) { printf("%c", c); }
 void printString(const char* str) { printf("%s", str); }
