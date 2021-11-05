@@ -1,0 +1,27 @@
+N"The Mandelbrot Set"
+
+; Registers:
+; a: temp 1
+; b: temp 2
+; c: temp 3
+; d: temp 4
+; j: MB loop counter
+; t: count of iterations
+; x: Y pos
+; y: X pos
+
+; Functions:
+; C: mandelbrot calc
+; L: main MB loop 
+; O: output
+; X: loop for X axis
+; Y: loop for Y axis
+; M: main, loop for Y axis
+
+:C t@1+t! a@#*s@`/c! b@#*s@`/d! c@d@+k@>(j@m!;) a@b@*100`/y@+b! c@d@-x@+a! j@1+j!;
+:L 0a!0b!0j!s@m!1{\Cj@m@<};
+:O Lj@40+#126>(\32),;
+:X 490`-x!1 95[  O x@ 8+x!];
+:Y 340`-y!1 35[N X y@20+y!];
+:M 0t! `T Y `T$- N t@." iterations, " . " ms";
+200s!1000000k!M

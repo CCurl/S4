@@ -208,7 +208,7 @@ addr run(addr start) {
             isError = (NUM_FUNCS <= t1);
             if (isError) { printString("-funcNum-"); }
             else if (FUNC[t1]) {
-                rpush(pc);
+                if (*pc != ';') { rpush(pc); }
                 pc = FUNC[t1];
             } break;
         case '[': doFor();                              break;  // 91
