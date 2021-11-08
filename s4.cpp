@@ -4,7 +4,7 @@
 
 SYS_T sys;
 byte ir, isBye = 0, isError = 0;
-static char buf[16];
+static char buf[24];
 addr pc;
 CELL t1;
 
