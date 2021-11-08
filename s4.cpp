@@ -8,8 +8,8 @@ static char buf[100];
 addr pc;
 CELL t1;
 
-inline void push(CELL v) { if (sys.dsp < STK_SZ) { sys.dstack[++sys.dsp] = v; } }
-inline CELL pop() { return (sys.dsp) ? sys.dstack[sys.dsp--] : 0; }
+void push(CELL v) { if (sys.dsp < STK_SZ) { sys.dstack[++sys.dsp] = v; } }
+CELL pop() { return (sys.dsp) ? sys.dstack[sys.dsp--] : 0; }
 
 inline void rpush(addr v) { if (sys.rsp < STK_SZ) { sys.rstack[++sys.rsp] = v; } }
 inline addr rpop() { return (sys.rsp) ? sys.rstack[sys.rsp--] : 0; }
