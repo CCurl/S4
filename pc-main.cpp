@@ -1,10 +1,16 @@
 // MINT - A Minimal Interpreter - for details, see https://github.com/monsonite/MINT
 
+#define __PC__
+#ifdef __PC__
+
 #ifdef _WIN32
-
+#define __WINDOWS__
 #define  _CRT_SECURE_NO_WARNINGS
-
 #include <Windows.h>
+#else
+#define __LINUX__
+#endif
+
 #include "s4.h"
 
 FILE* input_fp;
@@ -45,9 +51,14 @@ addr doCustom(byte ir, addr pc) {
     case 'B': pc = doBlock(pc);        break;
     case 'N': printString("-noNano-");
         isError = 1;                   break;
+#ifdef __WINDOWS__
     case 'T': push(GetTickCount());    break;
     case 'W': Sleep(pop());            break;
-    default:
+#else
+    case 'T': push(0);        break;
+    case 'W': pop();          break;
+#endif
+        default:
         isError = 1;
         printString("-notExt-");
     }
@@ -106,4 +117,5 @@ int main(int argc, char** argv) {
     while (!isBye) { loop(); }
     return 0;
 }
+
 #endif
