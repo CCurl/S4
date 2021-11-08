@@ -153,7 +153,7 @@ addr run(addr start) {
     isError = 0;
     pc = start;
     LSP = 0;
-    while (!isError && (0 < pc)) {
+    while (!isError && pc) {
         ir = *(pc++);
         switch (ir) {
         case 0: return pc;
