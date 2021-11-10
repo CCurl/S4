@@ -5,9 +5,9 @@
 
 #define STK_SZ        8
 #define LSTACK_SZ     4
-#define USER_SZ     (16*1024)
-#define NUM_REGS     26
-#define NUM_FUNCS    26*26
+#define USER_SZ     (32*1024)
+#define NUM_REGS    (26*26*26)
+#define NUM_FUNCS   (26*26*26)
 
 #define CELL        long
 #define UCELL       unsigned CELL

@@ -83,8 +83,10 @@ i@    (--n)       n: the index of the current FOR loop
 *** OTHER ***
 `BL   (n--)       PC: Load code from file (block-nnn.src). This can be nested.
 `BC   (h--)       PC: Block close
-`BO   (--h)       PC: Block open (write)
-`Bo   (--h)       PC: Block open (read)
+`BOR  (--h)       PC: Block open (read)
+`BOW  (--h)       PC: Block open (write)
+`BR   (h--c f)    PC: Block read one byte (f = 0 and c = 0 on EOF or error)
+`BW   (c h--f)    PC: Block write one byte (f = 0 on error)
 `LA   (--)        PC: Load Abort: to stop loading a block (eg - if the block has already been loaded)
 `PI   (p--)       Arduino: pin input  (pinMode(p, INPUT))
 `PU   (p--)       Arduino: pin pullup (pinMode(p, INPUT_PULLUP))
