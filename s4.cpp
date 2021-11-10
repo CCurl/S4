@@ -142,7 +142,7 @@ void doExt() {
         else { isError = 1; printString("-0div-"); }
         return;
     case '@': T = *(byte*)T;                       return;
-    case 'r': vmInit(); printString("-reset-");    return;
+    case 'r': vmInit();                            return;
     case '`': isBye = 1;                           return;
     default:
         pc = doCustom(ir, pc);
