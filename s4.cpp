@@ -33,22 +33,23 @@ void vmInit() {
     REG['z' - 'a'] = USER_SZ;
 }
 
-void setCell(byte* to, CELL val) {
-    *(to++) = (val) & 0xff;
-    *(to++) = (val >> 8) & 0xff;
+vvoid setCell(byte* to, CELL val) {
+    *(to)   = (byte)val; val = (val >> 8);
+    *(to+1) = (byte)val; val = (val >> 8);
 #if CELL_SZ == 4
-    * (to++) = (val >> 16) & 0xff;
-    *(to) = (val >> 24) & 0xff;
+    *(to+2) = (byte)val; val = (val >> 8);
+    *(to+3) = (byte)val;
 #endif
 }
 
 CELL getCell(byte* from) {
-    CELL val = *(from++);
-    val |= (*from++) << 8;
+    CELL val = 0;
 #if CELL_SZ == 4
-    val |= (*from++) << 16;
-    val |= (*from) << 24;
+    val =              *(from+3);
+    val = (val << 8) + *(from+2);
 #endif
+    val = (val << 8) + *(from+1);
+    val = (val << 8) + *(from);
     return val;
 }
 
