@@ -33,7 +33,7 @@ void vmInit() {
     REG['z' - 'a'] = USER_SZ;
 }
 
-vvoid setCell(byte* to, CELL val) {
+void setCell(byte* to, CELL val) {
     *(to)   = (byte)val; val = (val >> 8);
     *(to+1) = (byte)val; val = (val >> 8);
 #if CELL_SZ == 4
