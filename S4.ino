@@ -1,5 +1,8 @@
-#include "config.h"
 #include "s4.h"
+
+#define mySerial    Serial
+#define __SERIAL__   1
+#define ILED        13
 
 #if __SERIAL__
     int charAvailable() { return mySerial.available(); }
@@ -16,14 +19,18 @@
     void printChar(char c) { }
 #endif
 
-int genTib() { return regVal(7) + 10; }
+addr doCustom(byte ir, addr pc) {
+  return pc;
+}
 
 void loadCode(const char* src) {
-    int tib = genTib();
-    int i = tib;
-    while (*src) { setCodeByte(i++, *(src++)); }
-    setCodeByte(i, 0);
-    run(tib);
+    addr here = (addr)HERE;
+    addr here1 = here;
+    while (*src) {
+        *(here1++) = *(src++);
+    }
+    *here1 = 0;
+    run(here);
 }
 
 void input_push(FILE *fp) { }
@@ -35,44 +42,42 @@ FILE *input_pop() { return NULL; }
 
 
 void loadBaseSystem() {
-    loadCode("`D hD0[IC@#,96=IDC@';=&(N)];`");
-    loadCode("`I %%S~(\\\\~;)%<(\\;)PPGI;`");
-    loadCode("`C 4c; 11 1{\\ #3 :I (c+\\) PP %% >}\\\\c ;`");
-    loadCode("`B N\"# primes in \" #. \": \"T$ :C . T$- \" (\" . \" ms)\";`");
-    loadCode("`L 256$ 1[#+# :B]\\;`");
-    loadCode("D");
+    loadCode(":D u@h@1-[i@`@#58=(N),];");
+    loadCode(":N 13,10,;:B32,;");
+    loadCode(":R 0 25[Ni@#'a+,B4*r@+@.];");
 }
 
 void ok() {
-    printString("\r\ns4:"); 
-    dumpStack(0); 
-    printString(">");
+    printString("\r\ns4:("); 
+    dumpStack(); 
+    printString(")>");
 }
 
 
 void handleInput(char c) {
-    static int tib = 0, HERE1 = 0;
-    if (tib == 0) { 
-        tib = genTib(); 
-        HERE1 = tib; 
+    static addr here = (addr)NULL;
+    static addr here1 = (addr)NULL;
+    if (here == NULL) { 
+        here = (addr)HERE; 
+        here1 = here; 
     }
     if (c == 13) {
         printString(" ");
-        setCodeByte(HERE1, 0);
-        run(tib);
-        tib = 0;
+        *(here1) = 0;
+        run(here);
+        here = (addr)NULL;
         ok();
         return;
     }
-    if ((c == 8) && (tib < HERE1)) {
-        HERE1--;
+    if ((c == 8) && (here < here1)) {
+        here1--;
         char b[] = {8, 32, 8, 0};
         printString(b);
         return;
     }
     if (c == 9) { c = 32; }
-    if ((32 <= c) && (HERE1 < USER_SZ)) {
-        setCodeByte(HERE1++, c);
+    if (32 <= c) {
+        *(here1++) = (byte)c;
         char b[] = {c, 0};
         printString(b);
     }
