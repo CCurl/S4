@@ -3,15 +3,43 @@
 #define __PC__
 #ifdef __PC__
 
+#include "s4.h"
+
 #ifdef _WIN32
 #define __WINDOWS__
 #define  _CRT_SECURE_NO_WARNINGS
 #include <Windows.h>
+CELL millis() {
+    return (CELL)GetTickCount();
+}
+CELL nano() {
+    printString("-noNano-");
+    return (CELL)0;
+}
+void delay(UCELL ms) { 
+    Sleep(ms);
+}
 #else
 #define __LINUX__
+//#include <termios.h>
+//#include <sys/ioctl.h>
+#include <time.h>
+CELL millis() {
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    return (CELL)((ts.tv_sec * 1000) + (ts.tv_nsec / 1000000));
+}
+CELL nano() {
+    printString("-noNano-");
+    return (CELL)0;
+}
+void delay(UCELL ms) { 
+    struct timespec ts;
+    ts.tv_sec = ms / 1000;
+    ts.tv_nsec = (ms % 1000) * 1000000;
+    nanosleep(&ts, NULL); 
+}
 #endif
-
-#include "s4.h"
 
 FILE* input_fp;
 byte fdsp = 0;
@@ -68,17 +96,10 @@ addr doBlock(addr pc) {
 addr doCustom(byte ir, addr pc) {
     switch (ir) {
     case 'B': pc = doBlock(pc);        break;
-    //case 'L': pc = doBlock(pc);        break;
-    case 'N': printString("-noNano-");
-        isError = 1;                   break;
-#ifdef __WINDOWS__
-    case 'T': push(GetTickCount());    break;
-    case 'W': Sleep(pop());            break;
-#else
-    case 'T': push(0);        break;
-    case 'W': pop();          break;
-#endif
-        default:
+    case 'N': push(nano());            break;
+    case 'T': push(millis());          break;
+    case 'W': delay(pop());            break;
+    default:
         isError = 1;
         printString("-notExt-");
     }
