@@ -12,9 +12,8 @@
 CELL millis() {
     return (CELL)GetTickCount();
 }
-CELL nano() {
-    printString("-noNano-");
-    return (CELL)0;
+CELL micros() {
+    return (CELL)millis()*1000;
 }
 void delay(UCELL ms) { 
     Sleep(ms);
@@ -29,9 +28,10 @@ CELL millis() {
     clock_gettime(CLOCK_MONOTONIC, &ts);
     return (CELL)((ts.tv_sec * 1000) + (ts.tv_nsec / 1000000));
 }
-CELL nano() {
-    printString("-noNano-");
-    return (CELL)0;
+CELL micros() {
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    return (CELL)(ts.tv_nsec);
 }
 void delay(UCELL ms) { 
     struct timespec ts;
@@ -96,7 +96,7 @@ addr doBlock(addr pc) {
 addr doCustom(byte ir, addr pc) {
     switch (ir) {
     case 'B': pc = doBlock(pc);        break;
-    case 'N': push(nano());            break;
+    case 'N': push(micros());          break;
     case 'T': push(millis());          break;
     case 'W': delay(pop());            break;
     default:
