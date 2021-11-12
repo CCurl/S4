@@ -3,12 +3,12 @@
 #define __PC__
 #ifdef __PC__
 
-#include "s4.h"
 
 #ifdef _WIN32
 #define __WINDOWS__
 #define  _CRT_SECURE_NO_WARNINGS
 #include <Windows.h>
+#include "s4.h"
 CELL millis() {
     return (CELL)GetTickCount();
 }
@@ -23,6 +23,7 @@ void delay(UCELL ms) {
 //#include <termios.h>
 //#include <sys/ioctl.h>
 #include <time.h>
+#include "s4.h"
 CELL millis() {
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts);

@@ -34,22 +34,19 @@ void vmInit() {
 }
 
 void setCell(byte* to, CELL val) {
-    *(to)   = (byte)val; val = (val >> 8);
-    *(to+1) = (byte)val; val = (val >> 8);
-#if CELL_SZ == 4
-    *(to+2) = (byte)val; val = (val >> 8);
-    *(to+3) = (byte)val;
-#endif
+    *(to++) = (byte)val; 
+    for (int i = 1; i < CELL_SZ; i++) {
+        val = (val >> 8);
+        *(to++) = (byte)val;
+    }
 }
 
 CELL getCell(byte* from) {
     CELL val = 0;
-#if CELL_SZ == 4
-    val =              *(from+3);
-    val = (val << 8) + *(from+2);
-#endif
-    val = (val << 8) + *(from+1);
-    val = (val << 8) + *(from);
+    from += (CELL_SZ - 1);
+    for (int i = 0; i < CELL_SZ; i++) {
+        val = (val << 8) + *(from--);
+    }
     return val;
 }
 
