@@ -55,7 +55,7 @@ CELL getCell(byte* from) {
 
 void dumpStack() {
     for (UCELL i = 1; i <= sys.dsp; i++) {
-        printStringF("%s%ld", (i > 1 ? " " : ""), (long)sys.dstack[i]);
+        printStringF("%s%ld", (i > 1 ? " " : ""), (CELL)sys.dstack[i]);
     }
 }
 
@@ -173,7 +173,7 @@ addr run(addr start) {
         case '+': t1 = pop(); T += t1;                  break;  // 43
         case ',': printChar((char)pop());               break;  // 44
         case '-': t1 = pop(); T -= t1;                  break;  // 45
-        case '.': printStringF("%ld", (long)pop());     break;  // 46
+        case '.': printStringF("%ld", (CELL)pop());     break;  // 46
         case '/': isError = (T == 0);                           // 47
             if (isError) { printString("-0div-"); }
             else { t1 = T; T = N % t1; N /= t1; }       break;
