@@ -2,7 +2,7 @@
 
 #define mySerial    Serial
 #define __SERIAL__   1
-#define ILED        13
+#define ILED        16
 
 #if __SERIAL__
     int charAvailable() { return mySerial.available(); }
@@ -19,8 +19,59 @@
     void printChar(char c) { }
 #endif
 
+addr doPinRead(addr pc) {
+    byte ir = *(pc++);
+    CELL pin = pop();
+    switch (ir) {
+    case 'A': push(analogRead(pin));          break;
+    case 'D': push(digitalRead(pin));         break;
+    default:
+        isError = 1;
+        printString("-pinRead-");
+    }
+    return pc;
+}
+
+addr doPinWrite(addr pc) {
+    byte ir = *(pc++);
+    CELL pin = pop();
+    CELL val = pop();
+    switch (ir) {
+    case 'A': analogWrite(pin, val);          break;
+    case 'D': digitalWrite(pin, val);         break;
+    default:
+        isError = 1;
+        printString("-pinWrite-");
+    }
+    return pc;
+}
+
+addr doPin(addr pc) {
+    CELL t1 = *(pc++);
+    switch (t1) {
+    case 'I': pinMode(pop(), INPUT);          break;
+    case 'O': pinMode(pop(), OUTPUT);         break;
+    case 'U': pinMode(pop(), INPUT_PULLUP);   break;
+    case 'R': pc = doPinRead(pc);             break;
+    case 'W': pc = doPinWrite(pc);            break;
+    default:
+        isError = 1;
+        printString("-notPin-");
+    }
+    return pc;
+}
+
 addr doCustom(byte ir, addr pc) {
-  return pc;
+    switch (ir) {
+    case 'N': push(micros());          break;
+    case 'P': pc = doPin(pc);          break;
+    case 'T': push(millis());          break;
+    case 'W': delay(pop());            break;
+    default:
+        isError = 1;
+        printString("-notExt-");
+    }
+    return pc;
 }
 
 void loadCode(const char* src) {
@@ -45,6 +96,14 @@ void loadBaseSystem() {
     loadCode(":D u@h@1-[i@`@#58=(N),];");
     loadCode(":N 13,10,;:B32,;");
     loadCode(":R 0 25[Ni@#'a+,B4*r@+@.];");
+
+    loadCode(":C t@1+t! a@#*s@`/c! b@#*s@`/d! c@d@+k@>(j@m!;) a@b@*100`/y@+b! c@d@-x@+a! j@1+j!;");
+    loadCode(":L 0a!0b!0j!s@m!1{\\Cj@m@<};");
+    loadCode(":O Lj@40+#126>(\\32),;");
+    loadCode(":X 490`-x!1 95[  O x@ 8+x!];");
+    loadCode(":Y 340`-y!1 35[N X y@20+y!];");
+    loadCode(":M 0t! `T Y `T$- N t@.\" iterations, \" . \" ms\";");
+    // loadCode("200s!1000000k!M");
 }
 
 void ok() {
