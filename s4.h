@@ -11,7 +11,7 @@
 
 #define CELL        long
 #define UCELL       unsigned CELL
-#define CELL_SZ     4
+#define CELL_SZ     sizeof(CELL)
 #define ushort      unsigned short
 #define byte        unsigned char
 #define addr        byte *
