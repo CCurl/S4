@@ -1,3 +1,3 @@
 #/bin/sh
-clang -Ofast -os4 *.cpp
+clang -D__LINUX__ -Ofast -os4 *.cpp
 ls -l ./s4
