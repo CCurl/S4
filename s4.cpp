@@ -133,7 +133,7 @@ void doExt() {
     switch (ir) {
     case '!': *(byte*)T = (byte)N; DROP2;          return;
     case '-': T = -T;                              return;
-    case '/': if (T) { N /= T; DROP1; }
+    case '/': if (T) { t1 = T; T = N % t1; N /= t1; }
         else { isError = 1; printString("-0div-"); }
         return;
     case '%': if (T) { N %= T; DROP1; }
@@ -171,9 +171,9 @@ addr run(addr start) {
         case ',': printChar((char)pop());               break;  // 44
         case '-': t1 = pop(); T -= t1;                  break;  // 45
         case '.': printStringF("%ld", (CELL)pop());     break;  // 46
-        case '/': isError = (T == 0);                           // 47
-            if (isError) { printString("-0div-"); }
-            else { t1 = T; T = N % t1; N /= t1; }       break;
+        case '/': if (T) { N /= T; DROP1; }                     // 47
+                else { isError = 1;  printString("-0div-"); }
+                break;
         case '0': case '1': case '2': case '3': case '4':       // 48-57
         case '5': case '6': case '7': case '8': case '9':
             push(ir - '0'); ir = *(pc);
