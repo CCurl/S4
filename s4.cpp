@@ -149,7 +149,6 @@ void doExt() {
         return;
     case '@': T = *(byte*)T;                       return;
     case 'r': vmInit();                            return;
-    case '`': isBye = 1;                           return;
     default:
         pc = doCustom(ir, pc);
     }

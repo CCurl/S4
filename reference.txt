@@ -6,8 +6,8 @@
 +   (a b--n)      n: a+b - addition
 -   (a b--n)      n: a-b: subtraction
 *   (a b--n)      n: a*b - multiplication
-/   (a b--q r)    q: div(a,b), r: modulo(a,b) - /MOD
-'/  (a b--q)      q: a/b - division
+/   (a b--q)      q: a/b - division
+'/  (a b--q r)    q: div(a,b), r: modulo(a,b) - /MOD
 '%  (a b--r)      r: a%b - modulo
 
 
@@ -26,10 +26,10 @@ $  (a b--b a)     Swap top 2 stack items                 (Forth SWAP)
 
 
 *** MEMORY ***
-`@    (a--n)      Fetch byte n from address a
-`!    (n a--)     Store byte n  to  address a
 @     (a--n)      Fetch CELL n from address a
 !     (n a--)     Store CELL n  to  address a
+`@    (a--n)      Fetch BYTE n from address a
+`!    (n a--)     Store BYTE n  to  address a
 
 
 *** REGISTERS ***
@@ -73,7 +73,7 @@ XXX   (--)        Call function XXX
 >     (a b--f)    f: (a > b) ? 1 : 0;
 _     (x--f)      f: (x = 0) ? 1 : 0; (logical NOT)
 [     (F T--)     FOR: start a For/Next loop. if (T < F), swap T and F
-]     (--)        NEXT: increment index (I) and loop if (I <= T)
+]     (--)        NEXT: increment index (i) and loop if (i@ <= T)
 {     (f--f)      BEGIN: if (f == 0) skip to matching }
 }     (f--f?)     WHILE: if (f != 0) jump to matching { else drop f and continue
 i@    (--n)       n: the index of the current FOR loop
@@ -96,5 +96,6 @@ i@    (--n)       n: the index of the current FOR loop
 `PWA  (n p--)     Arduino: pin write analog  (analogWrite(p, n))
 `PWD  (n p--)     Arduino: pin write digital (digitalWrite(p, n))
 `T    (--n)       Time (Arduino: millis(), Windows: GetTickCount())
+`N    (--n)       Time (Arduino: micros(), Windows: N/A)
 `W    (n--)       Wait (Arduino: delay(),  Windows: Sleep())
-``    (--)        Exit S4
+`q    (--)        PC: Exit S4
