@@ -87,19 +87,32 @@ FILE *input_pop() { return NULL; }
 // * HERE is where you load your default code *
 // ********************************************
 
+#define SOURCE_STARTUP \
+    X(1000, ":D u@h@1-[i@`@#58=(N),];") \
+    X(1001, ":N 13,10,;:B\" \";:Q@.B;:QC`@.B;") \
+    X(1002, ":R 0 25[Ni@#'a+,B4*r@+@.];") \
+    X(1003, ":C t@1+t! a@#*s@/c! b@#*s@/d! c@d@+k@>(j@m!;) a@b@*100/y@+b! c@d@-x@+a! j@1+j!;") \
+    X(1004, ":L 0a!0b!0j!s@m!1{\\Cj@m@<};") \
+    X(1005, ":O Lj@40+#126>(\\32),;") \
+    X(1006, ":X 490`-x!1 95[  O x@ 8+x!];") \
+    X(1007, ":Y 340`-y!1 35[N X y@20+y!];") \
+    X(1008, ":M 0t! `T Y `T$- N t@.\" iterations, \" . \" ms\";") \
+    X(9999, "200 s! 1000000 k!")
+
+#define X(num, val) const PROGMEM char str ## num[] = val;
+SOURCE_STARTUP
+
+#undef X
+#define X(num, val) str ## num,
+const char *bootStrap[] = {
+    SOURCE_STARTUP
+    NULL
+};
 
 void loadBaseSystem() {
-    loadCode(":D u@h@1-[i@`@#58=(N),];");
-    loadCode(":N 13,10,;:B32,;");
-    loadCode(":R 0 25[Ni@#'a+,B4*r@+@.];");
-
-    loadCode(":C t@1+t! a@#*s@/c! b@#*s@/d! c@d@+k@>(j@m!;) a@b@*100/y@+b! c@d@-x@+a! j@1+j!;");
-    loadCode(":L 0a!0b!0j!s@m!1{\\Cj@m@<};");
-    loadCode(":O Lj@40+#126>(\\32),;");
-    loadCode(":X 490`-x!1 95[  O x@ 8+x!];");
-    loadCode(":Y 340`-y!1 35[N X y@20+y!];");
-    loadCode(":M 0t! `T Y `T$- N t@.\" iterations, \" . \" ms\";");
-    loadCode("200 s! 1000000 k!");
+    for (int i = 0; bootStrap[i] != NULL; i++) {
+        loadCode(bootStrap[i]);
+    }
 }
 
 void ok() {
