@@ -148,7 +148,9 @@ void doExt() {
         else { isError = 1; printString("-0div-"); }
         return;
     case '@': T = *(byte*)T;                       return;
-    case 'r': vmInit();                            return;
+    case 'C': rpush(pc);                        // fall thru to 'J'
+    case 'J': pc = (addr)pop();                    return;
+    case 'R': vmInit();                            return;
     default:
         pc = doCustom(ir, pc);
     }
