@@ -29,7 +29,7 @@ There are examples for S4 here: https://github.com/CCurl/S4/blob/main/examples.t
 
 - For Windows, I use Microsoft's Visual Studio (Community edition). 
 - For Development boards, I use the Arduino IDE. 
-- For Linux (Termux and Ubuntu), I use vi and clang.
+- For Linux systems, I use vi and clang. See the make script.
 - I do not have an Apple system, so I haven't tried to build S4 for that environment.
 - However, being such a simple and minimal C program, it should not be difficult to port S4 to any environment.
 
