@@ -136,6 +136,15 @@ void doNext() {
     }
 }
 
+void doRand(int modT) {
+    static CELL seed = 0;
+    if (seed == 0) { seed = getSeed(); }
+    seed ^= (seed << 13);
+    seed ^= (seed >> 17);
+    seed ^= (seed << 5);
+    T = (modT) ? (abs(seed) % T) : seed;
+}
+
 void doExt() {
     ir = *(pc++);
     switch (ir) {
@@ -148,6 +157,7 @@ void doExt() {
         else { isError = 1; printString("-0div-"); }
         return;
     case '@': T = *(byte*)T;                       return;
+    case 'R': doRand(1);                           return;
     case 'r': vmInit();                            return;
     default:
         pc = doCustom(ir, pc);
@@ -234,6 +244,7 @@ addr run(addr start) {
                     t1 = AddIt(t1, *(pc++), 'a', NUM_REGS);
                 }
             }
+            // if ((t1 == 2) && ((*pc == '@') || (*pc == '!'))) { printString("-c!@-"); ++pc; break; }
             isError = (t1 < NUM_REGS) ? 0 : 1;
             if (isError) { printString("-regNum-"); }
             else { push((CELL)&REG[t1]); }              break;

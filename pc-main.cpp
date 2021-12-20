@@ -85,6 +85,8 @@ addr doBlock(addr pc) {
     return pc;
 }
 
+CELL getSeed() { return millis(); }
+
 addr doCustom(byte ir, addr pc) {
     switch (ir) {
     case 'B': pc = doBlock(pc);        break;

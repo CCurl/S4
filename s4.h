@@ -54,3 +54,4 @@ extern void printChar(const char);
 extern void printString(const char*);
 extern void printStringF(const char*, ...);
 extern void dumpStack();
+extern CELL getSeed();
