@@ -158,6 +158,8 @@ void doExt() {
         return;
     case '@': T = *(byte*)T;                       return;
     case 'R': doRand(1);                           return;
+    case 'C': rpush(pc);                        // fall thru to 'J'
+    case 'J': pc = (addr)pop();                    return;
     case 'r': vmInit();                            return;
     default:
         pc = doCustom(ir, pc);
