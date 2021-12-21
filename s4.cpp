@@ -142,7 +142,7 @@ void doRand(int modT) {
     seed ^= (seed << 13);
     seed ^= (seed >> 17);
     seed ^= (seed << 5);
-    T = (modT) ? (abs(seed) % T) : seed;
+    T = (modT && T) ? (abs(seed) % T) : seed;
 }
 
 void doExt() {

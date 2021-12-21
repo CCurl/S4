@@ -15,6 +15,8 @@
     void printChar(char c) { }
 #endif
 
+CELL getSeed() { return millis(); }
+
 addr doPinRead(addr pc) {
     byte ir = *(pc++);
     CELL pin = pop();
@@ -121,6 +123,12 @@ void ok() {
     printString(")>");
 }
 
+// NB: tweak this depending on what your terminal window sends for [back-space]
+// PuTTY sends a 127 for back-space
+int isBackSpace(char c) { 
+  // printStringF("(%d)",c);
+  return (c == 127) ? 1 : 0; 
+}
 
 void handleInput(char c) {
     static addr here = (addr)NULL;
@@ -138,14 +146,14 @@ void handleInput(char c) {
         return;
     }
 
-    if ((c == 8) && (here < here1)) {
+    if (isBackSpace(c) && (here < here1)) {
         here1--;
         char b[] = {8, 32, 8, 0};
         printString(b);
         return;
     }
     if (c == 9) { c = 32; }
-    if (32 <= c) {
+    if (BetweenI(c, 32, 126)) {
         *(here1++) = (byte)c;
         char b[] = {c, 0};
         printString(b);
