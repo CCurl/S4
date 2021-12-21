@@ -96,7 +96,9 @@ i@    (--n)       n: the index of the current FOR loop
 `PRD  (p--n)      Arduino: pin read digital (n = digitalRead(p))
 `PWA  (n p--)     Arduino: pin write analog  (analogWrite(p, n))
 `PWD  (n p--)     Arduino: pin write digital (digitalWrite(p, n))
-`T    (--n)       Time (Arduino: millis(), Windows: GetTickCount())
-`N    (--n)       Time (Arduino: micros(), Windows: N/A)
+`R    (n--r)      r: a random number in the range [0..(n-1)]
+                  NB: if n=0, r is the entire 32-bit random number
+`T    (--n)       Milliseconds (Arduino: millis(), Windows: GetTickCount())
+`N    (--n)       Microseconds (Arduino: micros(), Windows: N/A)
 `W    (n--)       Wait (Arduino: delay(),  Windows: Sleep())
 `q    (--)        PC: Exit S4
