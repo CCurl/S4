@@ -101,4 +101,12 @@ i@    (--n)       n: the index of the current FOR loop
 `T    (--n)       Milliseconds (Arduino: millis(), Windows: GetTickCount())
 `N    (--n)       Microseconds (Arduino: micros(), Windows: N/A)
 `W    (n--)       Wait (Arduino: delay(),  Windows: Sleep())
+`iAF  (--a)       INFO: a: address of first function vector
+`iAH  (--a)       INFO: a: address of HERE variable
+`iAR  (--a)       INFO: a: address of first register vector
+`iAS  (--a)       INFO: a: address of beeginning of system structure
+`iAU  (--a)       INFO: a: address of beeginning of user area
+`iF   (--n)       INFO: n: number of functions
+`iR   (--n)       INFO: n: number of registers
+`iZ   (--n)       INFO: n: size of USER area
 `q    (--)        PC: Exit S4

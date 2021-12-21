@@ -157,6 +157,20 @@ void doExt() {
         else { isError = 1; printString("-0div-"); }
         return;
     case '@': T = *(byte*)T;                       return;
+    case 'i': ir = *(pc++);
+        if (ir == 'A') { 
+          ir = *(pc++);
+          if (ir == 'F') { push((CELL)&FUNC[0]); }
+          if (ir == 'H') { push((CELL)&HERE); }
+          if (ir == 'R') { push((CELL)&REG[0]); }
+          if (ir == 'S') { push((CELL)&sys); }
+          if (ir == 'U') { push((CELL)&USER[0]); }
+          return;
+        }
+        if (ir == 'F') { push(NUM_FUNCS); }
+        if (ir == 'R') { push(NUM_REGS); }
+        if (ir == 'Z') { push(USER_SZ); }
+        return;
     case 'R': doRand(1);                           return;
     case 'C': rpush(pc);                        // fall thru to 'J'
     case 'J': pc = (addr)pop();                    return;
