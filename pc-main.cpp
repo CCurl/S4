@@ -115,7 +115,7 @@ void rtrim(char* cp) {
 }
 
 void loadCode(const char* src) {
-    addr here = (addr)HERE;
+    addr here = HERE;
     addr tib = here;
     while (*src) {
         *(tib++) = *(src++);

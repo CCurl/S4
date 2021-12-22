@@ -5,7 +5,7 @@
 SYS_T sys;
 byte ir, isBye = 0, isError = 0;
 static char buf[24];
-addr pc;
+addr pc, HERE;
 CELL t1;
 
 void push(CELL v) { if (sys.dsp < STK_SZ) { sys.dstack[++sys.dsp] = v; } }
@@ -23,14 +23,7 @@ void vmInit() {
     for (int i = 0; i < NUM_REGS; i++) { REG[i] = 0; }
     for (int i = 0; i < USER_SZ; i++) { USER[i] = 0; }
     for (int i = 0; i < NUM_FUNCS; i++) { FUNC[i] = 0; }
-    REG['f' - 'a'] = (CELL)&sys.func[0];
-    REG['g' - 'a'] = NUM_REGS;
-    REG['h' - 'a'] = (CELL)&sys.user[0];
-    REG['n' - 'a'] = NUM_FUNCS;
-    REG['r' - 'a'] = (CELL)&sys.reg[0];
-    REG['s' - 'a'] = (CELL)&sys;
-    REG['u' - 'a'] = (CELL)&sys.user[0];
-    REG['z' - 'a'] = USER_SZ;
+    HERE = &sys.user[0];
 }
 
 void setCell(byte* to, CELL val) {
@@ -103,7 +96,7 @@ void doDefineFunction() {
     FUNC[fn] = pc;
     skipTo(';');
     if (isError) { printString("-dfErr-"); }
-    else { HERE = (CELL)pc; }
+    else { HERE = pc; }
 }
 
 void doIf() {
@@ -157,6 +150,7 @@ void doExt() {
         else { isError = 1; printString("-0div-"); }
         return;
     case '@': T = *(byte*)T;                       return;
+    case 'A': T = (T < 0) ? -T : T;                return;
     case 'i': ir = *(pc++);
         if (ir == 'A') { 
           ir = *(pc++);
@@ -172,18 +166,19 @@ void doExt() {
         if (ir == 'Z') { push(USER_SZ); }
         return;
     case 'R': doRand(1);                           return;
-    case 'C': rpush(pc);                        // fall thru to 'J'
+    case 'C': rpush(pc);       // fall thru to 'J'
     case 'J': pc = (addr)pop();                    return;
-    case 'r': vmInit();                            return;
+    case 's': ir = *(pc++);
+        if (ir == 'R') { vmInit(); }               return;
     default:
         pc = doCustom(ir, pc);
     }
 }
 
 addr run(addr start) {
-    isError = 0;
     pc = start;
-    LSP = 0;
+    isError = 0;
+    RSP = LSP = 0;
     while (!isError && pc) {
         ir = *(pc++);
         switch (ir) {
@@ -274,6 +269,5 @@ addr run(addr start) {
         case '~': T = ~T;                               break;  // 126
         }
     }
-    if (isError && ((CELL)pc < HERE)) { REG[4] = (CELL)pc; }
     return pc;
 }

@@ -9,17 +9,19 @@
 #define CELL_SZ     sizeof(CELL)
 #define ushort      unsigned short
 #define byte        unsigned char
-#define addr        byte *
+typedef byte *addr;
 
 #define REG        sys.reg
 #define USER       sys.user
 #define FUNC       sys.func
-#define HERE       REG[7]
-#define INDEX      REG[8]
-#define T          sys.dstack[sys.dsp]
-#define N          sys.dstack[sys.dsp-1]
-#define R          sys.rstack[sys.rsp]
+#define DSP        sys.dsp
+#define RSP        sys.rsp
 #define LSP        sys.lsp
+// #define HERE       REG[7]
+#define INDEX      REG[8]
+#define T          sys.dstack[DSP]
+#define N          sys.dstack[DSP-1]
+#define R          sys.rstack[RSP]
 #define DROP1      pop()
 #define DROP2      pop(); pop()
 #define BetweenI(n, x, y) ((x <= n) && (n <= y))
@@ -44,6 +46,7 @@ typedef struct {
 extern SYS_T sys;
 extern byte isBye;
 extern byte isError;
+extern addr HERE;
 
 extern void vmInit();
 extern CELL pop();

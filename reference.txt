@@ -7,23 +7,25 @@
 -   (a b--n)      n: a-b - subtraction
 *   (a b--n)      n: a*b - multiplication
 /   (a b--q)      q: a/b - division
-'%  (a b--r)      r: a%b - modulo
-'-  (a--b)        b: -a  - negate
-'/  (a b--q r)    q: div(a,b), r: modulo(a,b) - /MOD
+`%  (a b--r)      r: a%b - modulo
+`/  (a b--q r)    q: div(a,b), r: modulo(a,b) - /MOD
 
 
 *** BIT MANIPULATION ***
 &  (a b--n)       n: a and b
 |  (a b--n)       n: a or b
 ^  (a b--n)       n: a xor b
-~  (a--b)         b: not a (e.g - 1011 => 0100)
+~  (a--b)         b: ones-complement a (e.g - 1011 => 0100)
 
 
 *** STACK ***
-#  (a--a a)       Duplicate TOS             (Forth DUP)
-\  (a b--a)       Drop TOS                  (Forth DROP)
-$  (a b--b a)     Swap top 2 stack items    (Forth SWAP)
-%  (a b--a b a)   Push 2nd                  (Forth OVER)
+#  (a--a a)       Duplicate TOS             (DUP)
+\  (a b--a)       Drop TOS                  (DROP)
+$  (a b--b a)     Swap top 2 stack items    (SWAP)
+%  (a b--a b a)   Push 2nd                  (OVER)
+`- (a--b)         b: -a  -                  (Negate)
+`A (a--b)         b: abs(a)                 (Absolute)
+_  (n--f)         f: (n==0) ? 1 : 0;        (Logical NOT)
 
 
 *** MEMORY ***
@@ -35,17 +37,10 @@ $  (a b--b a)     Swap top 2 stack items    (Forth SWAP)
 
 *** REGISTERS ***
   NOTES: 1) Register names are 1 to 3 lowercase characters: [a..zzz]
-         2) The number of registers is controlled by the NUM_REGS #define in "config.h"
-      Register initial values:
-         - f: Start of function memory (ABSOLUTE)
-         - h: HERE **special**
-         - i: Loop index **special**
-         - r: Start of register memory (ABSOLUTE)
-         - s: Start of system structure (ABSOLUTE)
-         - u: Start of USER memory (ABSOLUTE)
-         - z: Size of USER area
-         - All other registers are set to 0
-xxx  (--n)        Push address of register X
+         2) The number of registers is controlled by the NUM_REGS #define in "config.h".
+         3) Register 'i' is the loop index **special**
+         4) All other registers are initialized to 0 and are free to use.
+xxx  (--a)        a: address of register X
 
 
 *** FUNCTIONS ***
@@ -72,7 +67,6 @@ XXX   (--)        Call function XXX
 <     (a b--f)    f: (a < b) ? 1 : 0;
 =     (a b--f)    f: (a = b) ? 1 : 0;
 >     (a b--f)    f: (a > b) ? 1 : 0;
-_     (x--f)      f: (x = 0) ? 1 : 0; (logical NOT)
 [     (F T--)     FOR: start a For/Next loop. if (T < F), swap T and F
 ]     (--)        NEXT: increment index (i) and loop if (i@ <= T)
 {     (f--f)      BEGIN: if (f == 0) skip to matching }
@@ -109,4 +103,5 @@ i@    (--n)       n: the index of the current FOR loop
 `iF   (--n)       INFO: n: number of functions
 `iR   (--n)       INFO: n: number of registers
 `iZ   (--n)       INFO: n: size of USER area
+`sR   (--)        S4 system reset
 `q    (--)        PC: Exit S4
