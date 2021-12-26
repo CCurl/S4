@@ -1,4 +1,4 @@
-// MINT - A Minimal Interpreter - for details, see https://github.com/monsonite/MINT
+// S4 - A Minimal Interpreter
 
 #include "s4.h"
 
