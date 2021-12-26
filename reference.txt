@@ -101,6 +101,7 @@ i@    (--n)       n: the index of the current FOR loop
 `iAS  (--a)       INFO: a: address of beeginning of system structure
 `iAU  (--a)       INFO: a: address of beeginning of user area
 `iF   (--n)       INFO: n: number of functions
+`iH   (--n)       INFO: n: value of HERE variable
 `iR   (--n)       INFO: n: number of registers
 `iZ   (--n)       INFO: n: size of USER area
 `sR   (--)        S4 system reset

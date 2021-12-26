@@ -162,6 +162,7 @@ void doExt() {
           return;
         }
         if (ir == 'F') { push(NUM_FUNCS); }
+        if (ir == 'H') { push((CELL)HERE); }
         if (ir == 'R') { push(NUM_REGS); }
         if (ir == 'Z') { push(USER_SZ); }
         return;

@@ -30,13 +30,13 @@ S4 examples:
     N A B d! $%+ [i@ @ d@ ! d@4+d! i@3+i!]\
 
 ; A simple benchmark for a 100 million FOR loop:
-    100 1000#** `T$ 1[] `T$-." ms"
+    1000#* 100* `T$ 1[] `T$-." ms"
 
 ; A simple benchmark for a 100 million WHILE loop:
-    100 1000#** `T$ {1-} `T$-." ms"
+    1000#* 100* `T$ {1-} `T$-." ms"
 
 ; Define a function to display the currently defined code:
-    :D `iAU`iAH@1-[i@`@#,';=(i@1+`@':=(13,10,))];
+    :D `iAU`iH1-[i@`@#,';=(i@1+`@':=(13,10,))];
 
 ; To exit S4:
     `q
