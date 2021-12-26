@@ -19,19 +19,15 @@ S4 examples:
     n@ 1[LP]
 
 ; To print numbers from F to T:
-    S4 code:             1 10[i@.32,]
+    S4 code:             1 10[i@." "]
     Forth equivalent:    f t FOR I . NEXT
     C equivalent:        for (int i = F; i <= T; i)) { printf("%d ", i); }
 
-; One way to copy N bytes from A to B
-    :PP 0(a--)$%@1+$!;
-    :CPY d! s! 1[s@ `@ d@ `! sPP dPP];     ; Define function CPY
-    n@ a@ b@ CPY
+; One way to copy N bytes from A to B (n f t--)
+    N A B d! $%+ [i@ `@ d@`! d@1+d!]\
 
 ; One way to copy N longs from A to B (N A B--)
-    :PS 0(n a--)$%@+$!;
-    :CPY d! s! 1[s@@ d@! 4sPS 4dPS];       ; Define function CPY
-    n@ a@ b@ :CPY
+    N A B d! $%+ [i@ @ d@ ! d@4+d! i@3+i!]\
 
 ; A simple benchmark for a 100 million FOR loop:
     100 1000#** `T$ 1[] `T$-." ms"
@@ -40,7 +36,7 @@ S4 examples:
     100 1000#** `T$ {1-} `T$-." ms"
 
 ; Define a function to display the currently defined code:
-    :DC u@h@1-[i@`@#58=(13,10,),];
+    :D `iAU`iAH@1-[i@`@#,';=(i@1+`@':=(13,10,))];
 
 ; To exit S4:
-    ``
+    `q
