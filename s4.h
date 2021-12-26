@@ -1,29 +1,32 @@
-// MINT - A Minimal Interpreter - for details, see https://github.com/monsonite/MINT
+// S4 - A Minimal Interpreter
 
 #include "config.h"
 #include <stdio.h>
 #include <stdarg.h>
 
-#define CELL        long
-#define UCELL       unsigned CELL
-#define CELL_SZ     sizeof(CELL)
-#define ushort      unsigned short
-#define byte        unsigned char
-typedef byte *addr;
+#ifndef S4CELL
+#define S4CELL long
+#endif
 
-#define REG        sys.reg
-#define USER       sys.user
-#define FUNC       sys.func
-#define DSP        sys.dsp
-#define RSP        sys.rsp
-#define LSP        sys.lsp
-// #define HERE       REG[7]
-#define INDEX      REG[8]
-#define T          sys.dstack[DSP]
-#define N          sys.dstack[DSP-1]
-#define R          sys.rstack[RSP]
-#define DROP1      pop()
-#define DROP2      pop(); pop()
+typedef S4CELL           CELL;
+typedef unsigned S4CELL  UCELL;
+typedef unsigned short   ushort;
+typedef unsigned char    byte;
+typedef byte            *addr;
+#define CELL_SZ          sizeof(CELL)
+
+#define REG              sys.reg
+#define USER             sys.user
+#define FUNC             sys.func
+#define DSP              sys.dsp
+#define RSP              sys.rsp
+#define LSP              sys.lsp
+#define INDEX            REG[8]
+#define T                sys.dstack[DSP]
+#define N                sys.dstack[DSP-1]
+#define R                sys.rstack[RSP]
+#define DROP1            pop()
+#define DROP2            pop(); pop()
 #define BetweenI(n, x, y) ((x <= n) && (n <= y))
 
 typedef struct {

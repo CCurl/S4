@@ -6,6 +6,8 @@
   #define  _CRT_SECURE_NO_WARNINGS
   #include <Windows.h>
   #define __PC__
+  // For Windows 64-bit, use 'long long'
+  // #define S4CELL long long
 #endif
 
 #ifdef __LINUX__

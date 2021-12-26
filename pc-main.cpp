@@ -12,7 +12,7 @@ CELL micros() {
     return (CELL)millis()*1000;
 }
 void delay(UCELL ms) { 
-    Sleep(ms);
+    Sleep((DWORD)ms);
 }
 #else
 CELL millis() {
@@ -53,10 +53,10 @@ addr doBlock(addr pc) {
             fclose((FILE*)pop());
         } break;
     case 'L': if (input_fp) { fpush(input_fp); }
-        sprintf(buf, "block-%03ld.s4", pop());
+        sprintf(buf, "block-%03ld.s4", (int)pop());
         input_fp = fopen(buf, "rb");
         break;
-    case 'O': sprintf(buf, "block-%03ld.s4", pop());
+    case 'O': sprintf(buf, "block-%03ld.s4", (int)pop());
         t1 = *(pc++);
         if (t1 == 'R') {
             push((CELL)fopen(buf, "rb"));

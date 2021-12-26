@@ -78,7 +78,7 @@ void skipTo(byte to) {
     isError = 1;
 }
 
-int AddIt(CELL n, char c, char f, int m) {
+CELL AddIt(CELL n, char c, char f, int m) {
     n = (n * 26) + (c - f);
     if (m <= n) { isError = 1; }
     return n;
