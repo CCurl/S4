@@ -27,7 +27,7 @@ There are examples for S4 here: https://github.com/CCurl/S4/blob/main/examples.t
 
 # Building S4
 
-- For Windows, I use Microsoft's Visual Studio (Community edition). 
+- For Windows, I use Microsoft's Visual Studio (Community edition). I use the x86 configuration.
 - For Development boards, I use the Arduino IDE. 
 - For Linux systems, I use vi and clang. See the make script.
 - I do not have an Apple system, so I haven't tried to build S4 for that environment.
