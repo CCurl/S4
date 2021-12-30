@@ -18,7 +18,7 @@
 #ifdef __PC__
   #define STK_SZ          16
   #define LSTACK_SZ       8
-  #define USER_SZ        (64*1024)
+  #define USER_SZ        (256*1024)
   #define NUM_REGS       (26*26*26)
   #define NUM_FUNCS      (26*26*26)
 #else

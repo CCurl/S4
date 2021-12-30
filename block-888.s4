@@ -11,7 +11,7 @@ N"The Mandelbrot Set"
 ; y: X pos
 
 ; Functions:
-; C: mandelbrot calc
+; Q: mandelbrot calc
 ; L: main MB loop 
 ; O: output
 ; X: loop for X axis
@@ -19,8 +19,8 @@ N"The Mandelbrot Set"
 ; M: main, loop for Y axis
 
 1`BL
-:C t@1+t! a@#*s@/c! b@#*s@/d! c@d@+k@>(j@m!;) a@b@*100/y@+b! c@d@-x@+a! j@1+j!;
-:L 0a!0b!0j!s@m!1{\Cj@m@<};
+:Q t@1+t! a@#*s@/c! b@#*s@/d! c@d@+k@>(j@m!;) a@b@*100/y@+b! c@d@-x@+a! j@1+j!;
+:L 0a!0b!0j!s@m!1{\Qj@m@<};
 :O Lj@40+#126>(\32),;
 :X 490`-x!1 95[  O x@ 8+x!];
 :Y 340`-y!1 35[N X y@20+y!];

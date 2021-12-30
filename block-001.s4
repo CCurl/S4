@@ -1,19 +1,8 @@
-:N13,10,;
-"S4 - v0.0.2 - Chris Curl"N
-"This system has "`iR." registers, "`iF." functions, and "`iZ." bytes user memory."N"Hello"N
+0(System Initialization)
 `sR
-0(info)
-:N 13,10,;
-:D `iAU`iH1-[i@`@#,';=(i@1+`@':=(13,10,))];
+:C `iAU`iH1-[i@`@#,';=(i@1+`@':=(13,10,))];
+:N13,10,;
 :R 0`iR1-[i@4*`iAR+@#(13,10,"r"i@." ".1)\];
-
-; HEX output
-:HX #9>(7+)'0+,;
-:HD 16`/$HX HX;
-:HW 256`/$ HD HD;
-:HL 256#*`/$ HW HW;
-
-; Binary output
-:BD 255&128 1 8[$%`/$.$2/]\\;
-:BW 256`/$ BD BD;
-:BL 256#*`/$ BW BW;
+:U `iH`iAU-1-.;
+"S4 - v0.1.0 - Chris Curl"N
+"This system has "`iR." registers, "`iF." functions, and "`iU." bytes user memory."N"Hello"N
