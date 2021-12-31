@@ -78,33 +78,18 @@ void skipTo(byte to) {
     isError = 1;
 }
 
-CELL AddIt(CELL n, char c, char f, int m) {
-    n = (n * 26) + (c - f);
-    if (m <= n) { isError = 1; }
-    return n;
-}
-
-void doDefineFunction() {
-    CELL fn = ir - 'A';
-    if (BetweenI(*pc, 'A', 'Z')) {
-        fn = AddIt(fn, *(pc++), 'A', NUM_FUNCS);
-        if (BetweenI(*pc, 'A', 'Z')) {
-            fn = AddIt(fn, *(pc++), 'A', NUM_FUNCS);
-        }
+int regFuncNum(int isReg) {
+    push(0);
+    while (*pc) {
+        if (isReg) { t1 = BetweenI(*pc, 'a', 'z') ? *pc - 'a' : -1; }
+        else { t1 = BetweenI(*pc, 'A', 'Z') ? *pc - 'A' : -1; }
+        if (t1 < 0) { break; }
+        T = (T*26) + t1;
+        ++pc;
     }
-    if (isError) { printString("-funcNum-"); return; }
-    FUNC[fn] = pc;
-    skipTo(';');
-    if (isError) { printString("-dfErr-"); }
-    else { HERE = pc; }
-}
-
-void doIf() {
-    CELL n = pop();
-    if (n == 0) {
-        skipTo(')');
-        return;
-    }
+    if (isReg && (NUM_REGS <= T)) { isError = 1; printString("-reg#-"); }
+    else if (NUM_FUNCS <= T) { isError = 1; printString("-func#-"); }
+    return isError ? 0 : 1;
 }
 
 void doFor() {
@@ -159,7 +144,7 @@ void doExt() {
         if (ir == '@') { push(getChar()); }
         return;
     case 'i': ir = *(pc++);
-        if (ir == 'A') { 
+        if (ir == 'A') {
           ir = *(pc++);
           if (ir == 'F') { push((CELL)&FUNC[0]); }
           if (ir == 'H') { push((CELL)&HERE); }
@@ -171,7 +156,7 @@ void doExt() {
         if (ir == 'F') { push(NUM_FUNCS); }
         if (ir == 'H') { push((CELL)HERE); }
         if (ir == 'R') { push(NUM_REGS); }
-        if (ir == 'Z') { push(USER_SZ); }
+        if (ir == 'U') { push(USER_SZ); }
         return;
     case 's': ir = *(pc++);
         if (ir == 'R') { vmInit(); }               return;
@@ -197,7 +182,7 @@ addr run(addr start) {
         case '%': push(N);                              break;  // 37 (OVER)
         case '&': t1 = pop(); T &= t1;                  break;  // 38
         case '\'': push(*(pc++));                       break;  // 39
-        case '(': doIf();                               break;  // 40
+        case '(': if (pop() == 0) { skipTo(')'); }      break;  // 40 (IF)
         case ')': /* endIf() */                         break;  // 41
         case '*': t1 = pop(); T *= t1;                  break;  // 42
         case '+': t1 = pop(); T += t1;                  break;  // 43
@@ -214,10 +199,9 @@ addr run(addr start) {
                 T = (T * 10) + (ir - '0');
                 ir = *(++pc);
             } break;
-        case ':': ir = *(pc++);                                 // 58
-            if (BetweenI(ir, 'A', 'Z')) { doDefineFunction(); }
-            else { isError = 1; }
-            break;
+        case ':': if (regFuncNum(0)) {
+            FUNC[pop()] = pc; skipTo(';'); HERE = pc;
+        }; break;
         case ';': pc = rpop();                          break;  // 59
         case '<': t1 = pop(); T = T < t1 ? 1 : 0;       break;  // 60
         case '=': t1 = pop(); T = T == t1 ? 1 : 0;      break;  // 61
@@ -226,22 +210,14 @@ addr run(addr start) {
         case '@': T = getCell((byte*)T);                break;  // 64
         case 'A': case 'B': case 'C': case 'D': case 'E':       // 65-90
         case 'F': case 'G': case 'H': case 'I': case 'J':
-        case 'K': case 'L': case 'M': case 'N': case 'O': case 'P':
-        case 'Q': case 'R': case 'S': case 'T': case 'U':
-        case 'V': case 'W': case 'X': case 'Y': case 'Z':
-            t1 = ir - 'A';
-            if (BetweenI(*pc, 'A', 'Z') && (26 < NUM_FUNCS)) {
-                t1 = AddIt(t1, *(pc++), 'A', NUM_FUNCS);
-                if (BetweenI(*pc, 'A', 'Z') && ((26*26) < NUM_FUNCS)) {
-                    t1 = AddIt(t1, *(pc++), 'A', NUM_FUNCS);
-                }
-            }
-            isError = (NUM_FUNCS <= t1);
-            if (isError) { printString("-funcNum-"); }
-            else if (FUNC[t1]) {
+        case 'K': case 'L': case 'M': case 'N': case 'O':
+        case 'P': case 'Q': case 'R': case 'S': case 'T':
+        case 'U': case 'V': case 'W': case 'X': case 'Y': 
+        case 'Z': --pc;
+            if (regFuncNum(0) && FUNC[T]) {
                 if (*pc != ';') { rpush(pc); }
-                pc = FUNC[t1];
-            } break;
+                pc = (addr)FUNC[T];
+            }  pop(); break;
         case '[': doFor();                              break;  // 91
         case '\\': DROP1;                               break;  // 92
         case ']': doNext();                             break;  // 93
@@ -250,23 +226,13 @@ addr run(addr start) {
         case '`': doExt();                              break;  // 96
         case 'a': case 'b': case 'c': case 'd': case 'e':       // 97-122
         case 'f': case 'g': case 'h': case 'i': case 'j': 
-        case 'k': case 'l': case 'm': case 'n': case 'o': case 'p': 
-        case 'q': case 'r': case 's': case 't': case 'u': 
-        case 'v': case 'w': case 'x': case 'y': case 'z': 
-            t1 = ir - 'a';
-            if (BetweenI(*pc, 'a', 'z') && (26 < NUM_REGS)) {
-                t1 = AddIt(t1, *(pc++), 'a', NUM_REGS);
-                if (BetweenI(*pc, 'a', 'z') && ((26*26) < NUM_REGS)) {
-                    t1 = AddIt(t1, *(pc++), 'a', NUM_REGS);
-                }
-            }
-            // if ((t1 == 2) && ((*pc == '@') || (*pc == '!'))) { printString("-c!@-"); ++pc; break; }
-            isError = (t1 < NUM_REGS) ? 0 : 1;
-            if (isError) { printString("-regNum-"); }
-            else { push((CELL)&REG[t1]); }              break;
+        case 'k': case 'l': case 'm': case 'n': case 'o': 
+        case 'p': case 'q': case 'r': case 's': case 't': 
+        case 'u': case 'v': case 'w': case 'x': case 'y': 
+        case 'z': --pc;
+            if (regFuncNum(1)) { T = (CELL)&REG[T]; }   break;
         case '{': if (T) { lpush()->start = pc; }               // 123
-                else { DROP1;  skipTo('}'); }
-            break;
+                else { DROP1;  skipTo('}'); }           break;
         case '|': t1 = pop(); T |= t1;                  break;  // 124
         case '}': if (!T) { ldrop(); DROP1; }                   // 125
                 else { lAt()->end = pc; pc = lAt()->start; }
