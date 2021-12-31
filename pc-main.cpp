@@ -14,6 +14,10 @@ CELL micros() {
 void delay(UCELL ms) { 
     Sleep((DWORD)ms);
 }
+
+int charAvailable() { return _kbhit(); }
+int getChar() { return _getch(); }
+
 #else
 CELL millis() {
     struct timespec ts;

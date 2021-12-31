@@ -151,6 +151,13 @@ void doExt() {
         return;
     case '@': T = *(byte*)T;                       return;
     case 'A': T = (T < 0) ? -T : T;                return;
+    case 'R': doRand(1);                           return;
+    case 'C': rpush(pc);       // fall thru to 'J'
+    case 'J': pc = (addr)pop();                    return;
+    case 'K': ir = *(pc++);
+        if (ir == '?') { push(charAvailable());  }
+        if (ir == '@') { push(getChar()); }
+        return;
     case 'i': ir = *(pc++);
         if (ir == 'A') { 
           ir = *(pc++);
@@ -166,9 +173,6 @@ void doExt() {
         if (ir == 'R') { push(NUM_REGS); }
         if (ir == 'Z') { push(USER_SZ); }
         return;
-    case 'R': doRand(1);                           return;
-    case 'C': rpush(pc);       // fall thru to 'J'
-    case 'J': pc = (addr)pop();                    return;
     case 's': ir = *(pc++);
         if (ir == 'R') { vmInit(); }               return;
     default:
