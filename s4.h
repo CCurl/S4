@@ -22,9 +22,8 @@ typedef byte            *addr;
 #define RSP              sys.rsp
 #define LSP              sys.lsp
 #define INDEX            REG[8]
-#define T                sys.dstack[DSP]
+#define TOS              sys.dstack[DSP]
 #define N                sys.dstack[DSP-1]
-#define R                sys.rstack[RSP]
 #define DROP1            pop()
 #define DROP2            pop(); pop()
 #define BetweenI(n, x, y) ((x <= n) && (n <= y))
@@ -63,3 +62,5 @@ extern void dumpStack();
 extern CELL getSeed();
 extern int charAvailable();
 extern int getChar();
+extern void wifiConnect();
+extern void createAccessPoint();
