@@ -167,7 +167,6 @@ void setup() {
 #endif
     vmInit();
     wifiConnect();
-    ok();
 }
 
 void loop() {
@@ -178,13 +177,15 @@ void loop() {
     
     if (iLed == 0) {
         loadBaseSystem();
+        ok();
         iLed = LED_BUILTIN;
         pinMode(iLed, OUTPUT);
     }
     if (nextBlink < curTm) {
         ledState = (ledState == LOW) ? HIGH : LOW;
         digitalWrite(iLed, ledState);
-        nextBlink = curTm + 1111;
+        nextBlink = curTm + 1000;
+        if (ledState == HIGH) { nextBlink += 1000; }
     }
 
     while ( charAvailable() ) { handleInput(getChar()); }

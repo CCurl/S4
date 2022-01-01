@@ -24,8 +24,8 @@
   #define NUM_FUNCS      (26*26*26)
 #else
   /* Dev Board */
-  #define __ESP8266__
   #include <Arduino.h>
+  #define __ESP8266__
   #define _NEEDS_ALIGN_   1
   #define STK_SZ          8
   #define LSTACK_SZ       4
