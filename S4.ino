@@ -6,14 +6,24 @@
         while (!charAvailable()) {}
         return mySerial.read();
     }
-    void printChar(char c) { mySerial.print(c); }
-    void printString(const char* str) { mySerial.print(str); }
+    void printSerial(const char* str) { mySerial.print(str); }
 #else
     int charAvailable() { return 0; }
     int getChar() { return 0; }
-    void printString(const char* str) { }
-    void printChar(char c) { }
+    void printSerial(const char* str) { }
 #endif
+
+int isOTA = 0;
+
+void printString(const char* str) { 
+    if (isOTA) { printWifi(str); }
+    else { printSerial(str); }
+}
+
+void printChar(const char ch) { 
+    char b[2] = { ch, 0 };
+    printString(b);
+}
 
 CELL getSeed() { return millis(); }
 
@@ -121,6 +131,18 @@ void ok() {
     printString(")>");
 }
 
+void wifiDisableWDT() {
+#ifdef __ESP8266__
+    wdt_disable();
+#endif
+}
+
+void wifiEnableWDT() {
+#ifdef __ESP8266__
+    wdt_enable(0);
+#endif
+}
+
 // NB: tweak this depending on what your terminal window sends for [back-space]
 // PuTTY sends a 127 for back-space
 int isBackSpace(char c) { 
@@ -131,14 +153,16 @@ int isBackSpace(char c) {
 void handleInput(char c) {
     static addr here = (addr)NULL;
     static addr here1 = (addr)NULL;
-    if (here == NULL) { 
-        here = (addr)HERE; 
-        here1 = here; 
+    if (here == NULL) {
+        here = (addr)HERE;
+        here1 = here;
     }
     if (c == 13) {
         printString(" ");
         *(here1) = 0;
+        wifiDisableWDT();
         run(here);
+        wifiEnableWDT();
         here = (addr)NULL;
         ok();
         return;
@@ -146,18 +170,16 @@ void handleInput(char c) {
 
     if (isBackSpace(c) && (here < here1)) {
         here1--;
-        char b[] = {8, 32, 8, 0};
-        printString(b);
+        // char b[] = {8, 32, 8, 0};
+        // printString(b);
         return;
     }
     if (c == 9) { c = 32; }
     if (BetweenI(c, 32, 126)) {
-        *(here1++) = (byte)c;
-        char b[] = {c, 0};
-        printString(b);
+        *(here1++) = c;
+        // printChar(c);
     }
 }
-
 
 void setup() {
 #ifdef __SERIAL__
@@ -166,7 +188,16 @@ void setup() {
     while (mySerial.available()) { char c = mySerial.read(); }
 #endif
     vmInit();
-    wifiConnect();
+    wifiConnect(NTWK, NTPW);
+}
+
+void do_autoRun() {
+    addr a = FUNC[NUM_FUNCS-1];
+    if (a) { 
+        wifiDisableWDT(); 
+        run(a);
+        wifiEnableWDT();
+    }
 }
 
 void loop() {
@@ -174,7 +205,7 @@ void loop() {
     static long nextBlink = 0;
     static int ledState = LOW;
     long curTm = millis();
-    
+
     if (iLed == 0) {
         loadBaseSystem();
         ok();
@@ -188,8 +219,13 @@ void loop() {
         if (ledState == HIGH) { nextBlink += 1000; }
     }
 
-    while ( charAvailable() ) { handleInput(getChar()); }
-
-    // addr a = functionAddress("R");
-    // if (a) { run(a); }
+    while (charAvailable()) { 
+        isOTA = 0;
+        handleInput(getChar()); 
+    }
+    while (wifiCharAvailable()) { 
+        isOTA = 1;
+        handleInput(wifiGetChar()); 
+    }
+    do_autoRun();
 }

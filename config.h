@@ -26,10 +26,14 @@
   /* Dev Board */
   #include <Arduino.h>
   #define __ESP8266__
+  #define NTWK            "FiOS-T01SJ"
+  #define NTPW            "marie2eric5936side"
+  #define MYSSID          "ESP-8266-1"
+  #define MYSSPW          "simplePW"
   #define _NEEDS_ALIGN_   1
   #define STK_SZ          8
   #define LSTACK_SZ       4
-  #define USER_SZ        (20*1024)
+  #define USER_SZ        (22*1024)
   #define NUM_REGS       (26*26)
   #define NUM_FUNCS      (26*26)
   #define __SERIAL__      1

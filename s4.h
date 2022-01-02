@@ -62,5 +62,9 @@ extern void dumpStack();
 extern CELL getSeed();
 extern int charAvailable();
 extern int getChar();
-extern void wifiConnect();
-extern void createAccessPoint();
+
+// Wifi stuff
+extern void wifiConnect(const char*, const char*);
+extern int wifiCharAvailable();
+extern char wifiGetChar();
+extern void printWifi(const char* str);

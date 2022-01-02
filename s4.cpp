@@ -23,7 +23,7 @@ void vmInit() {
     for (int i = 0; i < NUM_REGS; i++) { REG[i] = 0; }
     for (int i = 0; i < USER_SZ; i++) { USER[i] = 0; }
     for (int i = 0; i < NUM_FUNCS; i++) { FUNC[i] = 0; }
-    HERE = &sys.user[0];
+    HERE = USER;
 }
 
 void setCell(byte* to, CELL val) {
@@ -134,7 +134,7 @@ void doExt() {
     case '%': if (TOS) { N %= TOS; DROP1; }
         else { isError = 1; printString("-0div-"); }
         return;
-    case '@': TOS = *(byte*)TOS;                     return;
+    case '@': TOS = *(byte *)TOS;                    return;
     case 'A': TOS = (TOS < 0) ? -TOS : TOS;          return;
     case 'R': doRand(1);                             return;
     case 'C': rpush(pc);       // fall thru to 'J'
@@ -150,9 +150,10 @@ void doExt() {
           if (ir == 'H') { push((CELL)&HERE); }
           if (ir == 'R') { push((CELL)&REG[0]); }
           if (ir == 'S') { push((CELL)&sys); }
-          if (ir == 'U') { push((CELL)&USER[0]); }
+          if (ir == 'U') { push((CELL)USER); }
           return;
         }
+        if (ir == 'C') { push(CELL_SZ); }
         if (ir == 'F') { push(NUM_FUNCS); }
         if (ir == 'H') { push((CELL)HERE); }
         if (ir == 'R') { push(NUM_REGS); }
