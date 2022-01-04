@@ -102,7 +102,7 @@ FILE *input_pop() { return NULL; }
 #define SOURCE_STARTUP \
     X(1000, ":C N`iAU`iAH@1-[i@`@#,';=(i@1+`@':=(N))];") \
     X(1001, ":N 13,10,;:B 32,;:Q @.B;:U `iH`iAU-1-.;") \
-    X(1002, ":R 0`iR1-[i@4*`iAR+@#(Ni@26`/$26`/$'a+,'a+,'a+,\": \".1)\\];") \
+    X(1002, ":R 0`iR1-[i@`iC*`iAR+@#(Ni@26`/$26`/$'a+,'a+,'a+,\": \".1)\\];") \
     X(2000, "N\"This system has \"`iR.\" registers, \"`iF.\" functions, and \"`iU.\" bytes user memory.\"N")
 
 #ifdef __ESP8266__
