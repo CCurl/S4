@@ -2,7 +2,7 @@
 
 #include "s4.h"
 
-#ifdef __PC__
+#if __BOARD__ == PC
 
 #ifdef __WINDOWS__
 CELL millis() {
@@ -52,8 +52,8 @@ void printString(const char* str) { printf("%s", str); }
 addr doBlock(addr pc) {
     t1 = *(pc++);
     switch (t1) {
-    case 'C': if (T) {
-            if ((FILE*)T == input_fp) { input_fp = fpop(); }
+    case 'C': if (TOS) {
+            if ((FILE*)TOS == input_fp) { input_fp = fpop(); }
             fclose((FILE*)pop());
         } break;
     case 'L': if (input_fp) { fpush(input_fp); }

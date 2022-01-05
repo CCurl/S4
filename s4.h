@@ -12,7 +12,7 @@ typedef S4CELL           CELL;
 typedef unsigned S4CELL  UCELL;
 typedef unsigned short   ushort;
 typedef unsigned char    byte;
-typedef byte            *addr;
+typedef byte*            addr;
 #define CELL_SZ          sizeof(CELL)
 
 #define REG              sys.reg
@@ -22,11 +22,11 @@ typedef byte            *addr;
 #define RSP              sys.rsp
 #define LSP              sys.lsp
 #define INDEX            REG[8]
-#define T                sys.dstack[DSP]
+#define TOS              sys.dstack[DSP]
 #define N                sys.dstack[DSP-1]
-#define R                sys.rstack[RSP]
 #define DROP1            pop()
 #define DROP2            pop(); pop()
+#define LTOS             (&sys.lstack[LSP])
 #define BetweenI(n, x, y) ((x <= n) && (n <= y))
 
 typedef struct {
@@ -63,3 +63,10 @@ extern void dumpStack();
 extern CELL getSeed();
 extern int charAvailable();
 extern int getChar();
+
+// Wifi stuff
+extern void wifiStart();
+extern int wifiCharAvailable();
+extern char wifiGetChar();
+extern void printWifi(const char* str);
+extern void feedWatchDog();

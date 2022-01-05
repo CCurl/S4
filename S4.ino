@@ -6,14 +6,24 @@
         while (!charAvailable()) {}
         return mySerial.read();
     }
-    void printChar(char c) { mySerial.print(c); }
-    void printString(const char* str) { mySerial.print(str); }
+    void printSerial(const char* str) { mySerial.print(str); }
 #else
     int charAvailable() { return 0; }
     int getChar() { return 0; }
-    void printString(const char* str) { }
-    void printChar(char c) { }
+    void printSerial(const char* str) { }
 #endif
+
+int isOTA = 0;
+
+void printString(const char* str) { 
+    if (isOTA) { printWifi(str); }
+    else { printSerial(str); }
+}
+
+void printChar(const char ch) { 
+    char b[2] = { ch, 0 };
+    printString(b);
+}
 
 CELL getSeed() { return millis(); }
 
@@ -73,8 +83,8 @@ addr doCustom(byte ir, addr pc) {
 }
 
 void loadCode(const char* src) {
-    addr here = (addr)HERE;
-    addr here1 = here;
+    addr here = HERE;
+    addr here1 = HERE;
     while (*src) {
         *(here1++) = *(src++);
     }
@@ -90,19 +100,16 @@ FILE *input_pop() { return NULL; }
 // ********************************************
 
 #define SOURCE_STARTUP \
-    X(2000, "\"This system has \"`iR.\" registers, \"`iF.\" functions, and \"`iZ.\" bytes user memory.\"N") \
-    X(1000, ":D `iAU`iAH@1-[i@`@#,';=(i@1+`@':=(13,10,))];") \
-    X(1001, ":N 13,10,;:B\" \";:Q@.B;") \
-    X(1002, ":R 0`iR1-[i@4*`iAR+@#(13,10,\"r\"i@.\" \".1)\\];") \
-    X(1003, ":C t@1+t! a@#*s@/c! b@#*s@/d! c@d@+k@>(j@m!;) a@b@*100/y@+b! c@d@-x@+a! j@1+j!;") \
-    X(1004, ":L 0a!0b!0j!s@m!1{\\Cj@m@<};") \
-    X(1005, ":O Lj@40+#126>(\\32),;") \
-    X(1006, ":X 490`-x!1 95[  O x@ 8+x!];") \
-    X(1007, ":Y 340`-y!1 35[N X y@20+y!];") \
-    X(1008, ":M 0t! `T Y `T$- N t@.\" iterations, \" . \" ms\";") \
-    X(9999, "200 s! 1000000 k!")
+    X(1000, ":C N`iAU`iAH@1-[i@`@#,';=(i@1+`@':=(N))];") \
+    X(1001, ":N 13,10,;:U `iH`iAU-1-.;") \
+    X(1002, ":R 0`iR1-[i@`iC*`iAR+@#(Ni@26`/$26`/$'a+,'a+,'a+,\": \".1)\\];") \
+    X(2000, "N\"This system has \"`iR.\" registers, \"`iF.\" functions, and \"`iU.\" bytes user memory.\"N")
 
+#if __BOARD__ == ESP8266
+#define X(num, val) const char str ## num[] = val;
+#else
 #define X(num, val) const PROGMEM char str ## num[] = val;
+#endif
 SOURCE_STARTUP
 
 #undef X
@@ -125,7 +132,7 @@ void ok() {
 }
 
 // NB: tweak this depending on what your terminal window sends for [back-space]
-// PuTTY sends a 127 for back-space
+// E.G. - PuTTY sends a 127 for back-space
 int isBackSpace(char c) { 
   // printStringF("(%d)",c);
   return (c == 127) ? 1 : 0; 
@@ -134,9 +141,9 @@ int isBackSpace(char c) {
 void handleInput(char c) {
     static addr here = (addr)NULL;
     static addr here1 = (addr)NULL;
-    if (here == NULL) { 
-        here = (addr)HERE; 
-        here1 = here; 
+    if (here == NULL) {
+        here = (addr)HERE;
+        here1 = here;
     }
     if (c == 13) {
         printString(" ");
@@ -149,15 +156,16 @@ void handleInput(char c) {
 
     if (isBackSpace(c) && (here < here1)) {
         here1--;
-        char b[] = {8, 32, 8, 0};
-        printString(b);
+        if (!isOTA) {
+          char b[] = {8, 32, 8, 0};
+          printString(b);
+        }
         return;
     }
     if (c == 9) { c = 32; }
     if (BetweenI(c, 32, 126)) {
-        *(here1++) = (byte)c;
-        char b[] = {c, 0};
-        printString(b);
+        *(here1++) = c;
+        if (!isOTA) { printChar(c); }
     }
 }
 
@@ -168,8 +176,14 @@ void setup() {
     while (mySerial.available()) { char c = mySerial.read(); }
 #endif
     vmInit();
-    loadBaseSystem();
-    ok();
+    wifiStart();
+}
+
+void do_autoRun() {
+    addr a = FUNC[NUM_FUNCS-1];
+    if (a) {
+        run(a);
+    }
 }
 
 void loop() {
@@ -177,19 +191,27 @@ void loop() {
     static long nextBlink = 0;
     static int ledState = LOW;
     long curTm = millis();
-    
+
     if (iLed == 0) {
-        iLed = ILED;
+        loadBaseSystem();
+        ok();
+        iLed = LED_BUILTIN;
         pinMode(iLed, OUTPUT);
     }
     if (nextBlink < curTm) {
         ledState = (ledState == LOW) ? HIGH : LOW;
         digitalWrite(iLed, ledState);
-        nextBlink = curTm + 1111;
+        nextBlink = curTm + 1000;
+        if (ledState == HIGH) { nextBlink += 1000; }
     }
 
-    while ( charAvailable() ) { handleInput(getChar()); }
-
-    // addr a = functionAddress("R");
-    // if (a) { run(a); }
+    while (charAvailable()) { 
+        isOTA = 0;
+        handleInput(getChar()); 
+    }
+    while (wifiCharAvailable()) { 
+        isOTA = 1;
+        handleInput(wifiGetChar()); 
+    }
+    do_autoRun();
 }
