@@ -1,22 +1,14 @@
 #include "s4.h"
-#ifndef __ESP8266__
-void wifiConnect() {}
-void wifiCreateAP() {}
-void handleWifiClient() {}
-void printWifi(const char* str) {}
-int wifiAvailable() { return 0; }
-char wifiRead() { return 0; }
-void wifiDisableWDT();
-#else
+#if __BOARD__ == ESP8266
 #include <ESP8266WiFi.h>
 
 WiFiServer wifiServer(23);
 WiFiClient wifiClient;
 int haveClient = 0;
 
-void wifiConnect(const char *net, const char *pw) {
+void wifiStart() {
     printString("\r\nConnecting to WIFI...");
-    WiFi.begin(net, pw);
+    WiFi.begin(NTWK, NTPW);
     while (WiFi.status() != WL_CONNECTED) {
       delay(500);
       printString(".");
@@ -25,9 +17,7 @@ void wifiConnect(const char *net, const char *pw) {
     printString("\r\nStarting telnet server on port 23...");
     wifiServer.begin();
     wifiServer.setNoDelay(true);
-}
-
-void createWifiServer() {
+    printString("started.");
 }
 
 int wifiCharAvailable() {
@@ -55,4 +45,18 @@ void printWifi(const char* str) {
         wifiClient.write(str, strlen(str));
     }
 }
+
+int wdtCount = 1;
+void feedWatchDog() {
+    if (--wdtCount < 1) {
+        wdtCount = 99999;
+        ESP.wdtFeed();
+    }
+}
+#else
+void wifiStart() {}
+void printWifi(const char* str) {}
+int wifiCharAvailable() { return 0; }
+char wifiGetChar() { return 0; }
+void feedWatchDog() {}
 #endif

@@ -64,7 +64,8 @@ extern int charAvailable();
 extern int getChar();
 
 // Wifi stuff
-extern void wifiConnect(const char*, const char*);
+extern void wifiStart();
 extern int wifiCharAvailable();
 extern char wifiGetChar();
 extern void printWifi(const char* str);
+extern void feedWatchDog();

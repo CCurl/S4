@@ -101,11 +101,11 @@ FILE *input_pop() { return NULL; }
 
 #define SOURCE_STARTUP \
     X(1000, ":C N`iAU`iAH@1-[i@`@#,';=(i@1+`@':=(N))];") \
-    X(1001, ":N 13,10,;:B 32,;:Q @.B;:U `iH`iAU-1-.;") \
-    X(1002, ":R 0`iR1-[i@4*`iAR+@#(Ni@26`/$26`/$'a+,'a+,'a+,\": \".1)\\];") \
+    X(1001, ":N 13,10,;:U `iH`iAU-1-.;") \
+    X(1002, ":R 0`iR1-[i@`iC*`iAR+@#(Ni@26`/$26`/$'a+,'a+,'a+,\": \".1)\\];") \
     X(2000, "N\"This system has \"`iR.\" registers, \"`iF.\" functions, and \"`iU.\" bytes user memory.\"N")
 
-#ifdef __ESP8266__
+#if __BOARD__ == ESP8266
 #define X(num, val) const char str ## num[] = val;
 #else
 #define X(num, val) const PROGMEM char str ## num[] = val;
@@ -131,20 +131,8 @@ void ok() {
     printString(")>");
 }
 
-void wifiDisableWDT() {
-#ifdef __ESP8266__
-    wdt_disable();
-#endif
-}
-
-void wifiEnableWDT() {
-#ifdef __ESP8266__
-    wdt_enable(0);
-#endif
-}
-
 // NB: tweak this depending on what your terminal window sends for [back-space]
-// PuTTY sends a 127 for back-space
+// E.G. - PuTTY sends a 127 for back-space
 int isBackSpace(char c) { 
   // printStringF("(%d)",c);
   return (c == 127) ? 1 : 0; 
@@ -160,9 +148,7 @@ void handleInput(char c) {
     if (c == 13) {
         printString(" ");
         *(here1) = 0;
-        wifiDisableWDT();
         run(here);
-        wifiEnableWDT();
         here = (addr)NULL;
         ok();
         return;
@@ -170,14 +156,16 @@ void handleInput(char c) {
 
     if (isBackSpace(c) && (here < here1)) {
         here1--;
-        // char b[] = {8, 32, 8, 0};
-        // printString(b);
+        if (!isOTA) {
+          char b[] = {8, 32, 8, 0};
+          printString(b);
+        }
         return;
     }
     if (c == 9) { c = 32; }
     if (BetweenI(c, 32, 126)) {
         *(here1++) = c;
-        // printChar(c);
+        if (!isOTA) { printChar(c); }
     }
 }
 
@@ -188,15 +176,13 @@ void setup() {
     while (mySerial.available()) { char c = mySerial.read(); }
 #endif
     vmInit();
-    wifiConnect(NTWK, NTPW);
+    wifiStart();
 }
 
 void do_autoRun() {
     addr a = FUNC[NUM_FUNCS-1];
-    if (a) { 
-        wifiDisableWDT(); 
+    if (a) {
         run(a);
-        wifiEnableWDT();
     }
 }
 

@@ -240,6 +240,9 @@ addr run(addr start) {
             break;
         case '~': TOS = ~TOS;                               break;  // 126
         }
+        #ifdef __WATCHDOG__
+        feedWatchDog();
+        #endif
     }
     return pc;
 }
