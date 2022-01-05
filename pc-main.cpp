@@ -2,7 +2,7 @@
 
 #include "s4.h"
 
-#if __BOARD__ == PC
+#ifdef __PC__
 
 #ifdef __WINDOWS__
 CELL millis() {
