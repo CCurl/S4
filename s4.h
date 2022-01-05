@@ -12,7 +12,7 @@ typedef S4CELL           CELL;
 typedef unsigned S4CELL  UCELL;
 typedef unsigned short   ushort;
 typedef unsigned char    byte;
-typedef byte            *addr;
+typedef byte*            addr;
 #define CELL_SZ          sizeof(CELL)
 
 #define REG              sys.reg
@@ -26,6 +26,7 @@ typedef byte            *addr;
 #define N                sys.dstack[DSP-1]
 #define DROP1            pop()
 #define DROP2            pop(); pop()
+#define LTOS             (&sys.lstack[LSP])
 #define BetweenI(n, x, y) ((x <= n) && (n <= y))
 
 typedef struct {
