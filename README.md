@@ -6,9 +6,9 @@ S4 is an simple, fast, minimal, and interactive environment where the source cod
 
 I think of S4 as a stack-based, RPN, Forth-like, virtual CPU/VM that has many registers, function vectors, and any amount of user ram.
 
-A register is identified by up to 3 lower-case characters, so there is a maximum or (26*26*26) = 17576 registers available. I tend to think of registers as built-in variables.
+A register is identified by up to 3 lower-case characters, so there is a maximum or (26x26x26) = 17576 registers available. I tend to think of registers as built-in variables.
 
-Similarly, a function is identified by up to 3 UPPER-case characters, so there is a maximum or (26*26*26) = 17576 functions available.
+Similarly, a function is identified by up to 3 UPPER-case characters, so there is a maximum or (26x26x26) = 17576 functions available.
 
 The number of registers, function vectors, and user memory can be scaled as necessary to fit into a system of any size. For example, on an ESP-8266 board, a typical configuration might be 676 (26*26) registers and functions, and 24K of user ram. In such a system, register names would be in the range of [aa.zz], and function names would be in the range of [AA..ZZ]. On a Arduino Leonardo, you might configure the system to have 26 registers and functions, and 1K user ram.
 
