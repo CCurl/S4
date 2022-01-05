@@ -137,8 +137,8 @@ void doExt() {
     case '@': TOS = *(byte *)TOS;                    return;
     case 'A': TOS = (TOS < 0) ? -TOS : TOS;          return;
     case 'R': doRand(1);                             return;
-    case 'C': rpush(pc);       // fall thru to 'J'
-    case 'J': pc = (addr)pop();                      return;
+    case 'C': if (TOS) { rpush(pc); }             // fall thru to 'J'
+    case 'J': if (TOS) { pc = (addr)TOS; } DROP1;    return;
     case 'K': ir = *(pc++);
         if (ir == '?') { push(charAvailable());  }
         if (ir == '@') { push(getChar()); }
