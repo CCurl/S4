@@ -45,8 +45,18 @@ S4 is the result of my work towards those goals.
 - The same code runs on Windows, Linux, and multiple development boards (via the Arduino IDE).
 - See the file "config.h" for system configuration settings.
 
+# WiFi support
+
+Some boards, for example the ESP8266, support WiFi. For those boards, the __HASWIFI__ directive can be #defined to enable the boards WiFi.
+Note that those boards usually also have watchdogs that need to be enabled via the __WATCHDOG__ #define.
+
+# LittleFS support
+
+Some boards support LittleFS. For those boards, the __LITTLEFS__ directive can be #defined to save and load the defined code to the board, so that any user-defined words can be reloaded across boots.
+
 # Building S4
 
+- The target machine/environment is controlled by the #defined in the file "config.h"
 - For Windows, I use Microsoft's Visual Studio (Community edition). I use the x86 configuration.
 - For Development boards, I use the Arduino IDE. See the file "config.h" for board-specific settings.
 - For Linux systems, I use vi and clang. See the "make" script for more info.
