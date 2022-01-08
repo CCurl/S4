@@ -46,6 +46,6 @@ void lfsSave() {
 
 #else
 void lfsBegin() {}
-void lfsLoad() {}
-void lfsSave() {}
+void lfsLoad() { printString("-noLoad-"); }
+void lfsSave() { printString("-noSave-"); }
 #endif
