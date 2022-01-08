@@ -70,3 +70,8 @@ extern int wifiCharAvailable();
 extern char wifiGetChar();
 extern void printWifi(const char* str);
 extern void feedWatchDog();
+
+// LittleFS stuff
+extern void lfsBegin();
+extern void lfsLoad();
+extern void lfsSave();

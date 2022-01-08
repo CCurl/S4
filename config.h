@@ -6,7 +6,7 @@
 #define PICO     3
 #define ESP8266  4
 
-#define __BOARD__ PICO
+#define __BOARD__ ESP8266
 
 #ifdef _WIN32
   #define __WINDOWS__
@@ -52,6 +52,7 @@
   #define NUM_FUNCS      (26*26)
 #elif __BOARD__ == ESP8266
   #define __WATCHDOG__
+  #define __LITTLEFS__
   #define NTWK            "FiOS-T01SJ"
   #define NTPW            "marie2eric5936side"
   #define MYSSID          "ESP-8266-1"

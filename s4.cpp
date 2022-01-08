@@ -4,7 +4,7 @@
 
 SYS_T sys;
 byte ir, isBye = 0, isError = 0;
-static char buf[24];
+static char buf[64];
 addr pc, HERE;
 CELL t1;
 
@@ -137,9 +137,10 @@ void doExt() {
     case 'C': if (TOS) { rpush(pc); }                   // fall thru to 'J'
     case 'J': if (TOS) { pc = (addr)TOS; } DROP1;          return;
     case 'K': ir = *(pc++);
-        if (ir == '?') { push(charAvailable());  }
+        if (ir == '?') { push(charAvailable()); }
         if (ir == '@') { push(getChar()); }
         return;
+    case 'Z': printString((char *)pop());                  return;
     case 'i': ir = *(pc++);
         if (ir == 'A') {
           ir = *(pc++);
@@ -156,8 +157,11 @@ void doExt() {
         if (ir == 'R') { push(NUM_REGS); }
         if (ir == 'U') { push(USER_SZ); }
         return;
-    case 's': ir = *(pc++);
-        if (ir == 'R') { vmInit();   }                     return;
+    case 's': if (*(pc++) == 'R') { vmInit();   }          return;
+    case '`': t1 = TOS; 
+        while (*pc && *pc != '`') { *((addr)t1++) = *(pc++); }
+        *((addr)t1++) = 0; push(t1);
+        ++pc;                                              return;
     default:
         pc = doCustom(ir, pc);
     }

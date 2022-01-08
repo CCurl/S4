@@ -141,6 +141,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ESP8266.cpp" />
+    <ClCompile Include="LittleFS.cpp" />
     <ClCompile Include="pc-main.cpp" />
     <ClCompile Include="s4.cpp">
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsCpp</CompileAs>

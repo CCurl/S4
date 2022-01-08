@@ -71,6 +71,10 @@ addr doPin(addr pc) {
 
 addr doCustom(byte ir, addr pc) {
     switch (ir) {
+    case 'B': ir = *(pc++);
+        if (ir == 'L') { lfsLoad(); pc = 0; }
+        if (ir == 'S') { lfsSave(); }
+      break;
     case 'N': push(micros());          break;
     case 'P': pc = doPin(pc);          break;
     case 'T': push(millis());          break;
@@ -120,9 +124,13 @@ const char *bootStrap[] = {
 };
 
 void loadBaseSystem() {
+#ifdef __LITTLEFS__
+    loadCode("`BL");
+#else
     for (int i = 0; bootStrap[i] != NULL; i++) {
         loadCode(bootStrap[i]);
     }
+#endif
 }
 
 void ok() {
@@ -173,10 +181,12 @@ void setup() {
 #ifdef __SERIAL__
     while (!mySerial) {}
     mySerial.begin(19200);
+    delay(1000);
     while (mySerial.available()) { char c = mySerial.read(); }
 #endif
     vmInit();
     wifiStart();
+    lfsBegin();
 }
 
 void do_autoRun() {

@@ -54,13 +54,15 @@ XXX   (--)        Call function XXX
 
 
 *** INPUT/OUTPUT ***
-.     (N--)       Output N as decimal number
-,     (N--)       Output N as character (Forth EMIT)
-"     (--)        Output characters until the next '"'
-0..9  (--n)       Scan DECIMAL number until non digit
+.      (N--)      Output N as decimal number
+,      (N--)      Output N as character (Forth EMIT)
+"      (--)       Output characters until the next '"'
+0..9   (--n)      Scan DECIMAL number until non digit
                      to specify multiple values, separate them by space (4711 3333)
                      to enter a negative number, use "negate" (eg - 490`-)
-'x    (--n)       n: the ASCII value of x
+'x     (--n)      n: the ASCII value of x
+``XXX` (a--a b)   Copies XXX to address a, b is the next address after the NULL terminator.
+`Z     (a--)      a: address of a NULL terminated string to print.
 
 
 *** CONDITIONS/LOOPS/FLOW CONTROL ***
@@ -83,13 +85,15 @@ i@    (--n)       n: the index of the current FOR loop
 `BR   (h--c f)    PC: Block read one byte (f = 0 and c = 0 on EOF or error)
 `BW   (c h--f)    PC: Block write one byte (f = 0 on error)
 `LA   (--)        PC: Load Abort: to stop loading a block (eg - if the block has already been loaded)
-`PI   (p--)       Arduino: pin input  (pinMode(p, INPUT))
-`PU   (p--)       Arduino: pin pullup (pinMode(p, INPUT_PULLUP))
-`PO   (p--)       Arduino: pin output (pinMode(p, OUTPUT)
-`PRA  (p--n)      Arduino: pin read analog  (n = analogRead(p))
-`PRD  (p--n)      Arduino: pin read digital (n = digitalRead(p))
-`PWA  (n p--)     Arduino: pin write analog  (analogWrite(p, n))
-`PWD  (n p--)     Arduino: pin write digital (digitalWrite(p, n))
+`BL   (--)        Arduino: Load code from LittleFS. (When enabled via #define __LITTLEFS__)
+`BS   (--)        Arduino: Save code to LittleFS. (When enabled via #define __LITTLEFS__)
+`PI   (p--)       Arduino: Pin Input  (pinMode(p, INPUT))
+`PU   (p--)       Arduino: Pin Pullup (pinMode(p, INPUT_PULLUP))
+`PO   (p--)       Arduino: Pin Output (pinMode(p, OUTPUT)
+`PRA  (p--n)      Arduino: Pin Read Analog  (n = analogRead(p))
+`PRD  (p--n)      Arduino: Pin Read Digital (n = digitalRead(p))
+`PWA  (n p--)     Arduino: Pin Write Analog  (analogWrite(p, n))
+`PWD  (n p--)     Arduino: Pin Write Digital (digitalWrite(p, n))
 `R    (n--r)      r: a random number in the range [0..(n-1)]
                   NB: if n=0, r is the entire 32-bit random number
 `T    (--n)       Milliseconds (Arduino: millis(), Windows: GetTickCount())
