@@ -13,6 +13,14 @@
     void printSerial(const char* str) { }
 #endif
 
+#ifndef __WIFI__
+void wifiStart() {}
+void printWifi(const char* str) {}
+int wifiCharAvailable() { return 0; }
+char wifiGetChar() { return 0; }
+void feedWatchDog() {}
+#endif
+
 int isOTA = 0;
 
 void printString(const char* str) { 

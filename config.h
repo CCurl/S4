@@ -51,6 +51,7 @@
   #define NUM_REGS       (26*26*26)
   #define NUM_FUNCS      (26*26)
 #elif __BOARD__ == ESP8266
+  #define __WIFI__
   #define __WATCHDOG__
   #define __LITTLEFS__
   #define NTWK            "FiOS-T01SJ"

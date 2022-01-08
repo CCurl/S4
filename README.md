@@ -47,7 +47,7 @@ S4 is the result of my work towards those goals.
 
 # WiFi support
 
-Some boards, for example the ESP8266, support WiFi. For those boards, the __HASWIFI__ directive can be #defined to enable the boards WiFi.
+Some boards, for example the ESP8266, support WiFi. For those boards, the __WIFI__ directive can be #defined to enable the boards WiFi.
 Note that those boards usually also have watchdogs that need to be enabled via the __WATCHDOG__ #define.
 
 # LittleFS support
