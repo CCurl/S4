@@ -1,8 +1,9 @@
 0(System Initialization)
 `sR
 :C `iAU`iH1-[i@`@#,';=(i@1+`@':=(13,10,))];
-:N13,10,;
+:N 13,10,;
 :R 0`iR1-[i@`iC*`iAR+@#(13,10,i@26`/$26`/$'a+,'a+,'a+,": ".1)\];
-:U `iH`iAU-1-.;
+:U `iH`iAU-." bytes used";
 "S4 - v0.1.0 - Chris Curl"N
-"This system has "`iR." registers, "`iF." functions, and "`iU." bytes user memory."N"Hello"N
+"This system has "`iR." registers, "`iF." functions, and "`iU." bytes user memory."N
+"Hello"N

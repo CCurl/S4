@@ -12,6 +12,7 @@ void lfsBegin() {
 void lfsLoad() {
     int tot = 0;
     File f = LittleFS.open("/source", "r");
+    printStringF("-File f: %ld-", (CELL)&f);
     if (f) {
         vmInit();
         while (1) {
