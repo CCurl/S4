@@ -6,7 +6,7 @@
 #define PICO     3
 #define ESP8266  4
 
-#define __BOARD__ ESP8266
+#define __BOARD__ PICO
 
 #ifdef _WIN32
   #define __WINDOWS__
@@ -45,6 +45,7 @@
   #define NUM_REGS       (26*26)
   #define NUM_FUNCS      (26*26)
 #elif __BOARD__ == PICO
+  #define __LITTLEFS__
   #define STK_SZ          16
   #define LSTACK_SZ       8
   #define USER_SZ        (96*1024)
