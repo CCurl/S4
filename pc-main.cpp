@@ -89,11 +89,34 @@ addr doBlock(addr pc) {
     return pc;
 }
 
+addr doFile(addr pc) {
+    byte ir = *(pc++);
+    switch (ir) {
+    case 'O': t1 = pop(); t2 = pop();
+        push((CELL)fopen((char *)t2, (char *)t1));
+        break;
+    case 'C': t1 = pop();
+        if (t1) { fclose((FILE *)t1); }
+        break;
+    case 'R': t1 = pop(); t2 = 0;
+        if (t1) { t2 = fread(&ir, 1, 1, (FILE*)t1); }
+        push((t2 == 0) ? 0 : ir);
+        push(t2);
+        break;
+    case 'W': t1 = pop(); ir = (byte)pop();
+        if (t1) { t2 = fwrite(&ir, 1, 1, (FILE*)t1); }
+        push(t2);
+        break;
+    }
+    return pc;
+}
+
 CELL getSeed() { return millis(); }
 
 addr doCustom(byte ir, addr pc) {
     switch (ir) {
     case 'B': pc = doBlock(pc);        break;
+    case 'F': pc = doFile(pc);         break;
     case 'N': push(micros());          break;
     case 'T': push(millis());          break;
     case 'W': delay(pop());            break;
