@@ -79,10 +79,6 @@ addr doPin(addr pc) {
 
 addr doCustom(byte ir, addr pc) {
     switch (ir) {
-    case 'B': ir = *(pc++);
-        if (ir == 'L') { lfsLoad(); pc = 0; }
-        if (ir == 'S') { lfsSave(); }
-      break;
     case 'N': push(micros());          break;
     case 'P': pc = doPin(pc);          break;
     case 'T': push(millis());          break;
@@ -194,7 +190,7 @@ void setup() {
 #endif
     vmInit();
     wifiStart();
-    lfsBegin();
+    fileInit();
 }
 
 void do_autoRun() {

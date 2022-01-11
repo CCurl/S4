@@ -52,60 +52,9 @@ void printString(const char* str) { printf("%s", str); }
 addr doBlock(addr pc) {
     t1 = *(pc++);
     switch (t1) {
-    case 'C': if (TOS) {
-            if ((FILE*)TOS == input_fp) { input_fp = fpop(); }
-            fclose((FILE*)pop());
-        } break;
     case 'L': if (input_fp) { fpush(input_fp); }
         sprintf(buf, "block-%03ld.s4", (int)pop());
         input_fp = fopen(buf, "rb");
-        break;
-    case 'O': sprintf(buf, "block-%03ld.s4", (int)pop());
-        t1 = *(pc++);
-        if (t1 == 'R') {
-            push((CELL)fopen(buf, "rb"));
-        } else if (t1 == 'W') {
-            push((CELL)fopen(buf, "wb"));
-        }
-        break;
-    case 'R': t1 = pop();
-        if (t1) {
-            t2 = fread(buf, 1, 1, (FILE *)t1);
-            push(t2 ? buf[0] : 0);
-            push(t2);
-        } else {
-            push(0);
-            push(0);
-        } 
-        break;
-    case 'W': t1 = pop(); t2 = pop();
-        if (t1) {
-            buf[0] = (char)t2;
-            t2 = fwrite(buf, 1, 1, (FILE *)t1);
-            push(t2 ? 1 : 0);
-        }
-        break;
-    }
-    return pc;
-}
-
-addr doFile(addr pc) {
-    byte ir = *(pc++);
-    switch (ir) {
-    case 'O': t1 = pop(); t2 = pop();
-        push((CELL)fopen((char *)t2, (char *)t1));
-        break;
-    case 'C': t1 = pop();
-        if (t1) { fclose((FILE *)t1); }
-        break;
-    case 'R': t1 = pop(); t2 = 0;
-        if (t1) { t2 = fread(&ir, 1, 1, (FILE*)t1); }
-        push((t2 == 0) ? 0 : ir);
-        push(t2);
-        break;
-    case 'W': t1 = pop(); ir = (byte)pop();
-        if (t1) { t2 = fwrite(&ir, 1, 1, (FILE*)t1); }
-        push(t2);
         break;
     }
     return pc;
@@ -116,7 +65,6 @@ CELL getSeed() { return millis(); }
 addr doCustom(byte ir, addr pc) {
     switch (ir) {
     case 'B': pc = doBlock(pc);        break;
-    case 'F': pc = doFile(pc);         break;
     case 'N': push(micros());          break;
     case 'T': push(millis());          break;
     case 'W': delay(pop());            break;
@@ -162,7 +110,7 @@ void doHistory(char* str) {
 void loop() {
     FILE* fp = (input_fp) ? input_fp : stdin;
     if (fp == stdin) { ok(); }
-    if (fgets(buf, 100, fp) == buf) {
+    if (fgets(buf, sizeof(buf), fp) == buf) {
         if (fp == stdin) { doHistory(buf); }
         rtrim(buf);
         loadCode(buf);
@@ -170,7 +118,7 @@ void loop() {
     }
     if (input_fp) {
         fclose(input_fp);
-        input_fp = fpop(); // input_pop();
+        input_fp = fpop();
     }
 }
 

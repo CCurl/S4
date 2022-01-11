@@ -64,14 +64,18 @@ extern CELL getSeed();
 extern int charAvailable();
 extern int getChar();
 
-// Wifi stuff
+// Wifi support
 extern void wifiStart();
 extern int wifiCharAvailable();
 extern char wifiGetChar();
 extern void printWifi(const char* str);
 extern void feedWatchDog();
 
-// LittleFS stuff
-extern void lfsBegin();
-extern void lfsLoad();
-extern void lfsSave();
+// File support
+extern void fileInit();
+extern void fileOpen();
+extern void fileClose();
+extern void fileRead();
+extern void fileWrite();
+extern void fileLoad();
+extern void fileSave();

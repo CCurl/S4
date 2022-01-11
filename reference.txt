@@ -78,15 +78,14 @@ i@    (--n)       n: the index of the current FOR loop
 
 
 *** OTHER ***
-`BL   (n--)       PC: Load code from file (block-nnn.src). This can be nested.
-`BC   (h--)       PC: Block close
-`BOR  (--h)       PC: Block open (read)
-`BOW  (--h)       PC: Block open (write)
-`BR   (h--c f)    PC: Block read one byte (f = 0 and c = 0 on EOF or error)
-`BW   (c h--f)    PC: Block write one byte (f = 0 on error)
-`LA   (--)        PC: Load Abort: to stop loading a block (eg - if the block has already been loaded)
-`BL   (--)        Arduino: Load code from LittleFS. (When enabled via #define __LITTLEFS__)
-`BS   (--)        Arduino: Save code to LittleFS. (When enabled via #define __LITTLEFS__)
+`BL   (n--)       File: (PC): Load code from file (block-nnn.src). This can be nested.
+`FL   (--)        File: Load code from ./Code.S4.
+`FS   (--)        File: Save code  to  ./Code.S4.
+`FO   (n m--f)    File: Open -  n: name, m: mode, f: file handle (0 means not opened)
+`FC   (f--)       File: Close - f: file handle
+`FR   (f--c n)    File: Read -  f: file handle, c: char, n: success?
+`FW   (c f--n)    File: Write - f: file handle, c: char, n: success?
+                  NOTE: File operations are enabled by #define __FILES__
 `PI   (p--)       Arduino: Pin Input  (pinMode(p, INPUT))
 `PU   (p--)       Arduino: Pin Pullup (pinMode(p, INPUT_PULLUP))
 `PO   (p--)       Arduino: Pin Output (pinMode(p, OUTPUT)

@@ -134,6 +134,14 @@ void doExt() {
     case '@': TOS = *(byte *)TOS;                          return;
     case 'A': TOS = (TOS < 0) ? -TOS : TOS;                return;
     case 'R': doRand(1);                                   return;
+    case 'F': ir = *(pc++);
+        if (ir == 'O') { fileOpen();  }
+        if (ir == 'C') { fileClose(); }
+        if (ir == 'R') { fileRead();  }
+        if (ir == 'W') { fileWrite(); }
+        if (ir == 'L') { fileLoad();  }
+        if (ir == 'S') { fileSave();  }
+        return;
     case 'C': if (TOS) { rpush(pc); }                   // fall thru to 'J'
     case 'J': if (TOS) { pc = (addr)TOS; } DROP1;          return;
     case 'K': ir = *(pc++);
