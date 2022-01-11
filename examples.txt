@@ -5,29 +5,32 @@ S4 examples:
     ; here is another comment
   
 ;   if (c) { print("Yes") } else { print("No") }
-    c@#("Yes")_("No")
+    c@#("Yes")0=("No")
 
  ; x = (a == b) ? c : d;
-    a@b@=#(c@$)_(d@)x!;
+    a@b@=#(c@$)0=(d@)x!;
 
 ; To make sure F < T
-     S4 code:             %%>($)
-     Forth equivalent:    OVER OVER > IF SWAP THEN
-     C equivalent:        if (f > t) { int x = f; f = t; t = x; }
+;   S4 code:             %%>($)
+;   Forth equivalent:    OVER OVER > IF SWAP THEN
+;   C equivalent:        if (f > t) { int x = f; f = t; t = x; }
 
-; To do something (in this case, execute LP) n times:
+; To do something (in this case, execute LP) N times:
     n@ 1[LP]
 
+; Increment Register R
+    r@1+r!
+
 ; To print numbers from F to T:
-    S4 code:             1 10[i@." "]
-    Forth equivalent:    f t FOR I . NEXT
-    C equivalent:        for (int i = F; i <= T; i)) { printf("%d ", i); }
+;   S4 code:             f@ t@[i@." "]
+;   Forth equivalent:    F @ T @ FOR I . NEXT
+;   C equivalent:        for (int i = F; i <= T; i)) { printf("%d ", i); }
 
 ; One way to copy N bytes from A to B (n f t--)
-    N A B d! $%+ [i@ `@ d@`! d@1+d!]\
+    N A B d! s! 1[s@ `@ d@ `! s@1+s! d@1+d!]\
 
-; One way to copy N longs from A to B (N A B--)
-    N A B d! $%+ [i@ @ d@ ! d@4+d! i@3+i!]\
+; One way to copy N CELLS from A to B (N A B--)
+    N A B d! s! 1[s@ @ d@ ! s@`iC+s! d@`iC+d!]\
 
 ; A simple benchmark for a 100 million FOR loop:
     1000#* 100* `T$ 1[] `T$-." ms"
@@ -35,7 +38,7 @@ S4 examples:
 ; A simple benchmark for a 100 million WHILE loop:
     1000#* 100* `T$ {1-} `T$-." ms"
 
-; Define a function to display the currently defined code:
+; Define a word to display the currently defined code:
     :D `iAU`iH1-[i@`@#,';=(i@1+`@':=(13,10,))];
 
 ; To exit S4:

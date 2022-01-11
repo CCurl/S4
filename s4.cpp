@@ -166,10 +166,6 @@ void doExt() {
         if (ir == 'U') { push(USER_SZ); }
         return;
     case 's': if (*(pc++) == 'R') { vmInit();   }          return;
-    case '`': t1 = TOS; 
-        while (*pc && *pc != '`') { *((addr)t1++) = *(pc++); }
-        *((addr)t1++) = 0; push(t1);
-        ++pc;                                              return;
     default:
         pc = doCustom(ir, pc);
     }
@@ -232,7 +228,10 @@ addr run(addr start) {
         case '\\': DROP1;                                  break;  // 92
         case ']': doNext();                                break;  // 93
         case '^': t1 = pop(); TOS ^= t1;                   break;  // 94
-        case '_': TOS = (TOS) ? 0 : 1;                     break;  // 95
+        case '_': t1 = TOS;
+            while (*pc && *pc != '_') { *((addr)t1++) = *(pc++); }
+            *((addr)t1++) = 0; push(t1);
+            ++pc;                                          break;  // 95
         case '`': doExt();                                 break;  // 96
         case 'a': case 'b': case 'c': case 'd': case 'e':          // 97-122
         case 'f': case 'g': case 'h': case 'i': case 'j': 

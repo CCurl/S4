@@ -25,7 +25,6 @@ $  (a b--b a)     Swap top 2 stack items    (SWAP)
 %  (a b--a b a)   Push 2nd                  (OVER)
 `- (a--b)         b: -a  -                  (Negate)
 `A (a--b)         b: abs(a)                 (Absolute)
-_  (n--f)         f: (n==0) ? 1 : 0;        (Logical NOT)
 
 
 *** MEMORY ***
@@ -40,14 +39,14 @@ _  (n--f)         f: (n==0) ? 1 : 0;        (Logical NOT)
          2) The number of registers is controlled by the NUM_REGS #define in "config.h".
          3) Register 'i' is the loop index **special**
          4) All other registers are initialized to 0 and are free to use.
-xxx  (--a)        a: address of register X
+xxx  (--a)        a: address of register xxx
 
 
-*** FUNCTIONS ***
-        NOTES: 1) Function names are 1 to 3 uppercase characters: [A..ZZZ]
-               2) The number of functions is controlled by the NUM_FUNCS #define in "config.h"
-:     (--)        Define function. Copy chars to (HERE++) until closing ';'.
-XXX   (--)        Call function XXX
+*** WORDS ***
+        NOTES: 1) Word names are 1 to 3 uppercase characters: [A..ZZZ]
+               2) The number of words is controlled by the NUM_FUNCS #define in "config.h"
+:     (--)        Define word. Copy chars to (HERE++) until closing ';'.
+XXX   (--)        Execute word XXX
 ;     (--)        Return: PC = rpop()
         NOTE: returning while inside of a loop is not supported; behavior will be undefined.
         NOTE: outside of ':...;', ';' can be used to comment out the rest of the line
@@ -61,7 +60,7 @@ XXX   (--)        Call function XXX
                      to specify multiple values, separate them by space (4711 3333)
                      to enter a negative number, use "negate" (eg - 490`-)
 'x     (--n)      n: the ASCII value of x
-``XXX` (a--a b)   Copies XXX to address a, b is the next address after the NULL terminator.
+_XXX_  (a--a b)   Copies XXX to address a, b is the next address after the NULL terminator.
 `Z     (a--)      a: address of a NULL terminated string to print.
 
 
@@ -81,10 +80,10 @@ i@    (--n)       n: the index of the current FOR loop
 `BL   (n--)       File: (PC): Load code from file (block-nnn.src). This can be nested.
 `FL   (--)        File: Load code from ./Code.S4.
 `FS   (--)        File: Save code  to  ./Code.S4.
-`FO   (n m--f)    File: Open -  n: name, m: mode, f: file handle (0 means not opened)
-`FC   (f--)       File: Close - f: file handle
-`FR   (f--c n)    File: Read -  f: file handle, c: char, n: success?
-`FW   (c f--n)    File: Write - f: file handle, c: char, n: success?
+`FO   (n m--h)    File: Open -  n: name, m: mode, h: file handle (0 means not opened)
+`FC   (h--)       File: Close - h: file handle
+`FR   (h--c f)    File: Read -  h: file handle, c: char, n: success?
+`FW   (c h--f)    File: Write - h: file handle, c: char, n: success?
                   NOTE: File operations are enabled by #define __FILES__
 `PI   (p--)       Arduino: Pin Input  (pinMode(p, INPUT))
 `PU   (p--)       Arduino: Pin Pullup (pinMode(p, INPUT_PULLUP))
@@ -103,9 +102,9 @@ i@    (--n)       n: the index of the current FOR loop
 `iAR  (--a)       INFO: a: address of first register vector
 `iAS  (--a)       INFO: a: address of beeginning of system structure
 `iAU  (--a)       INFO: a: address of beeginning of user area
-`iF   (--n)       INFO: n: number of functions
+`iF   (--n)       INFO: n: number of words/functions
 `iH   (--n)       INFO: n: value of HERE variable
 `iR   (--n)       INFO: n: number of registers
-`iZ   (--n)       INFO: n: size of USER area
+`iZ   (--n)       INFO: n: number of bytes in the USER area
 `sR   (--)        S4 system reset
 `q    (--)        PC: Exit S4
