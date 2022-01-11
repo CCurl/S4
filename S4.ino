@@ -35,41 +35,21 @@ void printChar(const char ch) {
 
 CELL getSeed() { return millis(); }
 
-addr doPinRead(addr pc) {
-    byte ir = *(pc++);
-    CELL pin = pop();
-    switch (ir) {
-    case 'A': push(analogRead(pin));          break;
-    case 'D': push(digitalRead(pin));         break;
-    default:
-        isError = 1;
-        printString("-pinRead-");
-    }
-    return pc;
-}
-
-addr doPinWrite(addr pc) {
-    byte ir = *(pc++);
-    CELL pin = pop();
-    CELL val = pop();
-    switch (ir) {
-    case 'A': analogWrite(pin, val);          break;
-    case 'D': digitalWrite(pin, val);         break;
-    default:
-        isError = 1;
-        printString("-pinWrite-");
-    }
-    return pc;
-}
-
 addr doPin(addr pc) {
-    CELL t1 = *(pc++);
-    switch (t1) {
-    case 'I': pinMode(pop(), INPUT);          break;
-    case 'O': pinMode(pop(), OUTPUT);         break;
-    case 'U': pinMode(pop(), INPUT_PULLUP);   break;
-    case 'R': pc = doPinRead(pc);             break;
-    case 'W': pc = doPinWrite(pc);            break;
+    CELL pin = pop();
+    byte ir = *(pc++);
+    switch (ir) {
+    case 'I': pinMode(pin, INPUT);          break;
+    case 'O': pinMode(pin, OUTPUT);         break;
+    case 'U': pinMode(pin, INPUT_PULLUP);   break;
+    case 'R': ir = *(pc++);
+        if (ir == 'A') { push(analogRead(pin));  }
+        if (ir == 'D') { push(digitalRead(pin)); }
+        break;
+    case 'W': ir = *(pc++);
+        if (ir == 'A') { analogWrite(pin,  (int)pop()); }
+        if (ir == 'D') { digitalWrite(pin, (int)pop()); }
+        break;
     default:
         isError = 1;
         printString("-notPin-");
@@ -79,10 +59,10 @@ addr doPin(addr pc) {
 
 addr doCustom(byte ir, addr pc) {
     switch (ir) {
-    case 'N': push(micros());          break;
-    case 'P': pc = doPin(pc);          break;
-    case 'T': push(millis());          break;
-    case 'W': delay(pop());            break;
+    case 'N': push(micros());               break;
+    case 'P': pc = doPin(pc);               break;
+    case 'T': push(millis());               break;
+    case 'W': delay(pop());                 break;
     default:
         isError = 1;
         printString("-notExt-");
@@ -143,8 +123,8 @@ void ok() {
     printString(")>");
 }
 
-// NB: tweak this depending on what your terminal window sends for [back-space]
-// E.G. - PuTTY sends a 127 for back-space
+// NB: tweak this depending on what your terminal window sends for [Backspace]
+// E.G. - PuTTY sends a 127 for Backspace
 int isBackSpace(char c) { 
   // printStringF("(%d)",c);
   return (c == 127) ? 1 : 0; 
@@ -185,7 +165,7 @@ void setup() {
 #ifdef __SERIAL__
     while (!mySerial) {}
     mySerial.begin(19200);
-    delay(1000);
+    delay(500);
     while (mySerial.available()) { char c = mySerial.read(); }
 #endif
     vmInit();
@@ -195,9 +175,7 @@ void setup() {
 
 void do_autoRun() {
     addr a = FUNC[NUM_FUNCS-1];
-    if (a) {
-        run(a);
-    }
+    if (a) { run(a); }
 }
 
 void loop() {
