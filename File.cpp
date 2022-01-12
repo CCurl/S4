@@ -3,11 +3,12 @@
 #ifndef __FILES__
 void fileInit() {}
 void fileOpen(const char *fn, const char *m) {}
-void fileClose(CELL fh) { printString("-noLoad-"); }
-void fileRead(CELL fh) { printString("-noSave-"); }
-void fileWrite(CELL fh, byte ch) { printString("-noSave-"); }
-void fileLoad(CELL fh) { printString("-noSave-"); }
-void fileSave(CELL fh, byte ch) { printString("-noSave-"); }
+void fileClose() { printString("-noClose-"); }
+void fileDelete() { printString("-noDelete-"); }
+void fileRead() { printString("-noRead-"); }
+void fileWrite() { printString("-noWrite-"); }
+void fileLoad() { printString("-noLoad-"); }
+void fileSave() { printString("-noSave-"); }
 #else
 #if __BOARD__ == PC
 void fileInit() {}
@@ -19,8 +20,13 @@ void fileOpen() {
 }
 
 void fileClose() {
-    FILE *fh = (FILE*)pop();
+    FILE* fh = (FILE*)pop();
     fclose(fh);
+}
+
+void fileDelete() {
+    char* fn = (char*)TOS;
+    TOS = remove(fn) == 0 ? 1 : 0;
 }
 
 void fileRead() {
@@ -121,6 +127,12 @@ void fileClose() {
         files[fn-1]->close();
         files[fn-1] = NULL;
     }
+}
+
+void fileDelete() {
+    char* fn = (char*)TOS;
+    printString("-notimpl-");
+    TOS = 0;
 }
 
 void fileRead() {

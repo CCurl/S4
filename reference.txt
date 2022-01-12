@@ -80,10 +80,11 @@ i@    (--n)       n: the index of the current FOR loop
 `BL   (n--)       File: (PC): Load code from file (block-nnn.src). This can be nested.
 `FL   (--)        File: Load code from ./Code.S4.
 `FS   (--)        File: Save code  to  ./Code.S4.
-`FO   (n m--h)    File: Open -  n: name, m: mode, h: file handle (0 means not opened)
-`FC   (h--)       File: Close - h: file handle
-`FR   (h--c f)    File: Read -  h: file handle, c: char, n: success?
-`FW   (c h--f)    File: Write - h: file handle, c: char, n: success?
+`FO   (n m--h)    File: Open   - n: file name, m: mode, h: file handle (0 means not opened)
+`FC   (h--)       File: Close  - h: file handle
+`FD   (n--)       File: Delete - n: file name
+`FR   (h--c f)    File: Read   - h: file handle, c: char, n: success?
+`FW   (c h--f)    File: Write  - h: file handle, c: char, n: success?
                   NOTE: File operations are enabled by #define __FILES__
 `PI   (p--)       Arduino: Pin Input  (pinMode(p, INPUT))
 `PU   (p--)       Arduino: Pin Pullup (pinMode(p, INPUT_PULLUP))

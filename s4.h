@@ -75,6 +75,7 @@ extern void feedWatchDog();
 extern void fileInit();
 extern void fileOpen();
 extern void fileClose();
+extern void fileDelete();
 extern void fileRead();
 extern void fileWrite();
 extern void fileLoad();

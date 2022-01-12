@@ -137,6 +137,7 @@ void doExt() {
     case 'F': ir = *(pc++);
         if (ir == 'O') { fileOpen();  }
         if (ir == 'C') { fileClose(); }
+        if (ir == 'D') { fileDelete(); }
         if (ir == 'R') { fileRead();  }
         if (ir == 'W') { fileWrite(); }
         if (ir == 'L') { fileLoad();  }
