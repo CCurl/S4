@@ -13,14 +13,6 @@
     void printSerial(const char* str) { }
 #endif
 
-#ifndef __WIFI__
-void wifiStart() {}
-void printWifi(const char* str) {}
-int wifiCharAvailable() { return 0; }
-char wifiGetChar() { return 0; }
-void feedWatchDog() {}
-#endif
-
 int isOTA = 0;
 
 void printString(const char* str) { 
@@ -109,7 +101,7 @@ const char *bootStrap[] = {
 
 void loadBaseSystem() {
 #ifdef __LITTLEFS__
-    loadCode("`BL");
+    loadCode("`FL");
 #else
     for (int i = 0; bootStrap[i] != NULL; i++) {
         loadCode(bootStrap[i]);

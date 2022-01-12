@@ -1,4 +1,5 @@
 #include "s4.h"
+
 #ifndef __FILES__
 void fileInit() {}
 void fileOpen(const char *fn, const char *m) {}
@@ -70,57 +71,88 @@ void fileSave() {
         printString("-saveFail-");
     }
 }
-#else
+#endif // PC
+
+#ifdef __LITTLEFS__
 #include "LittleFS.h"
 
+#define MAX_FILES 10
+File *files[MAX_FILES];
+int numFiles = 0;
+File f;
+
+int freeFile() {
+  for (int i = 1; i <= MAX_FILES; i++) {
+    if (files[i-1] == NULL) { return i; }
+  }
+  isError = 1;
+  printString("-fileFull-");
+  return 0;
+}
+
 void fileInit() {
+    for (int i = 0; i < MAX_FILES; i++) { files[i] = NULL; }
     LittleFS.begin();
     FSInfo fs_info;
     LittleFS.info(fs_info);
-    printStringF("\r\nFS: Total: %ld", fs_info.totalBytes);
-    printStringF("\r\nFS: Used: %ld", fs_info.usedBytes);
+    printStringF("\r\nLittleFS: Total: %ld", fs_info.totalBytes);
+    printStringF("\r\nLittleFS: Used: %ld", fs_info.usedBytes);
 }
 
 void fileOpen() {
     char* md = (char*)pop();
     char* fn = (char*)pop();
-    push((CELL)fopen(fn, md));
+    int i = freeFile();
+    if (i) {
+        f = LittleFS.open(fn, md);
+        if (f) { files[i-1] = &f; } 
+        else { 
+            i = 0;
+            isError = 1; 
+            printString("-openFail-");
+        }
+    }
+    push(i);
 }
 
 void fileClose() {
-    FILE* fh = (FILE*)pop();
-    fclose(fh);
+    int fn = (int)pop();
+    if ((0 < fn) && (fn <= MAX_FILES) && (files[fn-1] != NULL)) {
+        files[fn-1]->close();
+        files[fn-1] = NULL;
+    }
 }
 
 void fileRead() {
-    FILE* fh = (FILE*)pop();
+    int fn = (int)pop();
     push(0);
     push(0);
+    if ((0 < fn) && (fn <= MAX_FILES) && (files[fn-1] != NULL)) {
+        byte c;
+        TOS = files[fn-1]->read(&c, 1);
+        N = (CELL)c;
+    }
 }
 
 void fileWrite() {
-    FILE* fh = (FILE*)pop();
-    char c = (char)pop();
-    push(0);
+    int fn = (int)pop();
+    byte c = (byte)TOS;
+    TOS = 0;
+    if ((0 < fn) && (fn <= MAX_FILES) && (files[fn - 1] != NULL)) {
+        TOS = files[fn-1]->write(&c, 1);
+    }
 }
 
 void fileLoad() {
-    int tot = 0;
     File f = LittleFS.open("/Code.S4", "r");
-    printStringF("-File f: %ld-", (CELL)f);
     if (f) {
         vmInit();
-        while (1) {
-            int num = f.read(HERE, 256);
-            tot += num;
-            HERE += num;
-            if (num < 256) { break; }
-        }
+        int num = f.read(HERE, USER_SZ);
         f.close();
-        *HERE = ';';
+        HERE += num;
         *(HERE+1) = 0;
         run(USER);
-        printStringF("-loaded, (%d)-", tot);
+        printStringF("-loaded, (%d)-", num);
     }
     else {
         printString("-loadFail-");
@@ -140,5 +172,5 @@ void fileSave() {
     }
 }
 
-#endif
-#endif
+#endif // __LITTLEFS__
+#endif // __FILES__

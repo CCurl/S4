@@ -5,8 +5,9 @@
 #define XIAO     2
 #define PICO     3
 #define ESP8266  4
+#define ESP32    5
 
-#define __BOARD__ PICO
+#define __BOARD__ ESP8266
 
 #ifdef _WIN32
   #define __WINDOWS__
@@ -46,6 +47,7 @@
   #define NUM_REGS       (26*26)
   #define NUM_FUNCS      (26*26)
 #elif __BOARD__ == PICO
+  #define __FILES__
   #define __LITTLEFS__
   #define STK_SZ          16
   #define LSTACK_SZ       8
@@ -53,8 +55,9 @@
   #define NUM_REGS       (26*26*26)
   #define NUM_FUNCS      (26*26)
 #elif __BOARD__ == ESP8266
-  #define __WIFI__
+  #define __WIFI__        1
   #define __WATCHDOG__
+  #define __FILES__
   #define __LITTLEFS__
   #define NTWK            "FiOS-T01SJ"
   #define NTPW            "marie2eric5936side"
