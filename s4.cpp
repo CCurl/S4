@@ -23,6 +23,7 @@ void vmInit() {
     for (int i = 0; i < USER_SZ; i++) { USER[i] = 0; }
     for (int i = 0; i < NUM_FUNCS; i++) { FUNC[i] = 0; }
     HERE = USER;
+    REG[21] = (CELL) (USER + (USER_SZ / 2)); // REG v
 }
 
 void setCell(byte* to, CELL val) {

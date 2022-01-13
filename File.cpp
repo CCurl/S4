@@ -1,14 +1,15 @@
 #include "s4.h"
 
 #ifndef __FILES__
-void fileInit() {}
-void fileOpen(const char *fn, const char *m) {}
-void fileClose() { printString("-noClose-"); }
-void fileDelete() { printString("-noDelete-"); }
-void fileRead() { printString("-noRead-"); }
-void fileWrite() { printString("-noWrite-"); }
-void fileLoad() { printString("-noLoad-"); }
-void fileSave() { printString("-noSave-"); }
+void noFile() { printString("-noFile-"); }
+void fileInit() { noFile(); }
+void fileOpen() { noFile(); }
+void fileClose() { noFile(); }
+void fileDelete() { noFile(); }
+void fileRead() { noFile(); }
+void fileWrite() { noFile(); }
+void fileLoad() { noFile(); }
+void fileSave() { noFile(); }
 #else
 #if __BOARD__ == PC
 void fileInit() {}
@@ -131,8 +132,7 @@ void fileClose() {
 
 void fileDelete() {
     char* fn = (char*)TOS;
-    printString("-notimpl-");
-    TOS = 0;
+    TOS = LittleFS.remove(fn) ? 1 : 0;
 }
 
 void fileRead() {
