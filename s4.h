@@ -23,6 +23,7 @@ typedef byte*            addr;
 #define LSP              sys.lsp
 #define INDEX            REG[8]
 #define TOS              sys.dstack[DSP]
+#define AOS              (addr)sys.dstack[DSP]
 #define N                sys.dstack[DSP-1]
 #define DROP1            pop()
 #define DROP2            pop(); pop()

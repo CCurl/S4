@@ -126,13 +126,15 @@ void doRand(int modT) {
 void doExt() {
     ir = *(pc++);
     switch (ir) {
-    case '!': *(byte*)TOS = (byte)N; DROP2;                return;
+    case '!': *AOS = (byte)N; DROP2;                       return;
     case '-': TOS = -TOS;                                  return;
+    case '#':; setCell(AOS, getCell(AOS) + 1); DROP1;      return;  // ++
+    case '=':; setCell(AOS, getCell(AOS) - 1); DROP1;      return;  // --
     case '/': if (TOS) { t1 = TOS; TOS = N % t1; N /= t1; }
         else { isError = 1; printString("-0div-"); }       return;
     case '%': if (TOS) { N %= TOS; DROP1; }
         else { isError = 1; printString("-0div-"); }       return;
-    case '@': TOS = *(byte *)TOS;                          return;
+    case '@': TOS = *AOS;                                  return;
     case 'A': TOS = (TOS < 0) ? -TOS : TOS;                return;
     case 'R': doRand(1);                                   return;
     case 'F': ir = *(pc++);
@@ -144,8 +146,7 @@ void doExt() {
         if (ir == 'L') { fileLoad();  }
         if (ir == 'S') { fileSave();  }
         return;
-    case 'C': if (TOS) { rpush(pc); }                   // fall thru to 'J'
-    case 'J': if (TOS) { pc = (addr)TOS; } DROP1;          return;
+    case 'J': if (TOS) { pc = AOS; } DROP1;                return;
     case 'K': ir = *(pc++);
         if (ir == '?') { push(charAvailable()); }
         if (ir == '@') { push(getChar()); }
@@ -182,7 +183,7 @@ addr run(addr start) {
         switch (ir) {
         case 0: return pc;
         case ' ': while (*(pc) == ' ') { pc++; }           break;  // 32
-        case '!': setCell((byte*)TOS, N); DROP2;           break;  // 33
+        case '!': setCell(AOS, N); DROP2;                  break;  // 33
         case '"': while (*(pc) != ir) { printChar(*(pc++)); };      // 34
                 ++pc; break;
         case '#': push(TOS);                               break;  // 35 (DUP)
@@ -215,7 +216,7 @@ addr run(addr start) {
         case '=': t1 = pop(); TOS = TOS == t1 ? 1 : 0;     break;  // 61
         case '>': t1 = pop(); TOS = TOS > t1 ? 1 : 0;      break;  // 62
         case '?': /* FREE */                               break;  // 63
-        case '@': TOS = getCell((byte*)TOS);               break;  // 64
+        case '@': TOS = getCell(AOS);                      break;  // 64
         case 'A': case 'B': case 'C': case 'D': case 'E':          // 65-90
         case 'F': case 'G': case 'H': case 'I': case 'J':
         case 'K': case 'L': case 'M': case 'N': case 'O':
