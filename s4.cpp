@@ -128,8 +128,10 @@ void doExt() {
     switch (ir) {
     case '!': *AOS = (byte)N; DROP2;                       return;
     case '-': TOS = -TOS;                                  return;
-    case '#':; setCell(AOS, getCell(AOS) + 1); DROP1;      return;  // ++
-    case '=':; setCell(AOS, getCell(AOS) - 1); DROP1;      return;  // --
+    case '#': setCell(AOS, getCell(AOS) + 1); DROP1;       return;  // ++
+    case '=': setCell(AOS, getCell(AOS) - 1); DROP1;       return;  // --
+    case '<': rpush((addr)pop());                          return;  // <R
+    case '>': push((CELL)rpop());                          return;  // R>
     case '/': if (TOS) { t1 = TOS; TOS = N % t1; N /= t1; }
         else { isError = 1; printString("-0div-"); }       return;
     case '%': if (TOS) { N %= TOS; DROP1; }
@@ -169,6 +171,7 @@ void doExt() {
         if (ir == 'U') { push(USER_SZ); }
         return;
     case 's': if (*(pc++) == 'R') { vmInit();   }          return;
+    case '~': TOS = (TOS) ? 0 : 1 ;                        return;
     default:
         pc = doCustom(ir, pc);
     }

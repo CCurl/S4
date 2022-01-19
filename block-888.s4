@@ -18,8 +18,8 @@ N"The Mandelbrot Set"
 ; Y: loop for Y axis
 ; M: main, loop for Y axis
 
-1`BL
-:Q t@1+t! a@#*s@/c! b@#*s@/d! c@d@+k@>(j@m!;) a@b@*100/y@+b! c@d@-x@+a! j@1+j!;
+0`BL
+:Q t`# a@#*s@/c! b@#*s@/d! c@d@+k@>(j@m!;) a@b@*100/y@+b! c@d@-x@+a! j`#;
 :L 0a!0b!0j!s@m!1{\Qj@m@<};
 :O Lj@40+#126>(\32),;
 :X 490`-x!1 95[  O x@ 8+x!];

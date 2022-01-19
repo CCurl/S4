@@ -19,12 +19,15 @@
 
 
 *** STACK ***
-#  (a--a a)       Duplicate TOS             (DUP)
-\  (a b--a)       Drop TOS                  (DROP)
-$  (a b--b a)     Swap top 2 stack items    (SWAP)
-%  (a b--a b a)   Push 2nd                  (OVER)
-`- (a--b)         b: -a  -                  (Negate)
-`A (a--b)         b: abs(a)                 (Absolute)
+#  (a--a a)       Duplicate TOS                    (DUP)
+\  (a b--a)       Drop TOS                         (DROP)
+$  (a b--b a)     Swap top 2 stack items           (SWAP)
+%  (a b--a b a)   Push 2nd                         (OVER)
+`- (a--b)         b: -a  -                         (Negate)
+`A (a--b)         b: abs(a)                        (Absolute)
+`< (N--)          Move N from data to return stack (<R)
+`> (N--)          Move N from return to data stack (R>)
+`~ (a--b)         b: if (a = 0) then 1, else 0     (LOGICAL NOT)
 
 
 *** MEMORY ***
@@ -32,12 +35,14 @@ $  (a b--b a)     Swap top 2 stack items    (SWAP)
 !     (n a--)     Store CELL n  to  address a
 `@    (a--n)      Fetch BYTE n from address a
 `!    (n a--)     Store BYTE n  to  address a
+`#    (a--)       a: (++) address of CELL to increment
+`=    (a--)       a: (--) address of CELL to decrement
 
 
 *** REGISTERS ***
   NOTES: 1) Register names are 1 to 3 lowercase characters: [a..zzz]
          2) The number of registers is controlled by the NUM_REGS #define in "config.h".
-         3) Register 'i' is the loop index **special**
+         3) Register 'i' is the 'loop' index **special**
          4) All other registers are initialized to 0 and are free to use.
 xxx  (--a)        a: address of register xxx
 
@@ -69,11 +74,11 @@ _XXX_  (a--a b)   Copies XXX to address a, b is the next address after the NULL 
 =     (a b--f)    f: (a = b) ? 1 : 0;
 >     (a b--f)    f: (a > b) ? 1 : 0;
 [     (F T--)     FOR: start a For/Next loop. if (T < F), swap T and F
-]     (--)        NEXT: increment index (i) and loop if (i@ <= T)
-{     (f--f)      BEGIN: if (f == 0) skip to matching }
-}     (f--f?)     WHILE: if (f != 0) jump to matching { else drop f and continue
+]     (--)        NEXT: increment index (i) and restart loop if (i@ <= T)
+{     (f--f)      BEGIN: if (f == 0) skip to matching '}'
+}     (f--f?)     WHILE: if (f != 0) jump to matching '{', else drop f and continue
 i@    (--n)       n: the index of the current FOR loop
-(     (f--)       if (f != 0), execute code in '()', else skip to matching ')'
+(     (f--)       IF: if (f != 0), continue into '()', else skip to matching ')'
 
 
 *** OTHER ***
@@ -106,6 +111,6 @@ i@    (--n)       n: the index of the current FOR loop
 `iF   (--n)       INFO: n: number of words/functions
 `iH   (--n)       INFO: n: value of HERE variable
 `iR   (--n)       INFO: n: number of registers
-`iZ   (--n)       INFO: n: number of bytes in the USER area
+`iU   (--n)       INFO: n: number of bytes in the USER area
 `sR   (--)        S4 system reset
 `q    (--)        PC: Exit S4

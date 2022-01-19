@@ -55,6 +55,7 @@ addr doBlock(addr pc) {
     case 'L': if (input_fp) { fpush(input_fp); }
         sprintf(buf, "block-%03ld.s4", (int)pop());
         input_fp = fopen(buf, "rb");
+        if (!input_fp) { input_fp = fpop(); }
         break;
     }
     return pc;
