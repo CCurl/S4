@@ -171,7 +171,6 @@ void doExt() {
         if (ir == 'U') { push(USER_SZ); }
         return;
     case 's': if (*(pc++) == 'R') { vmInit();   }          return;
-    case '~': TOS = (TOS) ? 0 : 1 ;                        return;
     default:
         pc = doCustom(ir, pc);
     }
