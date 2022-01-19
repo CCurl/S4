@@ -74,6 +74,8 @@ _XXX_  (a--a b)   Copies XXX to address a, b is the next address after the NULL 
 >     (a b--f)    f: (a > b) ? 1 : 0;
 [     (F T--)     FOR: start a For/Next loop. if (T < F), swap T and F
 ]     (--)        NEXT: increment index (i) and restart loop if (i@ <= T)
+                      NOTE: A FOR loop always runs at least one iteration.
+                            It can be put it inside a '()' to keep it from running.
 {     (f--f)      BEGIN: if (f == 0) skip to matching '}'
 }     (f--f?)     WHILE: if (f != 0) jump to matching '{', else drop f and continue
 i@    (--n)       n: the index of the current FOR loop
