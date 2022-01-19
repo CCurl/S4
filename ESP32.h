@@ -1,3 +1,4 @@
+// NOTE: this is a ".h" file and not a ".inc" file because the Ardiono IDE only supports #including "*.h" files 
 #include <ESP32WiFi.h>
 
 WiFiServer wifiServer(23);
