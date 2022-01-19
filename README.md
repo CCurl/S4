@@ -42,6 +42,7 @@ S4 is the result of my work towards those goals.
 # The implementation of S4
 
 - The entire system is implemented in 5 files: config.h, S4.h, S4.cpp, pc-main.cpp, and S4.ino.
+- - There are a few additional files to support optional functionality (WiFi and File access).
 - The same code runs on Windows, Linux, and multiple development boards (via the Arduino IDE).
 - See the file "config.h" for system configuration settings.
 
