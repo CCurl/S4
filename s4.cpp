@@ -126,56 +126,6 @@ void doRand(int modT) {
     TOS = (modT && TOS) ? (abs(seed) % TOS) : seed;
 }
 
-void doExt() {
-    ir = *(pc++);
-    switch (ir) {
-    case '!': *AOS = (byte)N; DROP2;                       return;
-    case '-': TOS = -TOS;                                  return;
-    case '#': setCell(AOS, getCell(AOS) + 1); DROP1;       return;  // ++
-    case '=': setCell(AOS, getCell(AOS) - 1); DROP1;       return;  // --
-    case '/': if (TOS) { t1 = TOS; TOS = N % t1; N /= t1; }         // /MOD
-        else { isError = 1; printString("-0div-"); }       return;
-    case '@': TOS = *AOS;                                  return;
-    case 'A': TOS = (TOS < 0) ? -TOS : TOS;                return;
-    case 'R': doRand(1);                                   return;
-    case 'F': ir = *(pc++);
-        if (ir == 'O') { fileOpen();  }
-        if (ir == 'C') { fileClose(); }
-        if (ir == 'D') { fileDelete(); }
-        if (ir == 'R') { fileRead();  }
-        if (ir == 'W') { fileWrite(); }
-        if (ir == 'L') { fileLoad();  }
-        if (ir == 'S') { fileSave();  }
-        return;
-    case 'J': if (TOS) { pc = AOS; } DROP1;                return;
-    case 'K': ir = *(pc++);
-        if (ir == '?') { push(charAvailable()); }
-        if (ir == '@') { push(getChar()); }
-        return;
-    case 'O': push(N);                                     return;
-    case 'S': t1 = TOS; TOS = N; N = t1;                   return;
-    case 'Z': printString((char *)pop());                  return;
-    case 'i': ir = *(pc++);
-        if (ir == 'A') {
-          ir = *(pc++);
-          if (ir == 'F') { push((CELL)&FUNC[0]); }
-          if (ir == 'H') { push((CELL)&HERE); }
-          if (ir == 'R') { push((CELL)&REG[0]); }
-          if (ir == 'U') { push((CELL)&USER[0]); }
-          return;
-        }
-        if (ir == 'C') { push(CELL_SZ); }
-        if (ir == 'F') { push(NUM_FUNCS); }
-        if (ir == 'H') { push((CELL)HERE); }
-        if (ir == 'R') { push(NUM_REGS); }
-        if (ir == 'U') { push(USER_SZ); }
-        return;
-    case 's': if (*(pc++) == 'R') { vmInit();   }          return;
-    default:
-        pc = doCustom(ir, pc);
-    }
-}
-
 addr run(addr start) {
     pc = start;
     isError = 0;
@@ -247,7 +197,55 @@ addr run(addr start) {
             while (*pc && *pc != '_') { *((addr)t1++) = *(pc++); }
             *((addr)t1++) = 0; push(t1);
             ++pc;                                          break;  // 95
-        case '`': doExt();                                 break;  // 96
+        case '`': 
+            ir = *(pc++);
+            switch (ir) {
+            case '!': *AOS = (byte)N; DROP2;                       break;
+            case '-': TOS = -TOS;                                  break;
+            case '#': setCell(AOS, getCell(AOS) + 1); DROP1;       break;  // ++
+            case '=': setCell(AOS, getCell(AOS) - 1); DROP1;       break;  // --
+            case '/': if (TOS) { t1 = TOS; TOS = N % t1; N /= t1; }         // /MOD
+                    else { isError = 1; printString("-0div-"); }       break;
+            case '@': TOS = *AOS;                                  break;
+            case 'A': TOS = (TOS < 0) ? -TOS : TOS;                break;
+            case 'R': doRand(1);                                   break;
+            case 'F': ir = *(pc++);
+                if (ir == 'O') { fileOpen(); }
+                if (ir == 'C') { fileClose(); }
+                if (ir == 'D') { fileDelete(); }
+                if (ir == 'R') { fileRead(); }
+                if (ir == 'W') { fileWrite(); }
+                if (ir == 'L') { fileLoad(); }
+                if (ir == 'S') { fileSave(); }
+                break;
+            case 'J': if (TOS) { pc = AOS; } DROP1;                break;
+            case 'K': ir = *(pc++);
+                if (ir == '?') { push(charAvailable()); }
+                if (ir == '@') { push(getChar()); }
+                break;
+            case 'O': push(N);                                     break;
+            case 'S': t1 = TOS; TOS = N; N = t1;                   break;
+            case 'Z': printString((char*)pop());                  break;
+            case 'i': ir = *(pc++);
+                if (ir == 'A') {
+                    ir = *(pc++);
+                    if (ir == 'F') { push((CELL)&FUNC[0]); }
+                    if (ir == 'H') { push((CELL)&HERE); }
+                    if (ir == 'R') { push((CELL)&REG[0]); }
+                    if (ir == 'U') { push((CELL)&USER[0]); }
+                    break;
+                }
+                if (ir == 'C') { push(CELL_SZ); }
+                if (ir == 'F') { push(NUM_FUNCS); }
+                if (ir == 'H') { push((CELL)HERE); }
+                if (ir == 'R') { push(NUM_REGS); }
+                if (ir == 'U') { push(USER_SZ); }
+                break;
+            case 's': if (*(pc++) == 'R') { vmInit(); }          break;
+            default:
+                pc = doCustom(ir, pc);
+            }
+            break;  // 96
         case 'a': case 'b': case 'c': case 'd': case 'e':          // 97-122
         case 'f': case 'g': case 'h': case 'i': case 'j': 
         case 'k': case 'l': case 'm': case 'n': case 'o': 
