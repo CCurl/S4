@@ -133,9 +133,7 @@ void doExt() {
     case '-': TOS = -TOS;                                  return;
     case '#': setCell(AOS, getCell(AOS) + 1); DROP1;       return;  // ++
     case '=': setCell(AOS, getCell(AOS) - 1); DROP1;       return;  // --
-    case '<': rpush((addr)pop());                          return;  // <R
-    case '>': push((CELL)rpop());                          return;  // R>
-    case '/': if (TOS) { t1 = TOS; TOS = N % t1; N /= t1; }
+    case '/': if (TOS) { t1 = TOS; TOS = N % t1; N /= t1; }         // /MOD
         else { isError = 1; printString("-0div-"); }       return;
     case '@': TOS = *AOS;                                  return;
     case 'A': TOS = (TOS < 0) ? -TOS : TOS;                return;
