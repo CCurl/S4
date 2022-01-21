@@ -7,6 +7,9 @@ byte ir, isBye = 0, isError = 0;
 static char buf[64];
 addr pc, HERE;
 CELL t1;
+#define NUM_LOCALS 9
+CELL locals[NUM_LOCALS * STK_SZ];
+ushort localStart;
 
 void push(CELL v) { if (sys.dsp < STK_SZ) { sys.dstack[++sys.dsp] = v; } }
 CELL pop() { return (sys.dsp) ? sys.dstack[sys.dsp--] : 0; }
@@ -18,7 +21,7 @@ inline LOOP_ENTRY_T* lpush() { if (LSP < STK_SZ) { ++LSP; } return LTOS; }
 inline LOOP_ENTRY_T *ldrop() { if (0 < LSP) { --LSP; } return LTOS; }
 
 void vmInit() {
-    sys.dsp = sys.rsp = sys.lsp = 0;
+    sys.dsp = sys.rsp = sys.lsp = localStart = 0;
     for (int i = 0; i < NUM_REGS; i++) { REG[i] = 0; }
     for (int i = 0; i < USER_SZ; i++) { USER[i] = 0; }
     for (int i = 0; i < NUM_FUNCS; i++) { FUNC[i] = 0; }
@@ -134,8 +137,6 @@ void doExt() {
     case '>': push((CELL)rpop());                          return;  // R>
     case '/': if (TOS) { t1 = TOS; TOS = N % t1; N /= t1; }
         else { isError = 1; printString("-0div-"); }       return;
-    case '%': if (TOS) { N %= TOS; DROP1; }
-        else { isError = 1; printString("-0div-"); }       return;
     case '@': TOS = *AOS;                                  return;
     case 'A': TOS = (TOS < 0) ? -TOS : TOS;                return;
     case 'R': doRand(1);                                   return;
@@ -179,18 +180,24 @@ void doExt() {
 addr run(addr start) {
     pc = start;
     isError = 0;
-    RSP = LSP = 0;
+    RSP = LSP = localStart = 0;
     while (!isError && pc) {
         ir = *(pc++);
         switch (ir) {
         case 0: return pc;
         case ' ': while (*(pc) == ' ') { pc++; }           break;  // 32
         case '!': setCell(AOS, N); DROP2;                  break;  // 33
-        case '"': while (*(pc) != ir) { printChar(*(pc++)); };      // 34
+        case '"': while (*(pc) != ir) { printChar(*(pc++)); };     // 34
                 ++pc; break;
-        case '#': push(TOS);                               break;  // 35 (DUP)
-        case '$': t1 = N; N = TOS; TOS = t1;               break;  // 36 (SWAP)
-        case '%': push(N);                                 break;  // 37 (OVER)
+        case '#': push(TOS);                              break;   // 35 (DUP)
+        case '$': ir = *(pc++) - '1'; t1 = pop();
+            if (BetweenI(ir, 0, (NUM_LOCALS-1))) {                     // 36 (Set Local)
+                    locals[localStart + ir] = t1;
+                } break;
+        case '%': ir = *(pc++) - '1'; push(0);
+            if (BetweenI(ir, 0, (NUM_LOCALS-1))) {                     // 37 (Local value)
+                    TOS = locals[localStart + ir];
+                } break;
         case '&': t1 = pop(); TOS &= t1;                   break;  // 38
         case '\'': push(*(pc++));                          break;  // 39
         case '(': if (pop() == 0) { skipTo(')'); }         break;  // 40 (IF)
@@ -213,7 +220,9 @@ addr run(addr start) {
         case ':': if (regFuncNum(0)) {
             FUNC[pop()] = pc; skipTo(';'); HERE = pc;
         }; break;
-        case ';': pc = rpop();                             break;  // 59
+        case ';': pc = rpop();
+            if (localStart) { localStart -= NUM_LOCALS; }
+            break;  // 59
         case '<': t1 = pop(); TOS = TOS < t1 ? 1 : 0;      break;  // 60
         case '=': t1 = pop(); TOS = TOS == t1 ? 1 : 0;     break;  // 61
         case '>': t1 = pop(); TOS = TOS > t1 ? 1 : 0;      break;  // 62
@@ -226,11 +235,14 @@ addr run(addr start) {
         case 'U': case 'V': case 'W': case 'X': case 'Y': 
         case 'Z': --pc;
             if (regFuncNum(0) && FUNC[TOS]) {
-                if (*pc != ';') { rpush(pc); }
-                pc = (addr)FUNC[TOS];
-            }  pop(); break;
+                if (*pc != ';') { 
+                    localStart += NUM_LOCALS;
+                    rpush(pc);
+                } pc = (addr)FUNC[TOS];
+            } pop(); break;
         case '[': doFor();                                 break;  // 91
-        case '\\': DROP1;                                  break;  // 92
+        case '\\': if (TOS) { N %= TOS; DROP1; }                   // 92 (MOD)
+            else { isError = 1; printString("-0div-"); }   break;
         case ']': doNext();                                break;  // 93
         case '^': t1 = pop(); TOS ^= t1;                   break;  // 94
         case '_': t1 = TOS;
