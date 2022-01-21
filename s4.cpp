@@ -161,7 +161,6 @@ void doExt() {
           if (ir == 'F') { push((CELL)&FUNC[0]); }
           if (ir == 'H') { push((CELL)&HERE); }
           if (ir == 'R') { push((CELL)&REG[0]); }
-          if (ir == 'S') { push((CELL)&sys); }
           if (ir == 'U') { push((CELL)&USER[0]); }
           return;
         }
@@ -189,13 +188,13 @@ addr run(addr start) {
         case '!': setCell(AOS, N); DROP2;                  break;  // 33
         case '"': while (*(pc) != ir) { printChar(*(pc++)); };     // 34
                 ++pc; break;
-        case '#': push(TOS);                              break;   // 35 (DUP)
+        case '#': push(TOS);                               break;  // 35 (DUP)
         case '$': ir = *(pc++) - '1'; t1 = pop();
-            if (BetweenI(ir, 0, (NUM_LOCALS-1))) {                     // 36 (Set Local)
+            if (BetweenI(ir, 0, (NUM_LOCALS-1))) {                 // 36 (Set Local)
                     locals[localStart + ir] = t1;
                 } break;
         case '%': ir = *(pc++) - '1'; push(0);
-            if (BetweenI(ir, 0, (NUM_LOCALS-1))) {                     // 37 (Local value)
+            if (BetweenI(ir, 0, (NUM_LOCALS-1))) {                 // 37 (Local value)
                     TOS = locals[localStart + ir];
                 } break;
         case '&': t1 = pop(); TOS &= t1;                   break;  // 38
@@ -217,12 +216,11 @@ addr run(addr start) {
                 TOS = (TOS * 10) + (ir - '0');
                 ir = *(++pc);
             } break;
-        case ':': if (regFuncNum(0)) {
-            FUNC[pop()] = pc; skipTo(';'); HERE = pc;
-        }; break;
+        case ':': if (regFuncNum(0)) {                             // 58
+                FUNC[pop()] = pc; skipTo(';'); HERE = pc; 
+            } break;
         case ';': pc = rpop();
-            if (localStart) { localStart -= NUM_LOCALS; }
-            break;  // 59
+            if (localStart) { localStart -= NUM_LOCALS; }  break;  // 59
         case '<': t1 = pop(); TOS = TOS < t1 ? 1 : 0;      break;  // 60
         case '=': t1 = pop(); TOS = TOS == t1 ? 1 : 0;     break;  // 61
         case '>': t1 = pop(); TOS = TOS > t1 ? 1 : 0;      break;  // 62
