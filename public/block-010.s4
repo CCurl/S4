@@ -1,0 +1,29 @@
+0(Screen Stuff)
+:CSI 27,"[";
+
+0(GXY (x y--); GotoXY)
+:GXY CSI.59,."H";
+
+0(CLS (--): Clear Screen)
+:CLS CSI"2J"1#GXY;
+
+0(STC (fg bg--): Set Color)
+:STC CSI.59,."m";
+
+0(CLC (--): Clear Color)
+:CLC 37 40STC;
+
+0(CLL (--): To list the colors )
+:CLL 30 37[N i@ $1 40 47[%1 i@ STC " (",%1.","i@.") "] CLC];
+
+0(CLU (--): More, ugly)
+0(:CLU 90 97[N i@ $1 100 107[%1 i@ STC " (",%1.","i@.") "] CLC];)
+
+0(COF (--): Curson off)
+:COF CSI"?25l";
+
+0(CON (--): Curson on)
+:CON CSI"?25h";
+
+0(DMO (--): A little demo of using these)
+:DMO x@0=(100x!) y@0=(40y!) CLS COF 1{\8`R 30+ 40 STC x@`R y@`R GXY "*" `K?0=}`K@\ CLC CON;

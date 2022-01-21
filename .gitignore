@@ -31,10 +31,15 @@
 *.out
 *.app
 
+.vs/
 Debug/
 Release/
 *.ipch
-/.vs
-/history.txt
-/S4.vcxproj.user
+*.vcxproj.user
+
+# S4 specific
 /Code.S4
+/public/t-*
+/local/*
+history.txt
+Code.S4

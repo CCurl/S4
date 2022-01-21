@@ -1,0 +1,39 @@
+
+; HEX output
+:HX #9>(7+)'0+,;
+:HD 16`/$HX HX;
+:HW 256`/$ HD HD;
+:HL 256#*`/$ HW HW;
+
+; Binary output
+:BD 255&128 1 8[$%`/$.$2/]\\;
+:BW 256`/$ BD BD;
+:BL 256#*`/$ BW BW;
+
+0(Screen Stuff)
+0(CSI (--): Control Sequence)
+:CSI 27,"[";
+
+0(GXY (x y--): GotoXY)
+:GXY CSI.";"."H";  
+
+0(CLS (--): Clear Screen)
+:CLS CSI"2J"1#GXY;
+
+0(STC (fg bg--): Set Color)
+:STC CSI.";"."m";
+
+0(CLC (--): Clear Color)
+:CLC 0# STC;
+
+0(CLL (--): Color list)
+:CLL 30 37[N i@ 40 47[# i@ STC " (" #. "," i@. ") "]\ CLC];
+
+0(COF (--): Curson off)
+:COF CSI"?25l";
+
+0(CON (--): Curson on)
+:CON CSI"?25h";
+
+0(DMO (--): A little demo, random stars, until you press a key (`K?0=))
+:DMO x@0=(120x!) y@0=(30y!)CLS 1{\x@`R y@`R GXY 8 `R 30+ 40 STC "*"`K?0=}`K@\ CLC;

@@ -1,0 +1,32 @@
+0(System Initialization)
+`sR
+:C `iAU`iH1-[i@`@#,';=(i@1+`@':=(13,10,))];
+:R 0`iR1-[i@`iC*`iAR+@#$4(13,10,i@26`/$2 26`/$1'a+,%1'a+,%2'a+,": "%4.)];
+:U `iH`iAU-;
+:N 13,10,;
+:D ." ";
+
+0(REG v is VHERE)
+:CM  v@! v@`iC+v!;           0(,)
+:CCM v@`! v`#;               0(C,)
+:VAR v@;                     0(VARIABLE)
+:ALT v@+v!;                  0(ALLOT)
+:MIN `O`O>(`S)\;             0(a b--n)
+:MAX `O`O<(`S)\;             0(a b--n)
+:WDR #`@`S1+`@256*+;         0(Word Read  16-bit (a--n))
+:WDW $1 256`/ %1`! %1 1+`!;  0(Word Write 16-bit (n a--))
+:SHL{`S2*`S1-};              0(Shift-Left)
+:SHR{`S2/`S1-};              0(Shift-Right)
+
+0(Jump tables - create the 'A' function first)
+:JT `iAF@CM;                 0(Jump Table)
+0(JTE (n jta--a) - jump table entry)
+:JTE @`S`iC*+@;
+:JTJ JTE `J;                 0(n jta--)
+
+0(MARKER/FORGET)
+:MKR `iH mkr!;
+:FGT mkr@ `iAH!;
+
+0(Initialize VHERE)
+`iAU `iU 2/ + v!

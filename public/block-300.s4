@@ -1,0 +1,32 @@
+0(Jump table)
+
+0(Save the current state)
+1`BL
+MKR
+0(------------------------------------------------------------------------------)
+
+:-create jump table-;
+VAR jt! 
+:#D D;   JT   0(0)
+:#$$D;   JT   0(1)
+:+D;     JT   0(2)
+:#+D;    JT   0(3)
+:1+D;    JT   0(4)
+:1-D;    JT   0(5)
+:"#6";   JT   0(6)
+
+:-test jump table execution-;
+:TA N"Test #".": ";
+:TB 1 TA 17    0 jt JTJ;
+:TC 2 TA 1     1 jt JTJ;
+:TD 3 TA 1 1   2 jt JTJ;
+:TE 4 TA 3     3 jt JTJ;
+:TF 5 TA 44    4 jt JTJ;
+:TG 6 TA 44    5 jt JTJ;
+:TH 7 TA       6 jt JTJ;
+
+:TT TB TC TD TE TG TF TH;
+TT
+
+0(------------------------------------------------------------------------------)
+:RL FGT 300 `BL;
