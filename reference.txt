@@ -7,7 +7,7 @@
 -   (a b--n)      n: a-b - subtraction
 *   (a b--n)      n: a*b - multiplication
 /   (a b--q)      q: a/b - division
-`%  (a b--r)      r: a%b - modulo
+\  (a b--r)       r: a%b - modulo
 `/  (a b--q r)    q: div(a,b), r: modulo(a,b) - /MOD
 
 
@@ -21,8 +21,8 @@
 *** STACK ***
 #  (a--a a)       Duplicate TOS                    (DUP)
 \  (a b--a)       Drop TOS                         (DROP)
-$  (a b--b a)     Swap top 2 stack items           (SWAP)
-%  (a b--a b a)   Push 2nd                         (OVER)
+`S (a b--b a)     Swap top 2 stack items           (SWAP)
+`O (a b--a b a)   Push 2nd                         (OVER)
 `- (a--b)         b: -a  -                         (Negate)
 `A (a--b)         b: abs(a)                        (Absolute)
 `< (N--)          Move N from data to return stack (<R)
@@ -44,6 +44,17 @@ $  (a b--b a)     Swap top 2 stack items           (SWAP)
          3) Register 'i' is the 'loop' index **special**
          4) All other registers are initialized to 0 and are free to use.
 xxx  (--a)        a: address of register xxx
+
+
+*** LOCALS ***
+   NOTES: S4 allocates 9 locals when executing each WORD.
+          The values of the locals are NOT initialized.
+          $[1..9] sets local #[1..9]
+          %[1..9] pushes the current value of local #[1..9]
+          $x simply drops TOS
+          $x pushes 0
+$x    (n--)       x: local to set from TOS. x:[1..9]. Drops TOS
+%x    (n--)       x: local to push to TOS. x:[1..9].
 
 
 *** WORDS ***

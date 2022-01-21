@@ -154,6 +154,8 @@ void doExt() {
         if (ir == '?') { push(charAvailable()); }
         if (ir == '@') { push(getChar()); }
         return;
+    case 'O': push(N);                                     return;
+    case 'S': t1 = TOS; TOS = N; N = t1;                   return;
     case 'Z': printString((char *)pop());                  return;
     case 'i': ir = *(pc++);
         if (ir == 'A') {
