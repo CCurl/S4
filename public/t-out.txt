@@ -1,0 +1,370 @@
+777`BL
+999`BL
+220`BL
+15 L
+10 1000#**L
+D
+777`BL
+D
+220`BL
+D
+10 1000#**B
+5 1000#**B
+D
+15L
+838806 168C
+\\
+8388608
+#HX
+#HL
+B
+hrlp
+hrlp
+help
+\\\\\\\\\\\\\\\\\\\\\
+999`BL
+220`BL
+1024#* 8* B
+999`BL
+D
+C
+210`BL
+220`BL
+BB
+C
+\
+D
+10000000B
+220`BL
+D
+C
+`IH1-`IAU-.
+`iH1-`iAU-.
+1`BL
+C
+U
+R
+220`BL
+R
+U
+C
+210`BL
+C
+U
+D
+R
+`q
+999`BL
+210`BL
+C
+U
+`q
+777`BL
+210`BL
+C
+U
+220`BL
+C
+U
+1`BL
+U
+C
+`q
+C
+R
+iC.
+`iC.
+0,
+1`BL
+R
+1`BL
+R
+1`BL
+R
+999`BL
+R
+C
+`q
+{`K@#,'x=0=}
+`K@
+.
+1{\`K@#,'x=0=}
+500 1000 # **
+C
+:B `T$1[]`T$-." ms";
+b
+B
+B
+C
+R
+220`BL
+R
+210`BL
+R
+C
+U
+`q
+210`BL
+220`BL
+C
+10000000B
+`q
+C
+U
+R
+210`BL
+220`BL
+10000000B
+26#*.
+32 126[13,10,i@#."-",]
+1a! 2b! 3c! a@ b@ c@ ++ . 
+ "Hello World!"
+10`BL
+999`BL
+\\\
+1`BL
+C
+0`BL
+C
+`R.
+10`R.
+10`BL
+DMO
+\\
+\\\\\\\\\\\\\\\\\
+C
+CLC
+CLS
+C
+
+
+
+\\\
+10`BL
+CLL
+DMO
+CLC
+C
+10`BL
+C
+10`BL
+DMO
+CLS
+C
+U
+DMO
+DMO
+CLS
+`q
+20
+45
+*
+50*
+\\
+4000 12 * .
+26**##.
+26##**.
+.
+`q
+999`BL
+10`BL
+CLS
+D
+C
+U
+DMO
+C
+CLS COF 1{\8`R 30+ 40 STC 120`R 50`R GXY "*" `K?0=}`K@\ CLC CON
+CLS COF 1{\8`R 30+ 40 STC 120`R 50`R GXY "*" `K?0=}`K@\ CLC CON
+CLSCLS COF 1{\8`R 30+ 40 STC 120`R 50`R GXY "*" `K?0=}`K@\ CLC CON
+CLS
+b.
+b@.
+`iH1000+b!
+b@.
+:INC 4*b@+#@1+$!;
+2 INC
+b2 8+@.
+:INC 4*b@+#@1+$!;
+2 INC
+`iH1000+b!
+:INC 4*b@+#@1+$!;
+2 INC
+b@ 8+@.
+2 INC
+b@ 8+@.
+0 999[0i@4*b@+!]
+0 999[i@4*b@+@." "]
+:DMP 0 999[i@4*b@+@." "];
+:INI 0 999[0i@4*b@+!];
+10`BL
+C
+:INI `iH 1000+ b! 0 999[0i@4*b@+!];
+INI
+`R.
+1000`R.
+1000`R.
+1 1000[`R." "]
+1 1000[1000`R." "]
+1 1000[1000`R INC]
+DMP
+1 1000[1000`R INC] DMP
+INI
+1 10000[1000`R INC] DMP
+INI 1 10000[1000`R INC] DMP
+INI 1 10000[1000`R INC] DMP
+INI 1 100000[1000`R INC] DMP
+INI 1 1000000[1000`R INC] DMP
+INI 1 10000000[1000`R INC] DMP
+INI 1 1000[1000`R INC] DMP
+INI 1 10000[1000`R INC] DMP
+INI 1 10000[1000`R INC] DMP
+INI 1 10000[1000`R INC] DMP
+INI 1 10000[1000`R INC] DMP
+INI 1 10000[1000`R INC] DMP
+INI 1 100000[1000`R INC] DMP
+INI 1 100000[100`R INC] DMP
+INI 1 100000[100`R INC] DMP
+INI 1 100000[100`R INC] DMP
+1075 931 - .
+1000n!
+INI 1 100000[n@`R INC] DMP
+:MIN %%>($)\;
+:MAX %%<($)\;
+12 44 MIN
+44 12 MIN
+..
+44 12 MAX
+12 44 MAX
+\\
+`sR
+:INC 4*b@+#@1+$!;
+:DMP 0 n@1-[i@4*b@+@." "];
+:GO INI 1[n@`R INC] DMP;
+:INI 1000n! `iH1000+b! 0 n@1-[0i@4*b@+!];
+:MIN %%>($)\;
+:MAX %%<($)\;
+C
+1`BL
+:INC 4*b@+#@1+$!;
+:DMP 0 n@1-[i@4*b@+@." "];
+:GO INI 1[n@`R INC] DMP;
+:INI n@0=(1000n!) `iH1000+b! 0 n@1-[0i@4*b@+!];
+:MIN %%>($)\;
+:MAX %%<($)\;
+C
+100000GO
+10 GO
+100 GO
+1000 GO
+2000 GO
+3000 GO
+4000 GO
+5000 GO
+5000 GO
+10000 GO
+DMO
+10`BL
+1`BL
+10`BL
+DMO
+120x! 50y! DMO
+`q
+999`BL
+201`BL
+``in.bmp`
+R
+201`BL
+R
+v@ ``in.bmp`     OI
+v@ ``out.bmp`     OI
+v@ ``in.bmp`     OI
+v@ ``out.bmp`     OO
+v@ ``block-201.s4`     OS
+R
+AO.
+AO(EF)AC
+203`BL
+203`BL
+201`BL
+\\
+C
+;
+:C `iAU`iH1-[i@`@#,';=(i@1+`@':=(13,10,))];
+C
+1`BL
+201`BL
+C
+\\
+201`BL
+\\
+C
+201`BL
+201`BL
+201`BL
+C
+ `iAU`iH1-[i@`@#,';=(i@1+`@':=(13,10,))]
+C
+U
+R
+C
+201`BL
+C
+203`BL
+203`BL
+203`BL
+201`BL
+203`BL
+C
+201`BL
+C
+U
+`q
+10`BL
+C
+DMO
+DMO
+CLS
+201`BL
+C
+203`BL
+C
+10`BL
+C
+`sR
+10`BL
+DMO
+C
+CLL
+1`BL
+
+
+
+
+
+
+
+
+
+
+
+
+C
+999`BL
+220`BL
+C
+1000#*10*B
+15L
+:P%%`/_(\\_;)%<(\;)2+P;
+15L
+`q
+201`BL
+203`BL
+347 1024* 8/
+\
+201`BL
+203`BL
+201`BL
+203`BL
+203`BL
+201`BL

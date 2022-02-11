@@ -1,0 +1,863 @@
+777`BL
+999`BL
+220`BL
+15 L
+10 1000#**L
+D
+777`BL
+D
+220`BL
+D
+10 1000#**B
+5 1000#**B
+D
+15L
+838806 168C
+\\
+8388608
+#HX
+#HL
+B
+hrlp
+hrlp
+help
+\\\\\\\\\\\\\\\\\\\\\
+999`BL
+220`BL
+1024#* 8* B
+999`BL
+D
+C
+210`BL
+220`BL
+BB
+C
+\
+D
+10000000B
+220`BL
+D
+C
+`IH1-`IAU-.
+`iH1-`iAU-.
+1`BL
+C
+U
+R
+220`BL
+R
+U
+C
+210`BL
+C
+U
+D
+R
+`q
+999`BL
+210`BL
+C
+U
+`q
+777`BL
+210`BL
+C
+U
+220`BL
+C
+U
+1`BL
+U
+C
+`q
+C
+R
+iC.
+`iC.
+0,
+1`BL
+R
+1`BL
+R
+1`BL
+R
+999`BL
+R
+C
+`q
+{`K@#,'x=0=}
+`K@
+.
+1{\`K@#,'x=0=}
+500 1000 # **
+C
+:B `T$1[]`T$-." ms";
+b
+B
+B
+C
+R
+220`BL
+R
+210`BL
+R
+C
+U
+`q
+210`BL
+220`BL
+C
+10000000B
+`q
+C
+U
+R
+210`BL
+220`BL
+10000000B
+26#*.
+32 126[13,10,i@#."-",]
+1a! 2b! 3c! a@ b@ c@ ++ . 
+ "Hello World!"
+10`BL
+999`BL
+\\\
+1`BL
+C
+0`BL
+C
+`R.
+10`R.
+10`BL
+DMO
+\\
+\\\\\\\\\\\\\\\\\
+C
+CLC
+CLS
+C
+
+
+
+\\\
+10`BL
+CLL
+DMO
+CLC
+C
+10`BL
+C
+10`BL
+DMO
+CLS
+C
+U
+DMO
+DMO
+CLS
+`q
+20
+45
+*
+50*
+\\
+4000 12 * .
+26**##.
+26##**.
+.
+`q
+999`BL
+10`BL
+CLS
+D
+C
+U
+DMO
+C
+CLS COF 1{\8`R 30+ 40 STC 120`R 50`R GXY "*" `K?0=}`K@\ CLC CON
+CLS COF 1{\8`R 30+ 40 STC 120`R 50`R GXY "*" `K?0=}`K@\ CLC CON
+CLSCLS COF 1{\8`R 30+ 40 STC 120`R 50`R GXY "*" `K?0=}`K@\ CLC CON
+CLS
+b.
+b@.
+`iH1000+b!
+b@.
+:INC 4*b@+#@1+$!;
+2 INC
+b2 8+@.
+:INC 4*b@+#@1+$!;
+2 INC
+`iH1000+b!
+:INC 4*b@+#@1+$!;
+2 INC
+b@ 8+@.
+2 INC
+b@ 8+@.
+0 999[0i@4*b@+!]
+0 999[i@4*b@+@." "]
+:DMP 0 999[i@4*b@+@." "];
+:INI 0 999[0i@4*b@+!];
+10`BL
+C
+:INI `iH 1000+ b! 0 999[0i@4*b@+!];
+INI
+`R.
+1000`R.
+1000`R.
+1 1000[`R." "]
+1 1000[1000`R." "]
+1 1000[1000`R INC]
+DMP
+1 1000[1000`R INC] DMP
+INI
+1 10000[1000`R INC] DMP
+INI 1 10000[1000`R INC] DMP
+INI 1 10000[1000`R INC] DMP
+INI 1 100000[1000`R INC] DMP
+INI 1 1000000[1000`R INC] DMP
+INI 1 10000000[1000`R INC] DMP
+INI 1 1000[1000`R INC] DMP
+INI 1 10000[1000`R INC] DMP
+INI 1 10000[1000`R INC] DMP
+INI 1 10000[1000`R INC] DMP
+INI 1 10000[1000`R INC] DMP
+INI 1 10000[1000`R INC] DMP
+INI 1 100000[1000`R INC] DMP
+INI 1 100000[100`R INC] DMP
+INI 1 100000[100`R INC] DMP
+INI 1 100000[100`R INC] DMP
+1075 931 - .
+1000n!
+INI 1 100000[n@`R INC] DMP
+:MIN %%>($)\;
+:MAX %%<($)\;
+12 44 MIN
+44 12 MIN
+..
+44 12 MAX
+12 44 MAX
+\\
+`sR
+:INC 4*b@+#@1+$!;
+:DMP 0 n@1-[i@4*b@+@." "];
+:GO INI 1[n@`R INC] DMP;
+:INI 1000n! `iH1000+b! 0 n@1-[0i@4*b@+!];
+:MIN %%>($)\;
+:MAX %%<($)\;
+C
+1`BL
+:INC 4*b@+#@1+$!;
+:DMP 0 n@1-[i@4*b@+@." "];
+:GO INI 1[n@`R INC] DMP;
+:INI n@0=(1000n!) `iH1000+b! 0 n@1-[0i@4*b@+!];
+:MIN %%>($)\;
+:MAX %%<($)\;
+C
+100000GO
+10 GO
+100 GO
+1000 GO
+2000 GO
+3000 GO
+4000 GO
+5000 GO
+5000 GO
+10000 GO
+DMO
+10`BL
+1`BL
+10`BL
+DMO
+120x! 50y! DMO
+`q
+999`BL
+201`BL
+``in.bmp`
+R
+201`BL
+R
+v@ ``in.bmp`     OI
+v@ ``out.bmp`     OI
+v@ ``in.bmp`     OI
+v@ ``out.bmp`     OO
+v@ ``block-201.s4`     OS
+R
+AO.
+AO(EF)AC
+203`BL
+203`BL
+201`BL
+\\
+C
+;
+:C `iAU`iH1-[i@`@#,';=(i@1+`@':=(13,10,))];
+C
+1`BL
+201`BL
+C
+\\
+201`BL
+\\
+C
+201`BL
+201`BL
+201`BL
+C
+ `iAU`iH1-[i@`@#,';=(i@1+`@':=(13,10,))]
+C
+U
+R
+C
+201`BL
+C
+203`BL
+203`BL
+203`BL
+201`BL
+203`BL
+C
+201`BL
+C
+U
+`q
+10`BL
+C
+DMO
+DMO
+CLS
+201`BL
+C
+203`BL
+C
+10`BL
+C
+`sR
+10`BL
+DMO
+C
+CLL
+1`BL
+
+
+
+
+
+
+
+
+
+
+
+
+C
+999`BL
+220`BL
+C
+1000#*10*B
+15L
+:P%%`/_(\\_;)%<(\;)2+P;
+15L
+`q
+201`BL
+203`BL
+347 1024* 8/
+\
+201`BL
+203`BL
+201`BL
+203`BL
+203`BL
+201`BL
+201`BL
+203`BL
+10`BL
+C
+U
+DMO
+120x!50yDMO
+\\
+120x!50y!DMO
+120x!50y!DMO
+120x!50y!DMO
+`q
+10`BL
+CLS
+C
+DMO\
+120x!50y!DMO
+C
+
+0t! x@0=(100x!) y@0=(40y!) CLS COF 1{\t@1+t! 8`R 30+ 40 STC x@`R y@`R GXY "*" `K?0=}`K@\ CLC CON t.
+
+N
+0t! x@0=(100x!) y@0=(40y!) CLS COF 1{\t@1+t! 8`R 30+ 40 STC x@`R y@`R GXY "*" `K?0=}`K@\ CLC CON Nt@.
+0t! x@0=(100x!) y@0=(40y!) CLS COF 1{\t@1+t! 8`R 30+ 40 STC x@`R y@`R GXY "*" `K?0=}`K@\ CLC CON Nt@.
+0t! x@0=(100x!) y@0=(40y!) CLS COF 1{\t@1+t! 8`R 30+ 40 STC x@`R y@`R GXY "*" `K?0=}`K@\ CLC CON Nt@.
+0t! 180x! 55! CLS COF 1{\t@1+t! 8`R 30+ 40 STC x@`R y@`R GXY "*" `K?0=}`K@\ CLC CON Nt@.
+0t! 180x! 55y! CLS COF 1{\t@1+t! 8`R 30+ 40 STC x@`R y@`R GXY "*" `K?0=}`K@\ CLC CON Nt@.
+`1BL
+1`BL
+10`BL
+0t! 180x! 55y! CLS COF 1{\t@1+t! 8`R 30+ 40 STC x@`R y@`R GXY "*" `K?0=}`K@\ CLC CON Nt@.
+0t! 190x! 65y! CLS COF 1{\t@1+t! 8`R 30+ 40 STC x@`R y@`R GXY "*" `K?0=}`K@\ CLC CON Nt@.
+0t! 185x! 60y! CLS COF 1{\t@1+t! 8`R 30+ 40 STC x@`R y@`R GXY "*" `K?0=}`K@\ CLC CON Nt@.
+0t! 188x! 62y! CLS COF 1{\t@1+t! 8`R 30+ 40 STC x@`R y@`R GXY "*" `K?0=}`K@\ CLC CON Nt@.
+CLS
+0t! 188x! 62y! CLS COF 1{\t@1+t! 8`R 30+ 40 STC x@`R y@`R GXY "*" `K?0=}`K@\ CLC CON Nt@.
+0t! 188x! 62y! CLS COF 1{\t@1+t! 8`R 30+ 40 STC x@`R y@`R GXY "*" `K?0=}`K@\ CLC CON Nt@.
+CLS
+1111`BL
+C
+TT
+RL
+C
+U
+RL
+RL
+`FS
+R
+120x! 50y!DMO
+CLS
+RL
+pw
+\\
+aa
+pw
+$-
+4\
+4/
+26`/
+$'a+,
+a'+,
+\`a+,
+\
+22'a+,
+RL
+C
+R
+DMO
+CLS
+C
+10000 GO
+100000 GO
+10000000 GO
+C
+`q
+10`BL
+1111`BL
+C
+120x!50y!DMO
+CLS
+C
+10000 GO
+`q
+v@.
+`q
+v@.
+76
+v@`!v@1+v!
+v@1-`@.
+57
+v@`!v@1+v!
+0 v@`!v@1+v!
+6388264 `Z
+:CCM v@`!v@1+v!;
+:CM v@!v@`iC+v!;
+C
+`FS
+`sR
+`FL
+C
+R
+:vhi v@vh!;
+:CM vh@!vh@`iC+vh!;
+:CCM vh@`!vh@1+vh!;
+:VHI v@vh!;
+C
+VHI
+:VHI vh@0=(v@vh!);
+R
+1`BL
+C
+1111`BL
+C
+R
+387CM
+R
+309934CM R
+RL
+RL
+xx@
+@.
+R
+RL
+RL
+`q
+205 211[@i,]
+205 211[i@,]
+228 255[i@,]
+128 255[i@,]
+pwd
+`q
+:"tsst";
+`iAF
+@
+`J
+300`BL
+RL
+C
+`sR
+1`BL
+300`BL
+C
+1`BL
+C
+300`BL
+C
+
+RL
+TT
+RL
+C
+R
+FG
+C
+FGT
+C
+300`BL
+C
+TT
+TE "hi there"
+U
+.
+C
+R
+`q
+160
+115
+*100/
+.
+160 115*
+2/
+\\\
+400`BL
+\
+\
+RL
+400`BL
+400`BL
+400`BL
+C
+1SCR
+CRC
+C
+RL
+300`BL
+400`BL
+C
+1SCR
+CRC
+2 CPC
+1 SCR DCR 2 SCR DCR
+ne@.
+1 SCR DCR 2 SCR DCR ne@." errors"
+1 SCR DCR 2 SCR DCR ne@." errors"
+1 SCR DCR 2 SCR DCR ne@." errors"
+1 SCR DCR 2 SCR DCR ne@." errors"
+1 SCR DCR 2 SCR DCR ne@." errors"
+1 SCR DCR 2 SCR DCR ne@." errors"
+1 SCR DCR 2 SCR DCR ne@." errors"
+1 SCR DCR 2 SCR DCR ne@." errors"
+1 SCR DCR 2 SCR DCR ne@." errors"
+1 SCR DCR 2 SCR DCR ne@." errors"
+1 SCR DCR 2 SCR DCR ne@." errors"
+1 SCR DCR 2 SCR DCR ne@." errors"
+1 SCR DCR 2 SCR DCR ne@." errors"
+1 SCR DCR 2 SCR DCR ne@." errors"
+1 SCR DCR 2 SCR DCR ne@." errors"
+1 SCR DCR 2 SCR DCR ne@." errors"
+1 SCR DCR 2 SCR DCR ne@." errors"
+1 SCR DCR 2 SCR DCR ne@." errors"
+1 SCR DCR 2 SCR DCR ne@." errors"
+1 SCR DCR 2 SCR DCR ne@." errors"
+1 SCR DCR 2 SCR DCR ne@." errors"
+1 SCR DCR 2 SCR DCR ne@." errors"
+1 SCR DCR 2 SCR DCR ne@." errors"
+1 SCR DCR 2 SCR DCR ne@." errors"
+1 SCR DCR 2 SCR DCR ne@." errors"
+C
+1 SCR DCR 2 SCR DCR ne@." errors"
+1 SCR DCR 2 SCR DCR ne@." errors"
+1 SCR DCR 2 SCR DCR ne@." errors"
+1 SCR DCR 2 SCR DCR ne@." errors"
+1 SCR DCR 2 SCR DCR ne@." errors"
+C
+100TT
+100TT
+100TT
+ne@.
+100TT
+100TT
+100 # 1[0ne! 1[1 SCR 2 CPC]ne@." "]
+100 # 1[0ne! 1[1 SCR 2 CPC]]
+100 # 1[0ne! 1[1 SCR 2 CPC]ne@." "]
+100 1[0ne! 10 1[1 SCR 2 CPC]ne@." "]
+100 1[0ne! 100 1[1 SCR 2 CPC]ne@." "]
+100 # 1[0ne! # 1[1 SCR 2 CPC]ne@." "]\
+10 # 1[0ne! # 1[1 SCR 2 CPC]ne@." "]\
+1 # 1[0ne! # 1[1 SCR 2 CPC]ne@." "]\
+1 # 1[0ne! # 1[1 SCR 2 CPC]ne@." "]\
+1 # 1[0ne! # 1[1 SCR 2 CPC]ne@." "]\
+1 # 1[0ne! # 1[1 SCR 2 CPC]ne@." "]\
+1 # 1[0ne! # 1[1 SCR 2 CPC]ne@." "]\
+1 # 1[0ne! # 1[1 SCR 2 CPC]ne@." "]\
+1 # 1[0ne! # 1[1 SCR 2 CPC]ne@." "]\
+1 # 1[0ne! # 1[1 SCR 2 CPC]ne@." "]\
+1 # 1[0ne! # 1[1 SCR 2 CPC]ne@." "]\
+1 # 1[0ne! # 1[1 SCR 2 CPC]ne@." "]\
+1 # 1[0ne! # 1[1 SCR 2 CPC]ne@(1 SCR DCR 2 SCR DCR)]\
+10 # 10[0ne! # 1[1 SCR 2 CPC]ne@(1 SCR DCR 2 SCR DCR)]\
+100 # 10[0ne! # 1[1 SCR 2 CPC]ne@(1 SCR DCR 2 SCR DCR)]\
+RL
+10TT
+cr@.
+fc@.
+tc@.
+CC.
+RAC
+\
+10TT
+\
+398FB.
+398FB.
+398FB.
+398FB.
+398FB.
+398FB.
+0FB.
+0FB.
+0FB.
+1FB.
+1FB.
+1FB.
+1FB.
+1FB.
+RL
+RAC
+TT
+\\
+100TT
+\\
+RL
+RAC
+100TT
+RL
+\
+RL
+10 TT
+RL
+100TT
+1000TT
+10000TT
+CLS
+C
+U.
+1 10[256`R #D FB D]
+1 10[256`R #D FB D N]
+1 100[256`R #D FB D N]
+1 100[256`R #D FB D N]
+
+1 3{$2*$1-}
+.
+1 3{$2*$1-}.
+1 1{$2*$1-}.
+:LS{$2*$1-};
+1 3 LS .
+44 1 LS.
+1 4 LS .
+1 8`R LS." "
+1 8`R LS." "
+1 8`R LS." "
+1 8`R LS." "
+1 10[1 8`R LS." "]
+1 10[1 8`R LS." "]
+1 10[1 8`R LS." "]
+1 10[1 8`R LS." "]
+1 10[1 8`R LS." "]
+1 10[1 8`R LS." "]
+1 10[1 8`R LS." "]
+1 10[1 8`R LS." "]
+1 1000[1 8`R LS." "]
+RL
+1000TT
+100TT
+100TT
+10TT
+10TT
+10 TF
+100TT
+1000TT
+1000TT
+10000TT
+10000#*.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+C
+`q
+`q
+300`BL
+400`BL
+C
+U.
+
+:A 83*99MIN99`-MAX;
+2A.
+:A 83*100/99MIN99`-MAX;
+2A.
+100`-100[i@A." "]
+200`-200[i@A." "]
+200`-200[i@#."->"A.N]
+0`BL
+200`BL
+`q
+220`BL
+15L
+999`BL
+210`BL
+220`BL
+C
+`q
+733 569 - .
+`q
+'A 26+ ,
+256 26 /
+.
+C
+`q
+C
+R
+\\
+0`BL
+R
+C
+U
+.
+22 33 MIN
+44`S
+MAX
+C
+\\
+$$
+0`BL
+C
+256a!
+a WDR
+.
+65535 a!
+a WDR .
+65537 a!
+a WDR .
+a
+56`S
+#1+$1
+$1 255 `/
+$1#`!1+`!
+a@.
+123 a
+$1 256`/
+%1`!%11+`!
+a@.
+0`BL
+R
+C
+U.
+1 4 SHL .
+1 3 SHL .
+8 2 SHR .
+8 1 SHR .
+8 0 SHR .
+1 7 SHL .
+1 8 SHL .
+10`BL
+C
+CLL
+DMO
+CLS
+C
+R
+`q
+210`BL
+220`BL
+220`BL
+15L
+
+
+300`BL
+300`BL
+300`BL
+`q
+62,
+`q
+`q
+777`BL
+220`BL
+210`BL
+999BL
+`BL
+`q
+:HELLO "hi";
+`q
+:HELLO "hi";
+`q
+:HELLO "hi";
+HELLO
+`q
+:SWAP $;
+1 2 3
+SWAP . SWAP
+:DROP \;
+SWAP DROP
+.
+:WORDS C;
+WORDS
+C
+:WORDS `iAU`iH1-[i@`@#,';=(i@1+`@':=(13,10,))];
+WORDS
+:CR 13,10,;
+WORDS
+:USED `iH`iAU-;
+USED .
+WORDS
+123 456 789
+SWAP DROP .
+g
+!
+g @ .
+g@1+h!
+g!. h@.
+:BL " ";
+WORDS
+g@.
+33 g!
+g@.BLh@.
+g @ .BL h @ .
+`q
+1`BL
+C
+999`BL
+`q

@@ -6,7 +6,12 @@ SYS_T sys;
 byte ir, isBye = 0, isError = 0;
 static char buf[64];
 addr pc, HERE;
-CELL t1;
+CELL t1, lastFunc;
+typedef struct {
+    long name;
+    addr val;
+} RF_T;
+RF_T func[NUM_FUNCS];
 
 void push(CELL v) { if (sys.dsp < STK_SZ) { sys.dstack[++sys.dsp] = v; } }
 CELL pop() { return (sys.dsp) ? sys.dstack[sys.dsp--] : 0; }
@@ -19,6 +24,7 @@ inline LOOP_ENTRY_T *ldrop() { if (0 < LSP) { --LSP; } return LTOS; }
 
 void vmInit() {
     sys.dsp = sys.rsp = sys.lsp = 0;
+    lastFunc = 0;
     for (int i = 0; i < NUM_REGS; i++) { REG[i] = 0; }
     for (int i = 0; i < USER_SZ; i++) { USER[i] = 0; }
     for (int i = 0; i < NUM_FUNCS; i++) { FUNC[i] = 0; }
@@ -78,6 +84,24 @@ void skipTo(byte to) {
     isError = 1;
 }
 
+int addFunc(CELL name, addr val) {
+    if (isError) { return -1; }
+    if (NUM_FUNCS <= lastFunc) { isError = 1; printString("-oof-"); return -1; }
+
+    func[lastFunc].name = name;
+    func[lastFunc].val = val;
+    return (lastFunc++);
+}
+
+addr findFunc(CELL name) {
+    if (isError) { return 0; }
+    for (int i = lastFunc - 1; 0 <= i; i--) {
+        RF_T* p = &func[i];
+        if (p->name == name) { return p->val; }
+    }
+    return 0;
+}
+
 int regFuncNum(int isReg) {
     push(0);
     while (*pc) {
@@ -87,8 +111,8 @@ int regFuncNum(int isReg) {
         TOS = (TOS*26) + t1;
         ++pc;
     }
-    if ( isReg && (NUM_REGS  <= TOS)) { isError = 1; printString("-reg#-"); }
-    if (!isReg && (NUM_FUNCS <= TOS)) { isError = 1; printString("-func#-"); }
+    if (isReg && (NUM_REGS <= TOS)) { pop(); isError = 1; printString("-reg#-"); }
+    // if (!isReg && (NUM_FUNCS <= TOS)) { pop(); isError = 1; printString("-func#-"); }
     return isError ? 0 : 1;
 }
 
@@ -184,7 +208,7 @@ addr run(addr start) {
         ir = *(pc++);
         switch (ir) {
         case 0: return pc;
-        case ' ': while (*(pc) == ' ') { pc++; }           break;  // 32
+        case ' ': while (BetweenI(*pc, 1, 32)) { pc++; }   break;  // 32
         case '!': setCell(AOS, N); DROP2;                  break;  // 33
         case '"': while (*(pc) != ir) { printChar(*(pc++)); };      // 34
                 ++pc; break;
@@ -211,7 +235,9 @@ addr run(addr start) {
                 ir = *(++pc);
             } break;
         case ':': if (regFuncNum(0)) {
-            FUNC[pop()] = pc; skipTo(';'); HERE = pc;
+            // FUNC[pop()] = pc; 
+            addFunc(pop(), pc);
+            skipTo(';'); HERE = pc;
         }; break;
         case ';': pc = rpop();                             break;  // 59
         case '<': t1 = pop(); TOS = TOS < t1 ? 1 : 0;      break;  // 60
@@ -225,10 +251,13 @@ addr run(addr start) {
         case 'P': case 'Q': case 'R': case 'S': case 'T':
         case 'U': case 'V': case 'W': case 'X': case 'Y': 
         case 'Z': --pc;
-            if (regFuncNum(0) && FUNC[TOS]) {
-                if (*pc != ';') { rpush(pc); }
-                pc = (addr)FUNC[TOS];
-            }  pop(); break;
+            if (regFuncNum(0)) {
+                t1 = (CELL)findFunc(pop());
+                if (t1) {
+                    if (*pc != ';') { rpush(pc); }
+                    pc = (addr)t1;
+                }
+            } break;
         case '[': doFor();                                 break;  // 91
         case '\\': DROP1;                                  break;  // 92
         case ']': doNext();                                break;  // 93
