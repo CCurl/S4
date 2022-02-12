@@ -9,8 +9,8 @@ N"Count of primes"
 ; B: (n--)        Benchmark routine
 ; L: (n--)        Loop for multiple benchmarks
 
-:Q 4c! 11[i@3P(c`#)i`#]c@;
-:B N"# primes in "#." - "`T$Q.`T$- " (" . " ms)";
+:Q 4 sC 11[rI 3 P(iC)iI]rC;
+:B N"# primes in "#." - "`T$ Q . `T$- " (" . " ms)";
 :L 256$1[#+#B]\;
 :P%%`/0=(\=;)%<(\;)2+P;
 
