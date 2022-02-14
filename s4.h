@@ -42,7 +42,6 @@ typedef struct {
     CELL   dstack[STK_SZ + 1];
     addr   rstack[STK_SZ + 1];
     LOOP_ENTRY_T lstack[LSTACK_SZ + 1];
-    addr   func[NUM_FUNCS];
     CELL   reg[NUM_REGS];
     byte   user[USER_SZ];
 } SYS_T;

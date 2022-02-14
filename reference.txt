@@ -7,15 +7,15 @@
 -   (a b--n)      n: a-b - subtraction
 *   (a b--n)      n: a*b - multiplication
 /   (a b--q)      q: a/b - division
-`%  (a b--r)      r: a%b - modulo
-`/  (a b--q r)    q: div(a,b), r: modulo(a,b) - /MOD
+^   (a b--r)      r: MODULO(a, b)
+&   (a b--q r)    q: DIV(a,b), r: MODULO(a,b) - /MOD
 
 
 *** BIT MANIPULATION ***
-&  (a b--n)       n: a and b
-|  (a b--n)       n: a or b
-^  (a b--n)       n: a xor b
-~  (a--b)         b: ones-complement a (e.g - 1011 => 0100)
+b&  (a b--n)      n: a AND b
+b|  (a b--n)      n: a OR  b
+b^  (a b--n)      n: a XOR b
+b~  (a--b)        b: NOT a (ones-complement, e.g - 101011 => 010100)
 
 
 *** STACK ***
@@ -23,37 +23,36 @@
 \  (a b--a)       Drop TOS                         (DROP)
 $  (a b--b a)     Swap top 2 stack items           (SWAP)
 %  (a b--a b a)   Push 2nd                         (OVER)
-`- (a--b)         b: -a  -                         (Negate)
-`A (a--b)         b: abs(a)                        (Absolute)
-`< (N--)          Move N from data to return stack (<R)
-`> (N--)          Move N from return to data stack (R>)
+_  (a--b)         b: -a                            (Negate)
+xA (a--b)         b: abs(a)                        (Absolute)
 
 
 *** MEMORY ***
+c@    (a--n)      Fetch BYTE n from address a
 @     (a--n)      Fetch CELL n from address a
-!     (n a--)     Store CELL n  to  address a
-`@    (a--n)      Fetch BYTE n from address a
-`!    (n a--)     Store BYTE n  to  address a
-`#    (a--)       a: (++) address of CELL to increment
-`=    (a--)       a: (--) address of CELL to decrement
+c!    (n a--)     Store BYTE n to address a
+!     (n a--)     Store CELL n to address a
 
 
-*** REGISTERS ***
-  NOTES: 1) Register names are 1 to 3 lowercase characters: [a..zzz]
-         2) The number of registers is controlled by the NUM_REGS #define in "config.h".
-         3) Register 'i' is the 'loop' index **special**
-         4) All other registers are initialized to 0 and are free to use.
-xxx  (--a)        a: address of register xxx
+*** REGISTERS and LOCALS ***
+  NOTES: 1) Register names are 1 to 3 UPPERCASE characters: [A..ZZZ]
+         2) LOCALS: S4 provides 10 locals per call [0..9].
+         3) The number of registers is controlled by the NUM_REGS #define in "config.h".
+         4) Register 'I' is the FOR Loop index **special**
+rABC  (--n)       n: value of register ABC
+sABC  (n--)       n: value to store in register ABC
+iABC  (--)        increment register ABC
+dABC  (--)        decrement register ABC
 
 
 *** WORDS ***
-        NOTES: 1) Word names are 1 to 3 uppercase characters: [A..ZZZ]
+        NOTES: 1) Word names are any number of UPPERCASE characters
                2) The number of words is controlled by the NUM_FUNCS #define in "config.h"
 :     (--)        Define word. Copy chars to (HERE++) until closing ';'.
 XXX   (--)        Execute word XXX
 ;     (--)        Return: PC = rpop()
         NOTE: returning while inside of a loop is not supported; behavior will be undefined.
-        NOTE: outside of ':...;', ';' can be used to comment out the rest of the line
+        NOTE: outside of ':<...>;', ';' can be used to comment out the rest of the line
 
 
 *** INPUT/OUTPUT ***
@@ -62,56 +61,57 @@ XXX   (--)        Execute word XXX
 "      (--)       Output characters until the next '"'
 0..9   (--n)      Scan DECIMAL number until non digit
                      to specify multiple values, separate them by space (4711 3333)
-                     to enter a negative number, use "negate" (eg - 490`-)
+                     to enter a negative number, use "negate" (eg - 490_)
 'x     (--n)      n: the ASCII value of x
-_XXX_  (a--a b)   Copies XXX to address a, b is the next address after the NULL terminator.
-`Z     (a--)      a: address of a NULL terminated string to print.
+`XXX`  (a--a b)   Copies XXX to address a, b is the next address after the NULL terminator.
+xZ     (a--)      Output the NULL terminated string starting at address a.
 
 
 *** CONDITIONS/LOOPS/FLOW CONTROL ***
 <     (a b--f)    f: (a < b) ? 1 : 0;
 =     (a b--f)    f: (a = b) ? 1 : 0;
 >     (a b--f)    f: (a > b) ? 1 : 0;
+~     (n -- f)    f: (a = 0) ? 1 : 0; (Logical NOT)
 [     (F T--)     FOR: start a For/Next loop. if (T < F), swap T and F
-]     (--)        NEXT: increment index (i) and restart loop if (i@ <= T)
+]     (--)        NEXT: increment index (I) and restart loop if (rI <= T)
                       NOTE: A FOR loop always runs at least one iteration.
                             It can be put it inside a '()' to keep it from running.
 {     (f--f)      BEGIN: if (f == 0) skip to matching '}'
 }     (f--f?)     WHILE: if (f != 0) jump to matching '{', else drop f and continue
-i@    (--n)       n: the index of the current FOR loop
+rI    (--n)       n: the index of the current FOR loop
 (     (f--)       IF: if (f != 0), continue into '()', else skip to matching ')'
 
 
 *** OTHER ***
-`BL   (n--)       File: (PC): Load code from file (block-nnn.src). This can be nested.
-`FL   (--)        File: Load code from ./Code.S4.
-`FS   (--)        File: Save code  to  ./Code.S4.
-`FO   (n m--h)    File: Open   - n: file name, m: mode, h: file handle (0 means not opened)
-`FC   (h--)       File: Close  - h: file handle
-`FD   (n--)       File: Delete - n: file name
-`FR   (h--c f)    File: Read   - h: file handle, c: char, n: success?
-`FW   (c h--f)    File: Write  - h: file handle, c: char, n: success?
+xBL   (n--)       File: (PC): Load code from file (block-nnn.src). This can be nested.
+xFL   (--)        File: Load code from ./Code.S4.
+xFS   (--)        File: Save code  to  ./Code.S4.
+xFO   (n m--h)    File: Open   - n: file name, m: mode, h: file handle (0 means not opened)
+xFC   (h--)       File: Close  - h: file handle
+xFD   (n--)       File: Delete - n: file name
+xFR   (h--c f)    File: Read   - h: file handle, c: char, n: success?
+xFW   (c h--f)    File: Write  - h: file handle, c: char, n: success?
                   NOTE: File operations are enabled by #define __FILES__
-`PI   (p--)       Arduino: Pin Input  (pinMode(p, INPUT))
-`PU   (p--)       Arduino: Pin Pullup (pinMode(p, INPUT_PULLUP))
-`PO   (p--)       Arduino: Pin Output (pinMode(p, OUTPUT)
-`PRA  (p--n)      Arduino: Pin Read Analog  (n = analogRead(p))
-`PRD  (p--n)      Arduino: Pin Read Digital (n = digitalRead(p))
-`PWA  (n p--)     Arduino: Pin Write Analog  (analogWrite(p, n))
-`PWD  (n p--)     Arduino: Pin Write Digital (digitalWrite(p, n))
-`R    (n--r)      r: a random number in the range [0..(n-1)]
+xPI   (p--)       Arduino: Pin Input  (pinMode(p, INPUT))
+xPU   (p--)       Arduino: Pin Pullup (pinMode(p, INPUT_PULLUP))
+xPO   (p--)       Arduino: Pin Output (pinMode(p, OUTPUT)
+xPRA  (p--n)      Arduino: Pin Read Analog  (n = analogRead(p))
+xPRD  (p--n)      Arduino: Pin Read Digital (n = digitalRead(p))
+xPWA  (n p--)     Arduino: Pin Write Analog  (analogWrite(p, n))
+xPWD  (n p--)     Arduino: Pin Write Digital (digitalWrite(p, n))
+xR    (n--r)      r: a random number in the range [0..(n-1)]
                   NB: if n=0, r is the entire 32-bit random number
-`T    (--n)       Milliseconds (Arduino: millis(), Windows: GetTickCount())
-`N    (--n)       Microseconds (Arduino: micros(), Windows: N/A)
-`W    (n--)       Wait (Arduino: delay(),  Windows: Sleep())
-`iAF  (--a)       INFO: a: address of first function vector
-`iAH  (--a)       INFO: a: address of HERE variable
-`iAR  (--a)       INFO: a: address of first register vector
-`iAS  (--a)       INFO: a: address of beeginning of system structure
-`iAU  (--a)       INFO: a: address of beeginning of user area
-`iF   (--n)       INFO: n: number of words/functions
-`iH   (--n)       INFO: n: value of HERE variable
-`iR   (--n)       INFO: n: number of registers
-`iU   (--n)       INFO: n: number of bytes in the USER area
-`sR   (--)        S4 system reset
-`q    (--)        PC: Exit S4
+xT    (--n)       Milliseconds (Arduino: millis(), Windows: GetTickCount())
+xN    (--n)       Microseconds (Arduino: micros(), Windows: N/A)
+xW    (n--)       Wait (Arduino: delay(),  Windows: Sleep())
+xIAF  (--a)       INFO: a: address of first function vector
+xIAH  (--a)       INFO: a: address of HERE variable
+xIAR  (--a)       INFO: a: address of first register vector
+xIAS  (--a)       INFO: a: address of beeginning of system structure
+xIAU  (--a)       INFO: a: address of beeginning of user area
+xIF   (--n)       INFO: n: number of words/functions
+xIH   (--n)       INFO: n: value of HERE variable
+xIR   (--n)       INFO: n: number of registers
+xIU   (--n)       INFO: n: number of bytes in the USER area
+xSR   (--)        S4 system reset
+xq    (--)        PC: Exit S4

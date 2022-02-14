@@ -1,5 +1,4 @@
-:N13,10,;
-N"Block 2"
+CR "Block 2"
 
 ; HEX output
 :HX #9>(7+)'0+,;
@@ -8,6 +7,6 @@ N"Block 2"
 :HL 256#*`/$ HW HW;
 
 ; Binary output
-:BD 255&128 1 8[$%`/$.$2/]\\;
+:BD 255 b& 128 s1 1 8[r1 `/ $. r1 2/ s1]\;
 :BW 256`/$ BD BD;
 :BL 256#*`/$ BW BW;

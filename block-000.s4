@@ -1,9 +1,9 @@
 0(System Initialization)
-`sR
-:CODE `iAU`iH1-[rIc@#,';=(rI1+c@':=(CR))];
+xSR
+:CODE xIAU xIH1-[rI c@ #,';=(rI 1+ c@': =(CR))];
 :CR 13,10,;
-:REGS 0`iR 1-[rI `iC* `iAR+ @#(CR rI 26`/$26`/$'a+,'a+,'a+,": ".1)\];
-:USED `iH `iAU-;
+:REGS 0 xIR 1-[rI xIC* xIAR+ @#s1(CR "r" rI 26&$26&$'A+,'A+,'A+,": "r1.)];
+:USED xIH xIAU-;
 "S4 - v0.1.0 - Chris Curl" CR
-"This system has "`iR." registers, "`iF." functions, and "`iU." bytes user memory." CR
+"This system has "xIR." registers, "xIF." functions, and "xIU." bytes user memory." CR
 "Hello" CR

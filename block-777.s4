@@ -1,6 +1,6 @@
 ; Block.777
 
-0`BL
+0xBL
 N"Count of primes"
 
 ; c:              Register for count of primes
@@ -10,8 +10,8 @@ N"Count of primes"
 ; L: (n--)        Loop for multiple benchmarks
 
 :Q 4 sC 11[rI 3 P(iC)iI]rC;
-:B N"# primes in "#." - "`T$ Q . `T$- " (" . " ms)";
+:B CR"# primes in "#." - "xT$ Q . xT$- " (" . " ms)";
 :L 256$1[#+#B]\;
-:P%%`/0=(\=;)%<(\;)2+P;
+:P%%&~(\=;)%<(\;)2+P;
 
 10 L

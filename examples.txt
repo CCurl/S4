@@ -5,10 +5,10 @@ S4 examples:
     ; here is another comment
   
 ;   if (c) { print("Yes") } else { print("No") }
-    c@#("Yes")0=("No")
+    rC #("Yes")~("No")
 
  ; x = (a == b) ? c : d;
-    a@b@=#(c@$)0=(d@)x!;
+    rA rB=#(rC$)~(rD)sX;
 
 ; To make sure F < T
 ;   S4 code:             %%>($)
@@ -16,30 +16,30 @@ S4 examples:
 ;   C equivalent:        if (f > t) { int x = f; f = t; t = x; }
 
 ; To do something (in this case, execute LP) N times:
-    n@ 1[LP]
+    1 rN[LP]
 
-; Increment Register R
-    r@1+r!
+; Increment Register x, decrement register Y
+    iX dY
 
 ; To print numbers from F to T:
-;   S4 code:             f@ t@[i@." "]
+;   S4 code:             rF rT[rI." "]
 ;   Forth equivalent:    F @ T @ FOR I . NEXT
 ;   C equivalent:        for (int i = F; i <= T; i)) { printf("%d ", i); }
 
 ; One way to copy N bytes from A to B (n f t--)
-    N A B d! s! 1[s@ `@ d@ `! s@1+s! d@1+d!]\
+    N A B s2 s1 1[r1 c@ r2 c! i1 i2]
 
 ; One way to copy N CELLS from A to B (N A B--)
-    N A B d! s! 1[s@ @ d@ ! s@`iC+s! d@`iC+d!]\
+    N A B sD sS 1[rS @ rD ! rS`iC+sS rD`iC+sD]
 
 ; A simple benchmark for a 100 million FOR loop:
-    1000#* 100* `T$ 1[] `T$-." ms"
+    1000#* 100* xT$ 1[] xT$-." ms"
 
 ; A simple benchmark for a 100 million WHILE loop:
-    1000#* 100* `T$ {1-} `T$-." ms"
+    1000#* 100* xT$ {1-} xT$-." ms"
 
 ; Define a word to display the currently defined code:
-    :D `iAU`iH1-[i@`@#,';=(i@1+`@':=(13,10,))];
+    :CODE xIAU xIH 1-[rI c@ #,';=(rI 1+ c@': =(13,10,))];
 
 ; To exit S4:
-    `q
+    xq
