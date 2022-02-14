@@ -102,7 +102,7 @@ addr findFunc(CELL hash) {
 
 int regFuncNum(int isReg) {
     push(0);
-    byte m = (isReg) ? 26 : 2;
+    byte m = (isReg) ? 26 : 16;
     while (*pc) {
         t1 = BetweenI(*pc, 'A', 'Z') ? *(pc++) - 'A' : -1;
         if (t1 < 0) { break; }

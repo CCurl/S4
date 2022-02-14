@@ -39,7 +39,7 @@
   #define LSTACK_SZ       8
   #define USER_SZ        (256*1024)
   #define NUM_REGS       (26*26*26)
-  #define NUM_FUNCS      (100)
+  #define NUM_FUNCS      (500)
 #elif __BOARD__ == XIAO
   #define STK_SZ          8
   #define LSTACK_SZ       4
