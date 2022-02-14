@@ -1,4 +1,4 @@
-N"The Mandelbrot Set"
+; The mandelbrot set
 
 ; Registers:
 ; rA: temp 1
@@ -16,13 +16,14 @@ N"The Mandelbrot Set"
 ; O: output
 ; X: loop for X axis
 ; Y: loop for Y axis
-; M: main, loop for Y axis
+; MBROT: main, loop for Y axis
 
 0xBL
+:HEADER CR "The Mandelbrot Set";
 :Q iT rA#*rS/sC rB#*rS/sD rCrD+rK>(rJsM;) rArB*100/rY+sB rCrD-rX+sA iJ;
 :L 0sA 0sB 0sJ rSsM 1{\ Q rJ rM<};
 :O L rJ 40+#126>(\32),;
 :X 490_ sX 1 95[   O rX 8+sX];
 :Y 340_ sY 1 35[CR X rY20+sY];
-:M 0sT xT Y xT$- CR rT." iterations, " . " ms";
+:MBROT HEADER 0sT xT Y xT$- CR rT." iterations, " . " ms";
 200 sS 1000000 sK M

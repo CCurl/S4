@@ -3,15 +3,14 @@
 0xBL
 N"Count of primes"
 
-; c:              Register for count of primes
+; rC:             Register for count of primes
 ; P: (n l--f)     Is Prime Number routine
-; Q: (n1--n2)     Count of Primes routine
-; B: (n--)        Benchmark routine
-; L: (n--)        Loop for multiple benchmarks
+; CP: (n1--n2)    Count of Primes routine
+; BENCH: (n--)    Benchmark routine
+; CPLOOP: (n--)   Loop for multiple benchmarks
 
-:Q 4 sC 11[rI 3 P(iC)iI]rC;
-:B CR"# primes in "#." - "xT$ Q . xT$- " (" . " ms)";
-:L 256$1[#+#B]\;
+:CP 4 sC 11[rI 3 P(iC)iI]rC;
+:BENCH CR"# primes in "#." - "xT$ CP . xT$- " (" . " ms)";
+:CPLOOP 256$1[#+#BENCH]\;
 :P%%&~(\=;)%<(\;)2+P;
 
-10 L
