@@ -38,6 +38,11 @@ typedef struct {
 } LOOP_ENTRY_T;
 
 typedef struct {
+    UCELL hash;
+    addr val;
+} FUNC_T;
+
+typedef struct {
     ushort dsp, rsp, lsp, u1;
     CELL   dstack[STK_SZ + 1];
     addr   rstack[STK_SZ + 1];

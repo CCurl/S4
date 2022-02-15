@@ -4,15 +4,11 @@
 
 SYS_T sys;
 byte ir, isBye = 0, isError = 0;
-short locBase;
+short locBase, lastFunc;
 static char buf[64];
 addr pc, HERE;
-CELL t1, lastFunc;
-typedef struct {
-    long hash;
-    addr val;
-} RF_T;
-RF_T func[NUM_FUNCS]; 
+CELL seed, t1;
+FUNC_T func[NUM_FUNCS]; 
 CELL locs[STK_SZ * 10];
 
 void push(CELL v) { if (DSP < STK_SZ) { sys.dstack[++DSP] = v; } }
@@ -25,8 +21,7 @@ inline LOOP_ENTRY_T* lpush() { if (LSP < STK_SZ) { ++LSP; } return LTOS; }
 inline LOOP_ENTRY_T *ldrop() { if (0 < LSP) { --LSP; } return LTOS; }
 
 void vmInit() {
-    DSP = RSP = LSP = 0;
-    lastFunc = 0;
+    seed = DSP = RSP = LSP = lastFunc = 0;
     for (int i = 0; i < NUM_REGS; i++) { REG[i] = 0; }
     for (int i = 0; i < USER_SZ; i++) { USER[i] = 0; }
     HERE = USER;
@@ -85,14 +80,7 @@ void skipTo(byte to) {
     isError = 1;
 }
 
-void addFunc(CELL hash, addr val) {
-    if (NUM_FUNCS <= lastFunc) { isError = 1; printString("-oof-"); }
-    if (isError) { return; }
-    func[lastFunc].hash = hash;
-    func[lastFunc++].val = val;
-}
-
-addr findFunc(CELL hash) {
+addr findFunc(UCELL hash) {
     if (isError) { return 0; }
     for (int i = lastFunc - 1; 0 <= i; i--) {
         if (func[i].hash == hash) { return func[i].val; }
@@ -100,37 +88,44 @@ addr findFunc(CELL hash) {
     return 0;
 }
 
-int regFuncNum(int isReg) {
+void addFunc(UCELL hash) {
+    // DEBUG: report if the hash is already defined
+    if (findFunc(hash)) { printStringF("-redef (%lu)-", hash); }
+    if (NUM_FUNCS <= lastFunc) { isError = 1; printString("-oof-"); }
+    if (isError) { return; }
+    func[lastFunc].hash = hash;
+    func[lastFunc++].val = pc;
+}
+
+UCELL funcNum() {
+    UCELL hash = 0;
+    while (*pc && BetweenI(*pc, 'A', 'Z')) {
+        hash = (hash << 4) ^ *(pc++);
+    }
+    return hash;
+}
+
+int regNum() {
     push(0);
-    byte m = (isReg) ? 26 : 16;
     while (*pc) {
         t1 = BetweenI(*pc, 'A', 'Z') ? *(pc++) - 'A' : -1;
         if (t1 < 0) { break; }
-        TOS = (TOS * m) + t1;
+        TOS = (TOS * 26) + t1;
     }
-    if (isReg && (NUM_REGS <= TOS)) { pop(); isError = 1; printString("-reg#-"); }
+    if (NUM_REGS <= TOS) { pop(); isError = 1; printString("-reg#-"); }
     return isError ? 0 : 1;
 }
 
 void doRegOp(int op) {
-    if (BetweenI(*pc,'0','9')) {
-        CELL loc = locBase + (*(pc++) - '0');
-        switch (op) {
-        case 'd': locs[loc]--;           return;
-        case 'i': locs[loc]++;           return;
-        case 'r': push(locs[loc]);       return;
-        case 's': locs[loc] = pop();     return;
-        }
-        return;
-    }
-    if (regFuncNum(1)) {
-        CELL regNum = pop();
-        switch (op) {
-        case 'd': REG[regNum]--;         return;
-        case 'i': REG[regNum]++;         return;
-        case 'r': push(REG[regNum]);     return;
-        case 's': REG[regNum] = pop();   return;
-        }
+    CELL *pCell = 0;
+    if (BetweenI(*pc, '0', '9')) { pCell = &locs[locBase + (*(pc++) - '0')];} 
+    else { if (regNum()) { pCell = &REG[pop()]; } }
+    if (!pCell) { return; }
+    switch (op) {
+    case 'd': (*pCell)--;         return;
+    case 'i': (*pCell)++;         return;
+    case 'r': push(*pCell);       return;
+    case 's': *pCell = pop();     return;
     }
 }
 
@@ -156,15 +151,6 @@ void doNext() {
     }
 }
 
-void doRand(int modT) {
-    static CELL seed = 0;
-    if (seed == 0) { seed = getSeed(); }
-    seed ^= (seed << 13);
-    seed ^= (seed >> 17);
-    seed ^= (seed << 5);
-    TOS = (modT && TOS) ? (abs(seed) % TOS) : seed;
-}
-
 int isNot0(int exp) {
     if (exp == 0) { isError = 1; printString("-0div-"); }
     return isError == 0;
@@ -174,7 +160,11 @@ void doExt() {
     ir = *(pc++);
     switch (ir) {
     case 'A': TOS = (TOS < 0) ? -TOS : TOS;                return;
-    case 'R': doRand(1);                                   return;
+    case 'R': if (seed == 0) { seed = getSeed(); }         // RAND
+        seed ^= (seed << 13);
+        seed ^= (seed >> 17);
+        seed ^= (seed << 5);
+        TOS = (TOS) ? (abs(seed) % TOS) : seed;            return;
     case 'F': ir = *(pc++);
         if (ir == 'O') { fileOpen();  }
         if (ir == 'C') { fileClose(); }
@@ -243,10 +233,7 @@ addr run(addr start) {
                 TOS = (TOS * 10) + (ir - '0');
                 ir = *(++pc);
             } break;
-        case ':': if (regFuncNum(0)) {                                       // 58
-                addFunc(pop(), pc);
-                skipTo(';'); HERE = pc;
-            } break;
+        case ':': addFunc(funcNum()); skipTo(';'); HERE = pc;        break;  // 58
         case ';': pc = rpop(); locBase -= 10;                        break;  // 59
         case '<': t1 = pop(); TOS = TOS < t1 ? 1 : 0;                break;  // 60
         case '=': t1 = pop(); TOS = TOS == t1 ? 1 : 0;               break;  // 61
@@ -259,13 +246,11 @@ addr run(addr start) {
         case 'P': case 'Q': case 'R': case 'S': case 'T':
         case 'U': case 'V': case 'W': case 'X': case 'Y': 
         case 'Z': --pc;
-            if (regFuncNum(0)) {
-                t1 = (CELL)findFunc(pop());
+                t1 = (CELL)findFunc(funcNum());
                 if (t1) {
                     if (*pc != ';') { locBase += 10; rpush(pc); }
                     pc = (addr)t1;
-                }
-            } break;
+                } break;
         case '[': doFor();                                           break;  // 91
         case '\\': DROP1;                                            break;  // 92 (DROP)
         case ']': doNext();                                          break;  // 93
@@ -274,12 +259,12 @@ addr run(addr start) {
         case '`': push(TOS);                                                 // 96
             while (*pc && (*pc != ir)) { *(AOS++) = *(pc++); }
             *(AOS++) = 0; ++pc;                                      break;
-        case 'b': ir = *(pc++);                                      // BIT ops
+        case 'b': ir = *(pc++);                                              // BIT ops
             if (ir == '&') { N &= TOS; DROP1; }                              // AND
             if (ir == '|') { N |= TOS; DROP1; }                              // OR
             if (ir == '^') { N ^= TOS; DROP1; }                              // XOR
             if (ir == '~') { TOS = ~TOS; }                           break;  // NOT
-        case 'c': ir = *(pc++);                                      // c! / c@
+        case 'c': ir = *(pc++);                                              // c! / c@
             if (ir == '!') { *AOS = (byte)N; DROP2; }
             if (ir == '@') { TOS = *AOS; }                           break;
         case 'd': case 'i': case 'r': case 's': doRegOp(ir);         break;

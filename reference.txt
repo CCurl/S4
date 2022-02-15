@@ -114,4 +114,4 @@ xIH   (--n)       INFO: n: value of HERE variable
 xIR   (--n)       INFO: n: number of registers
 xIU   (--n)       INFO: n: number of bytes in the USER area
 xSR   (--)        S4 system reset
-xq    (--)        PC: Exit S4
+xQ    (--)        PC: Exit S4

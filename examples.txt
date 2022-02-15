@@ -41,5 +41,5 @@ S4 examples:
 ; Define a word to display the currently defined code:
     :CODE xIAU xIH 1-[rI c@ #,';=(rI 1+ c@': =(13,10,))];
 
-; To exit S4:
-    xq
+; Exit S4:
+    xQ
