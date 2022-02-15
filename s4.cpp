@@ -98,9 +98,9 @@ void addFunc(UCELL hash) {
 }
 
 UCELL funcNum() {
-    UCELL hash = 0;
+    UCELL hash = 5381;
     while (*pc && BetweenI(*pc, 'A', 'Z')) {
-        hash = (hash << 4) ^ *(pc++);
+        hash = ((hash << 5) + hash) + *(pc++);
     }
     return hash;
 }
