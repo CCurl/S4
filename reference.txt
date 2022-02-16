@@ -51,8 +51,9 @@ dABC  (--)        decrement register ABC
 :     (--)        Define word. Copy chars to (HERE++) until closing ';'.
 XXX   (--)        Execute word XXX
 ;     (--)        Return: PC = rpop()
-        NOTE: returning while inside of a loop is not supported; behavior will be undefined.
-        NOTE: outside of ':<...>;', ';' can be used to comment out the rest of the line
+        NOTES: 1) Returning while inside of a loop is not supported; break out of the loop.
+               2) Use '|' to break out of a FOR or WHILE loop.
+               3) outside of ':<...>;', ';' can be used to comment out the rest of the line
 
 
 *** INPUT/OUTPUT ***
@@ -74,12 +75,13 @@ xZ     (a--)      Output the NULL terminated string starting at address a.
 >     (a b--f)    f: (a > b) ? 1 : 0;
 ~     (n -- f)    f: (a = 0) ? 1 : 0; (Logical NOT)
 [     (F T--)     FOR: start a For/Next loop. if (T < F), swap T and F
+rI    (--n)       n: the index of the current FOR loop
 ]     (--)        NEXT: increment index (I) and restart loop if (rI <= T)
                       NOTE: A FOR loop always runs at least one iteration.
                             It can be put it inside a '()' to keep it from running.
 {     (f--f)      BEGIN: if (f == 0) skip to matching '}'
 }     (f--f?)     WHILE: if (f != 0) jump to matching '{', else drop f and continue
-rI    (--n)       n: the index of the current FOR loop
+|     (--)        BREAK: Break out of current WHILR of FOR loop
 (     (f--)       IF: if (f != 0), continue into '()', else skip to matching ')'
 
 

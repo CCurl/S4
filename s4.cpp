@@ -130,15 +130,32 @@ void doRegOp(int op) {
     }
 }
 
+void loopBreak() {
+    if (LSP == 0) { return; }
+    LOOP_ENTRY_T* x = LTOS;
+    int isFor = (x->from <= x->to) ? 1 : 0;
+    if (isFor) { INDEX = ldrop()->from; }
+    else { ldrop(); }
+    if (x->end) { pc = x->end; }
+    else { skipTo(isFor ? ']' : '}'); }
+}
+
+void doWhile(){
+    lpush()->start = pc;
+    LTOS->end = 0;
+    LTOS->from = 1;
+    LTOS->to = 0;
+}
+
 void doFor() {
     CELL f = (N < TOS) ? N : TOS;
     CELL t = (N < TOS) ? TOS : N;
     DROP2;
     LOOP_ENTRY_T *x = lpush();
     x->start = pc;
+    x->end = 0;
     INDEX = x->from = f;
     x->to = t;
-    x->end = 0;
 }
 
 void doNext() {
@@ -285,9 +302,9 @@ addr run(addr start) {
         case 'p': case 'q': case 't': case 'u': case 'v': case 'w':  break;
         case 'x': doExt();                                           break;
         case 'y':  case 'z':                                         break;
-        case '{': if (TOS) { lpush()->start = pc; }                          // 123
+        case '{': if (TOS) { doWhile(); }                                    // 123
                 else { DROP1;  skipTo('}'); }                        break;
-        case '|': /* FREE */                                         break;  // 124
+        case '|': loopBreak();                                       break;  // 124
         case '}': if (!TOS) { ldrop(); DROP1; }                              // 125
                 else { LTOS->end = pc; pc = LTOS->start; }           break;
         case '~': TOS = (TOS) ? 0 : 1;                               break;  // 126
