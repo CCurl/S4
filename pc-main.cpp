@@ -49,23 +49,11 @@ FILE* fpop() { return (fdsp) ? fstack[fdsp--] : 0; }
 void printChar(const char c) { printf("%c", c); }
 void printString(const char* str) { printf("%s", str); }
 
-addr doBlock(addr pc) {
-    t1 = *(pc++);
-    switch (t1) {
-    case 'L': if (input_fp) { fpush(input_fp); }
-        sprintf(buf, "block-%03ld.s4", (int)pop());
-        input_fp = fopen(buf, "rb");
-        if (!input_fp) { input_fp = fpop(); }
-        break;
-    }
-    return pc;
-}
 
 CELL getSeed() { return millis(); }
 
 addr doCustom(byte ir, addr pc) {
     switch (ir) {
-    case 'B': pc = doBlock(pc);        break;
     case 'N': push(micros());          break;
     case 'T': push(millis());          break;
     case 'W': delay(pop());            break;

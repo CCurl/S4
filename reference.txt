@@ -84,7 +84,10 @@ rI    (--n)       n: the index of the current FOR loop
 
 
 *** OTHER ***
-xBL   (n--)       File: (PC): Load code from file (block-nnn.src). This can be nested.
+xBO   (n m--fh)   File: Block Open (block-nnn.s4, m: 0=>read, 1=write)
+xBR   (n a sz--)  File: Block Read (block-nnn.s4, max sz bytee).
+xBW   (n a sz--)  File: Block Write (block-nnn.s4, sz bytes).
+xBL   (n--)       File: Load code from file (block-nnn.src). This can be nested.
 xFL   (--)        File: Load code from ./Code.S4.
 xFS   (--)        File: Save code  to  ./Code.S4.
 xFO   (n m--h)    File: Open   - n: file name, m: mode, h: file handle (0 means not opened)

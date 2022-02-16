@@ -77,6 +77,10 @@ extern void printWifi(const char* str);
 extern void feedWatchDog();
 
 // File support
+extern void blockOpen();
+extern void blockLoad();
+extern void blockRead();
+extern void blockWrite();
 extern void fileInit();
 extern void fileOpen();
 extern void fileClose();

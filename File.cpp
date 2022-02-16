@@ -78,6 +78,52 @@ void fileSave() {
         printString("-saveFail-");
     }
 }
+
+// (n m--fh)
+void blockOpen() {
+    CELL m = pop(), n = TOS;
+    char fn[24];
+    sprintf(fn, "block-%03d.s4", (int)n);
+    TOS = (CELL)fopen(fn, m ? "wb" : "rb");
+}
+
+// (n a sz--f)
+void blockRead() {
+    CELL sz = pop(), a = pop();
+    push(0); blockOpen();
+    FILE* fh = (FILE *)pop();
+    push(0);
+    if (fh) {
+        TOS = fread((byte *)a, 1, sz, fh);
+        fclose(fh);
+    }
+}
+
+// (n a sz--f)
+void blockWrite() {
+    CELL sz = pop(), a = pop();
+    push(1); blockOpen();
+    FILE* fh = (FILE *)pop();
+    push(0);
+    if (fh) {
+        if (sz == 0) { sz = strlen((char*)a); }
+        fwrite((byte *)a, 1, sz, fh);
+        fclose(fh);
+        TOS = 1;
+    }
+}
+
+extern FILE* input_fp;
+extern FILE* fpop();
+extern void fpush(FILE*);
+void blockLoad() {
+    char fn[24];
+    if (input_fp) { fpush(input_fp); }
+    sprintf(fn, "block-%03d.s4", (int)pop());
+    input_fp = fopen(fn, "rb");
+    if (!input_fp) { input_fp = fpop(); }
+}
+
 #endif // PC
 
 #ifdef __LITTLEFS__

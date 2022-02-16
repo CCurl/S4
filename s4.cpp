@@ -24,6 +24,7 @@ void vmInit() {
     seed = DSP = RSP = LSP = lastFunc = 0;
     for (int i = 0; i < NUM_REGS; i++) { REG[i] = 0; }
     for (int i = 0; i < USER_SZ; i++) { USER[i] = 0; }
+    for (int i = 0; i < NUM_FUNCS; i++) { func[i].hash = 0; }
     HERE = USER;
     REG[21] = (CELL) (USER + (USER_SZ / 2)); // REG v
 }
@@ -165,14 +166,20 @@ void doExt() {
         seed ^= (seed >> 17);
         seed ^= (seed << 5);
         TOS = (TOS) ? (abs(seed) % TOS) : seed;            return;
+    case 'B': ir = *(pc++);
+        if (ir == 'O') { blockOpen(); }
+        if (ir == 'R') { blockRead(); }
+        if (ir == 'W') { blockWrite(); }
+        if (ir == 'L') { blockLoad(); }
+        return;
     case 'F': ir = *(pc++);
-        if (ir == 'O') { fileOpen();  }
+        if (ir == 'O') { fileOpen(); }
         if (ir == 'C') { fileClose(); }
         if (ir == 'D') { fileDelete(); }
-        if (ir == 'R') { fileRead();  }
+        if (ir == 'R') { fileRead(); }
         if (ir == 'W') { fileWrite(); }
-        if (ir == 'L') { fileLoad();  }
-        if (ir == 'S') { fileSave();  }
+        if (ir == 'L') { fileLoad(); }
+        if (ir == 'S') { fileSave(); }
         return;
     case 'J': if (TOS) { pc = AOS; } DROP1;                return;
     case 'K': ir = *(pc++);
