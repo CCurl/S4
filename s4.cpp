@@ -267,8 +267,13 @@ addr run(addr start) {
         case 'c': ir = *(pc++);                                              // c! / c@
             if (ir == '!') { *AOS = (byte)N; DROP2; }
             if (ir == '@') { TOS = *AOS; }                           break;
+        case 'h': push(0); t1 = 1; while (0 <= t1) {
+                t1 = BetweenI(*pc, '0', '9') ? (*pc - '0') : -1;
+                t1 = BetweenI(*pc, 'A', 'F') ? (*pc - 'A') + 10 : t1;
+                if (0 <= t1) { TOS = (TOS * 0x10) + t1; ++pc; }
+            } break;
         case 'd': case 'i': case 'r': case 's': doRegOp(ir);         break;
-        case 'a': case 'e': case 'f': case 'g': case 'h': case 'j':  break;  // 97-122
+        case 'a': case 'e': case 'f': case 'g': case 'j':            break;  // 97-122
         case 'k': case 'l': case 'm': case 'n': case 'o':            break;
         case 'p': case 'q': case 't': case 'u': case 'v': case 'w':  break;
         case 'x': doExt();                                           break;

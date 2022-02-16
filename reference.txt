@@ -62,6 +62,7 @@ XXX   (--)        Execute word XXX
 0..9   (--n)      Scan DECIMAL number until non digit
                      to specify multiple values, separate them by space (4711 3333)
                      to enter a negative number, use "negate" (eg - 490_)
+hNNN   (--h)      h: NNN as a HEX number (0-9, A-F, UPPERCASE only)
 'x     (--n)      n: the ASCII value of x
 `XXX`  (a--a b)   Copies XXX to address a, b is the next address after the NULL terminator.
 xZ     (a--)      Output the NULL terminated string starting at address a.
