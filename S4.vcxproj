@@ -154,10 +154,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore" />
-    <None Include="block-000.s4" />
-    <None Include="block-002.s4" />
-    <None Include="block-777.s4" />
-    <None Include="block-888.s4" />
     <None Include="ESP32.h" />
     <None Include="ESP8266.h" />
     <None Include="LICENSE" />

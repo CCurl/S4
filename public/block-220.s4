@@ -1,0 +1,16 @@
+; Block.777
+
+0xBL
+N"Count of primes"
+
+; rC:             Register for count of primes
+; P: (n l--f)     Is Prime Number routine
+; CP: (n1--n2)    Count of Primes routine
+; BENCH: (n--)    Benchmark routine
+; CPLOOP: (n--)   Loop for multiple benchmarks
+
+:CP 4 sC 11[rI 3 P(iC)iI]rC;
+:BENCH CR"# primes in "#." - "xT$ CP . xT$- " (" . " ms)";
+:CPLOOP 256$1[#+#BENCH]\;
+:P%%&~(\=;)%<(\;)2+P;
+10 CPLOOP

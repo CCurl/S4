@@ -1,0 +1,10 @@
+; HEX output
+:HX #9>(7+)'0+,;
+:HD 16&$HX HX;
+:HW 256&$ HD HD;
+:HL 256#*&$ HW HW;
+
+; Binary output
+:BD 255b& 128s1 1 8[#r1 b& ~~. r1 2/ s1]\;
+:BW 256&$ BD BD;
+:BL 256#*&$ BW BW;

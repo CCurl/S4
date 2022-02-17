@@ -1,0 +1,39 @@
+N"Decode the encoded image"N
+
+1xBL
+
+:IO Open, close, read input;
+:IO _rb_ \ xFO ih!;
+:IC ih@ (ih@ xFC) 0 ih!;
+:IR ih@xFR 0=(CF);
+
+:OO Open, close, write output;
+:OO _wb_ \ xFO oh!;
+:OC oh@ (oh@ xFC) 0 oh!;
+:OW oh@ (oh@ xFW \;),;
+
+:SH (--): Skip BMP Header;
+:SH 1 54[IR\];
+
+:PP (A--) increment CELL at A;
+:PP #@1+$!;
+
+:LS (A--) left-shift CELL at A;
+:LS #@#+$!;
+
+:OB (--): Output the Byte;
+:OB tb@ 0=(IC;) tb@ OW 0 tb! nb PP;
+
+:PF (--): Process the File;
+:PF ih@{\ IR 1 & (tb@ bt@ | tb!) bt LS bt@ 127>(OB 1 bt!) ih@} OB;
+
+:DW (--): Do the Work;
+:DW 0 tb! 0 bn! 1 bt! SH PF;
+
+:DF (--) Decode image file;
+:DF 0 nb! ih@(DW IC OC);
+
+xIAU 5000+ v!
+v@ _t-out.bmp_  IO
+v@ _t-out.txt_  OO
+DF N N "File size: " nb@ .

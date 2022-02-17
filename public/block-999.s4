@@ -1,0 +1,18 @@
+CR "Block  Description"
+CR "-----  ---------------------------------"
+CR " 001    Some general functions"
+CR " 010    Screen stuff"
+CR " 200    The Game of Life"
+CR " 201    Encode a TEXT file into a BMP"
+CR " 202    Compare the encoded BMP against the orig"
+CR " 203    Decode the BMP"
+CR " 210    The Mandelbrot Set"
+CR " 220    Count of Primes Benchmark"
+CR " 300    Block Editor"
+CR " 400    Genetic evolution"
+CR " 6502   A 6502 emulator"
+CR " 999    This file"
+CR " 1111   A local sandbox"
+CR 
+CR "Reference: https://github.com/CCurl/S4/blob/main/reference.txt"
+CR 

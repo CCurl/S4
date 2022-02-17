@@ -1,0 +1,51 @@
+N"File Steganographer"N
+
+1xBL
+
+:OS Source/hidden file operations;
+:OS _rb_ \ xFO sh!;        0(Open)
+:CS sh@ (sh@ xFC 0 sh!);   0(Close)
+:RS sh@ xFR;               0(Read)
+
+:IO Input file operations;
+:OI _rb_ \ xFO ih!;        0(Open)
+:CI ih@ (ih@ xFC 0 ih!);   0(Close)
+:RI ih@ xFR;               0(Read)
+
+:OO Output file operations;
+:OO _wb_ \ xFO oh!;        0(Open)
+:CO oh@ (oh@ xFC 0 oh!);   0(Close)
+:WO oh@ xFW \;             0(Write)
+
+:OA (--f): Opened all?;
+:OA sh@ 0=("-sh-"0;) ih@ 0=("-ih-"0;) oh@ 0=("-oh-"0;) 1;
+
+:CA (--): Close All;
+:CA CS CI CO;
+
+:NS (--):  Next Source Byte, sb is the Source Byte;
+:NS 0 sb! sh@(RS 0=(CS) sb!);
+
+:NB (--1|0): Next Bit (From the Source);
+:NB bn@ 1+ # bn! 6>(0 bn! NS) sb@ 2 x/ $ sb!;
+
+:PP (A--): Increment CELL at A;
+:PP #@1+$!;
+
+:CH (--): Copy Header (54 bytes);
+:CH 1 54[RI (WO) sz PP];
+
+:PB (b--): Process One Byte;
+:PB 254 & NB | WO sz PP ;
+
+:DW (--): Do the work;
+:DW 0 sz! CH 8 bn! 1{\RI(PB 1)};
+
+:EF (--): Encode file;
+:EF "Encoding ... " DW "done. Output is " sz@ . " bytes";
+
+xIAU 5000+ v!
+v@ _t-in.txt_       OS
+v@ _t-in.bmp_       OI
+v@ _t-out.bmp_      OO
+OA (EF) CA
