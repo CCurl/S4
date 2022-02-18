@@ -168,7 +168,7 @@ void do_autoRun() {
     const char *cp = "AUTORUN";
     addr a = (addr)cp;
     addr fa = findFunc(funcNum(a));
-    if (a) { run(a); }
+    if (fa) { run(fa); }
 }
 
 void loop() {
