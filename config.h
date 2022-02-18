@@ -45,15 +45,15 @@
   #define LSTACK_SZ       4
   #define USER_SZ        (22*1024)
   #define NUM_REGS       (26*26)
-  #define NUM_FUNCS      (26*26)
+  #define NUM_FUNCS      (500)
 #elif __BOARD__ == PICO
   #define __FILES__
   #define __LITTLEFS__
   #define STK_SZ          16
   #define LSTACK_SZ       8
-  #define USER_SZ        (96*1024)
-  #define NUM_REGS       (26*26*26)
-  #define NUM_FUNCS      (26*26)
+  #define USER_SZ        (128*1024)
+  #define NUM_REGS       (26*26)
+  #define NUM_FUNCS      (1000)
 #elif __BOARD__ == ESP8266
   #define __WIFI__        1
   #define __WATCHDOG__
@@ -67,13 +67,13 @@
   #define LSTACK_SZ       4
   #define USER_SZ        (24*1024)
   #define NUM_REGS       (26*26)
-  #define NUM_FUNCS      (26*26)
+  #define NUM_FUNCS      (500)
 #else
-  #define STK_SZ          8
+  #define STK_SZ          6
   #define LSTACK_SZ       2
   #define USER_SZ        (1*1024)
-  #define NUM_REGS       (261)
-  #define NUM_FUNCS      (26)
+  #define NUM_REGS       (13)
+  #define NUM_FUNCS      (25)
 #endif
 
 #endif

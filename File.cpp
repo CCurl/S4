@@ -1,8 +1,8 @@
 #include "s4.h"
 
 #ifndef __FILES__
-void noFile() { printString("-noFile-"); }
-void fileInit() { noFile(); }
+void noFile() { ptinrString("-noFile-"); }
+void fileInit() { }
 void fileOpen() { noFile(); }
 void fileClose() { noFile(); }
 void fileDelete() { noFile(); }
@@ -10,6 +10,10 @@ void fileRead() { noFile(); }
 void fileWrite() { noFile(); }
 void fileLoad() { noFile(); }
 void fileSave() { noFile(); }
+void blockOpen() { noFile(); }
+void blockRead() { noFile(); }
+void blockWrite() { noFile(); }
+void blockLoad() { noFile(); }
 #else
 #if __BOARD__ == PC
 void fileInit() {}
@@ -130,13 +134,13 @@ void blockLoad() {
 #include "LittleFS.h"
 
 #define MAX_FILES 10
-File *files[MAX_FILES];
+File files[MAX_FILES+1];
 int numFiles = 0;
 File f;
 
 int freeFile() {
   for (int i = 1; i <= MAX_FILES; i++) {
-    if (files[i-1] == NULL) { return i; }
+    if (!files[i]) { return i; }
   }
   isError = 1;
   printString("-fileFull-");
@@ -144,7 +148,7 @@ int freeFile() {
 }
 
 void fileInit() {
-    for (int i = 0; i < MAX_FILES; i++) { files[i] = NULL; }
+    // for (int i = 0; i < MAX_FILES; i++) { files[i] = File(); }
     LittleFS.begin();
     FSInfo fs_info;
     LittleFS.info(fs_info);
@@ -158,7 +162,7 @@ void fileOpen() {
     int i = freeFile();
     if (i) {
         f = LittleFS.open(fn, md);
-        if (f) { files[i-1] = &f; } 
+        if (f) { files[i] = f; } 
         else { 
             i = 0;
             isError = 1; 
@@ -170,9 +174,8 @@ void fileOpen() {
 
 void fileClose() {
     int fn = (int)pop();
-    if ((0 < fn) && (fn <= MAX_FILES) && (files[fn-1] != NULL)) {
-        files[fn-1]->close();
-        files[fn-1] = NULL;
+    if (BetweenI(fn, 1, MAX_FILES) && (files[fn])) {
+        files[fn].close();
     }
 }
 
@@ -185,9 +188,9 @@ void fileRead() {
     int fn = (int)pop();
     push(0);
     push(0);
-    if ((0 < fn) && (fn <= MAX_FILES) && (files[fn-1] != NULL)) {
+    if (BetweenI(fn, 1, MAX_FILES) && (files[fn])) {
         byte c;
-        TOS = files[fn-1]->read(&c, 1);
+        TOS = files[fn].read(&c, 1);
         N = (CELL)c;
     }
 }
@@ -196,8 +199,8 @@ void fileWrite() {
     int fn = (int)pop();
     byte c = (byte)TOS;
     TOS = 0;
-    if ((0 < fn) && (fn <= MAX_FILES) && (files[fn - 1] != NULL)) {
-        TOS = files[fn-1]->write(&c, 1);
+    if (BetweenI(fn, 1, MAX_FILES) && (files[fn])) {
+        TOS = files[fn].write(&c, 1);
     }
 }
 
@@ -230,5 +233,53 @@ void fileSave() {
     }
 }
 
+// (n--)
+char *blockFN() {
+    static char fn[24];
+    CELL n = pop();
+    sprintf(fn, "/block-%03d.s4", (int)n);
+    return fn;
+}
+
+// (n m--f)
+void blockOpen() {
+    CELL m = pop();
+    int fn = freeFile();
+    if (fn == 0) { return; }
+    File f = LittleFS.open(blockFN(), m ? "w" : "r");
+    if (f) {
+        files[fn] = f;
+    }
+}
+
+// (n a sz--f)
+void blockRead() {
+    CELL sz = pop(), a = pop();
+    File f = LittleFS.open(blockFN(), "r");
+    push(0);
+    if (f) {
+        TOS = f.read((addr)a, sz);
+        f.close();
+    }
+}
+
+// (n--)
+void blockLoad() {
+    printString("-noBL-");
+    pop();
+}
+
+// (n a sz--f)
+void blockWrite() {
+    CELL sz = pop(), a = pop();
+    File f = LittleFS.open(blockFN(), "w");
+    push(0);
+    if (f) {
+        if (sz == 0) { sz = strlen((char*)a); }
+        f.write((addr)a, sz);
+        f.close();
+        TOS = 1;
+    }
+}
 #endif // __LITTLEFS__
 #endif // __FILES__

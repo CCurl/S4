@@ -98,10 +98,10 @@ void addFunc(UCELL hash) {
     func[lastFunc++].val = pc;
 }
 
-UCELL funcNum() {
+UCELL funcNum(addr &a) {
     UCELL hash = 5381;
-    while (*pc && BetweenI(*pc, 'A', 'Z')) {
-        hash = ((hash << 5) + hash) + *(pc++);
+    while (*a && BetweenI(*a, 'A', 'Z')) {
+        hash = ((hash << 5) + hash) + *(a++);
     }
     return hash;
 }
@@ -257,7 +257,7 @@ addr run(addr start) {
                 TOS = (TOS * 10) + (ir - '0');
                 ir = *(++pc);
             } break;
-        case ':': addFunc(funcNum()); skipTo(';'); HERE = pc;        break;  // 58
+        case ':': addFunc(funcNum(pc)); skipTo(';'); HERE = pc;        break;  // 58
         case ';': pc = rpop(); locBase -= 10;                        break;  // 59
         case '<': t1 = pop(); TOS = TOS < t1 ? 1 : 0;                break;  // 60
         case '=': t1 = pop(); TOS = TOS == t1 ? 1 : 0;               break;  // 61
@@ -270,7 +270,7 @@ addr run(addr start) {
         case 'P': case 'Q': case 'R': case 'S': case 'T':
         case 'U': case 'V': case 'W': case 'X': case 'Y': 
         case 'Z': --pc;
-                t1 = (CELL)findFunc(funcNum());
+                t1 = (CELL)findFunc(funcNum(pc));
                 if (t1) {
                     if (*pc != ';') { locBase += 10; rpush(pc); }
                     pc = (addr)t1;
@@ -297,9 +297,15 @@ addr run(addr start) {
                 if (0 <= t1) { TOS = (TOS * 0x10) + t1; ++pc; }
             } break;
         case 'd': case 'i': case 'r': case 's': doRegOp(ir);         break;
+        case 'p': ir = *(pc++);
+#ifndef PC
+            if (ir == 'H') { digitalWrite(TOS, 1); }
+            if (ir == 'L') { digitalWrite(TOS, 0); }
+            break;
+#endif
         case 'a': case 'e': case 'f': case 'g': case 'j':            break;  // 97-122
         case 'k': case 'l': case 'm': case 'n': case 'o':            break;
-        case 'p': case 'q': case 't': case 'u': case 'v': case 'w':  break;
+        case 'q': case 't': case 'u': case 'v': case 'w':  break;
         case 'x': doExt();                                           break;
         case 'y':  case 'z':                                         break;
         case '{': if (TOS) { doWhile(); }                                    // 123

@@ -80,10 +80,10 @@ FILE *input_pop() { return NULL; }
 // ********************************************
 
 #define SOURCE_STARTUP \
-    X(1000, ":C N`iAU`iAH@1-[i@`@#,';=(i@1+`@':=(N))];") \
-    X(1001, ":N 13,10,;:U `iH`iAU-.;") \
-    X(1002, ":R 0`iR1-[i@`iC*`iAR+@#(Ni@26`/$26`/$'a+,'a+,'a+,\": \".1)\\];") \
-    X(2000, "N\"This system has \"`iR.\" registers, \"`iF.\" functions, and \"`iU.\" bytes user memory.\"N")
+    X(1000, ":CODE CR xIAU xIH 1-[rI c@ #,';=(rI 1+ c@':=(CR))];") \
+    X(1001, ":CR 13,10,;:U xIHxIAU-;") \
+    X(1002, ":REGS 0 xIR 1-[rI xIC* xIAR+@ #s1(CR\"r\" rI 26&$ 26&$ 'A+,'A+,'A+,\": \"r1.)];") \
+    X(2000, "CR\"This system has \"xIR.\" registers, \"xIF.\" functions, and \"xIU.\" bytes user memory.\"CR")
 
 #if __BOARD__ == ESP8266
 #define X(num, val) const char str ## num[] = val;
@@ -100,12 +100,11 @@ const char *bootStrap[] = {
 };
 
 void loadBaseSystem() {
-#ifdef __LITTLEFS__
-    loadCode("`FL");
-#else
     for (int i = 0; bootStrap[i] != NULL; i++) {
         loadCode(bootStrap[i]);
     }
+#ifdef __LITTLEFS__
+    loadCode("xFL");
 #endif
 }
 
@@ -166,7 +165,9 @@ void setup() {
 }
 
 void do_autoRun() {
-    addr a = FUNC[NUM_FUNCS-1];
+    const char *cp = "AUTORUN";
+    addr a = (addr)cp;
+    addr fa = findFunc(funcNum(a));
     if (a) { run(a); }
 }
 

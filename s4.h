@@ -61,6 +61,8 @@ extern CELL pop();
 extern void push(CELL);
 extern addr run(addr);
 extern addr doCustom(byte, addr);
+extern addr findFunc(UCELL);
+extern UCELL funcNum(addr&);
 extern void printChar(const char);
 extern void printString(const char*);
 extern void printStringF(const char*, ...);
