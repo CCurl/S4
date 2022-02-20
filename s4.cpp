@@ -305,7 +305,11 @@ addr run(addr start) {
 #endif
         case 'a': case 'e': case 'f': case 'g': case 'j':            break;  // 97-122
         case 'k': case 'l': case 'm': case 'n': case 'o':            break;
-        case 'q': case 't': case 'u': case 'v': case 'w':  break;
+        case 'q': case 't': case 'u': case 'v': break;
+        case 'w': ir = *(pc++);                                              // w! / w@
+            if (ir == '!') { *AOS = (byte)N; *(AOS+1) = (byte)(N/256); DROP2;}
+            if (ir == '@') { TOS = (*(AOS+1)*256) | *(AOS); }
+            break;
         case 'x': doExt();                                           break;
         case 'y':  case 'z':                                         break;
         case '{': if (TOS) { doWhile(); }                                    // 123
