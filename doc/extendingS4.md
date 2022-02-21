@@ -65,5 +65,5 @@ The last thing to do is \#define \_\_GAMEPAD\_\_. This is best done in "config.h
 
 Now in S4, you can do things like: 
 
-3 xGP xGW  - Press button 3
-3 xGR xGW  - Release button 3
+3 xGP xGW  0(Press button 3)
+3 xGR xGW  0(Release button 3)
