@@ -1,12 +1,10 @@
 # Adding new functionality to S4:
 
-In run(), in the "switch" statement, there are cases available for direct support of new instructions, mostly unused lowercase characters. New functionality can be put there.
+In run(start) (S4.cpp), in the "switch" statement, there are cases available for direct support of new instructions, mostly unused lowercase characters. New functionality can be put there by comandeering one of the /\* FREE \*/ cases.
 
-S4 also has "extended" instructions. These are triggered by the 'x' case. All extended instructions begin with 'x'. For extended instructions, function doExt() in called. It behaves in a similar way to run(), by setting 'ir = \*(pc++)' and a switch statement. Ihe "default:" case calls an external function, doCustom(ir, pc). That is where system-specific functionality should be put; (eg - pin manipulation for Arduino Boards). Function doCustom() is given the pc and ir, and needs to return the address where pc should continue.
+S4 also has "extended" instructions. These are triggered by the 'x' case. All extended instructions begin with 'x'. For extended instructions, function doExt() is called. It behaves in a similar way to run(), by setting 'ir = \*(pc++)' and a switch statement. The "default:" case calls an external function, doCustom(ir, pc). That is where I usually put system-specific functionality; (eg - pin manipulation for Arduino Boards). Function doCustom(ir, pc) needs to return the address where pc should continue.
 
-As an example, I will add Gamepad/Joystick simulation to S4 as extended instructions.
-
-I am using HID-Project from NicoHood (https://github.com/NicoHood/HID).
+As an example, I will add Gamepad/Joystick simulation to S4 as extended instructions. This example uses the HID-Project from NicoHood (https://github.com/NicoHood/HID).
 
 Import the library into Arduino using "Import Library".
 
@@ -14,9 +12,13 @@ In the doCustom(ir, pc) function (S4.ino), add a new case for ir. In this case, 
 
 ```
 addr doCustom(byte ir, addr pc) {
+    ir = *(pc++);
+    switch (ir) {
     ...
     case 'G': pc = doGamePad(ir, pc);        break;
     ...
+    }
+    return pc;
 }
 ```
 
@@ -42,7 +44,6 @@ addr doGamePad(byte ir, addr pc) {
         printString("-notGamepad-");
     }
     return pc;
-  
 }
 \#else
 addr doGamePad(addr pc) { printString("-noGamepad-"); return pc; }
