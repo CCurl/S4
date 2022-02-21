@@ -4,10 +4,12 @@ The main interpreter loop in S4 is the run(addr start) function in the S4.cpp fi
 
 Variables:
 
+```
 pc      The 'program counter'; it points to the NEXT character in the instruction stream.
 ir      The 'instruction register'; it holds the CURRENT instruction/opcode.
 TOS     The 'top of stack'. This is very heavily used.
 N       The 'next on stack'.
+```
 
 # Program flow:
 
