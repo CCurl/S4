@@ -1,16 +1,16 @@
-# S4 - A small and fast stack machine VM/CPU
+# S4 - A minimal and extendable stack machine VM/CPU
 
-S4 is an simple, fast, minimal, and interactive environment where the source code IS the machine code. There is no compilation in S4.
+S4 is a minimal, extendable, and interactive environment where the source code IS the machine code. There is no compilation in S4.
 
 # What is S4?
 
-I think of S4 as a stack-based, RPN, Forth-like, virtual CPU/VM that can have as many registers, functions, and amount of user ram that the system supports.
+I think of S4 as a stack-based, RPN, Forth-like, virtual CPU/VM that can have as many registers, functions, and amount of user ram as the system supports.
 
 A register is identified by up to 3 lower-case characters, so there is a maximum or (26x26x26) = 17576 registers available. I tend to think of registers as built-in variables.
 
-A function is identified by any number of UPPER-case characters. The number of functions is set in the config.h file.
+A function is identified by any number of UPPER-case characters. The maximum number of functions is set in the config.h file.
 
-The number of registers, function vectors, and user memory can be scaled as desired to fit into a system of any size. For example, on an ESP-8266 board, a typical configuration might be 676 (26*26) registers, 5000 functions, and 24K of user ram. In such a system, register names would be in the range of [aa.zz]. For a RPI Pico, I use 576 registers, 1000 functions, and 128K USER RAM. On a Arduino Leonardo, you might configure the system to have 26 registers and functions, and 1K USER. On a Windows or Linux system, I use 17576 registers (26*26*26), 1000 functions, and 128K USER.
+The number of registers, function vectors, and user memory can be scaled as desired to fit into a system of any size. For example, on an ESP-8266 board, a typical configuration might be 576 (26*26) registers, 5000 functions, and 24K of user ram. In such a system, register names would be in the range of [aa.zz]. For a RPI Pico, I use 576 registers, 1000 functions, and 128K USER RAM. On a Arduino Leonardo, you might configure the system to have 26 registers and functions, and 1K USER. On a Windows or Linux system, I use 17576 registers (26*26*26), 5000 functions, and 1MB USER.
 
 - Example 1: "Hello World!"            - the typical "hello world" program.
 - Example 2: 1sA 2sB 3sC rA rB rC ++ . - would print 6.
@@ -48,16 +48,16 @@ S4 is the result of my work towards those goals.
 
 # WiFi support
 
-Some boards, for example the ESP8266, support WiFi. For those boards, the __WIFI__ directive can be #defined to enable the boards WiFi.
-Note that those boards usually also have watchdogs that need to be enabled via the __WATCHDOG__ #define.
+Some boards, for example the ESP32 or ESP8266, support WiFi. For those boards, the __WIFI__ directive can be #defined to enable the boards WiFi.
+Note that those boards usually also have watchdogs that should also be enabled via the __WATCHDOG__ #define.
 
 # LittleFS support
 
-Some boards support LittleFS. For those boards, the __LITTLEFS__ directive can be #defined to save and load the defined code to the board, so that any user-defined words can be reloaded across boots.
+Some boards support LittleFS. For those boards, the __LITTLEFS__ directive can be #defined to save and load the defined code to the board, so that any user-defined words can be presisted and reloaded across boots.
 
 # Building S4
 
-- The target machine/environment is controlled by the #defined in the file "config.h"
+- The target machine/environment is controlled by the #defines in the file "config.h"
 - For Windows, I use Microsoft's Visual Studio (Community edition). I use the x86 configuration.
 - For Development boards, I use the Arduino IDE. See the file "config.h" for board-specific settings.
 - For Linux systems, I use vi and clang. See the "make" script for more info.
