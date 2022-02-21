@@ -11,7 +11,7 @@ void feedWatchDog() {}
 #if __WIFI__ == 1
 #if __BOARD__ == ESP8266
 #include "ESP8266.h"
-#elif __BOARD__ == ESP32
+#elif __BOARD__ == ESP32_DEV
 #include "ESP32.h"
 #endif
 #endif // __WIFI__

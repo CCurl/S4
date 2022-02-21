@@ -1,13 +1,14 @@
 #ifndef __CONFIG__
 #define __CONFIG__
 
-#define PC       1
-#define XIAO     2
-#define PICO     3
-#define ESP8266  4
-#define ESP32    5
+#define PC          1
+#define XIAO        2
+#define PICO        3
+#define ESP8266     4
+#define ESP32_DEV   5
+#define LEO         6
 
-#define __BOARD__ PICO
+#define __BOARD__ XIAO
 
 #ifdef _WIN32
   #define __WINDOWS__
@@ -41,11 +42,12 @@
   #define NUM_REGS       (26*26*26)
   #define NUM_FUNCS      (500)
 #elif __BOARD__ == XIAO
+  // #define __GAMEPAD__
   #define STK_SZ          8
   #define LSTACK_SZ       4
   #define USER_SZ        (22*1024)
   #define NUM_REGS       (26*26)
-  #define NUM_FUNCS      (500)
+  #define NUM_FUNCS      (100)
 #elif __BOARD__ == PICO
   #define __FILES__
   #define __LITTLEFS__
@@ -68,7 +70,21 @@
   #define USER_SZ        (24*1024)
   #define NUM_REGS       (26*26)
   #define NUM_FUNCS      (500)
-#else
+#elif __BOARD__ == ESP32_DEV
+  #define __WIFI__        1
+  // #define __WATCHDOG__
+  #define __FILES__
+  #define __LITTLEFS__
+  #define NTWK            "FiOS-T01SJ"
+  #define NTPW            "marie2eric5936side"
+  #define MYSSID          "ESP32-1"
+  #define MYSSPW          "simplePW"
+  #define STK_SZ          8
+  #define LSTACK_SZ       4
+  #define USER_SZ        (64*1024)
+  #define NUM_REGS       (26*26)
+  #define NUM_FUNCS      (1000)
+#elif __BOARD__ == LEO
   #define STK_SZ          6
   #define LSTACK_SZ       2
   #define USER_SZ        (1*1024)

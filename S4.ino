@@ -49,8 +49,34 @@ addr doPin(addr pc) {
     return pc;
 }
 
+#ifdef __GAMEPAD__
+#include <HID-Project.h>
+#include <HID-Settings.h>
+addr doGamePad(addr pc) {
+    byte ir = *(pc++);
+    switch (ir) {
+    case 'X': Gamepad.xAxis(pop());          break;
+    case 'Y': Gamepad.yAxis(pop());          break;
+    case 'P': Gamepad.press(pop());          break;
+    case 'R': Gamepad.release(pop());        break;
+    case 'A': Gamepad.dPad1(pop());          break;
+    case 'B': Gamepad.dPad2(pop());          break;
+    case 'L': Gamepad.releaseAll();          break;
+    case 'W': Gamepad.write();               break;
+    default:
+        isError = 1;
+        printString("-notGamepad-");
+    }
+    return pc;
+  
+}
+#else
+addr doGamePad(addr pc) { printString("-noGamepad-"); return pc; }
+#endif
+
 addr doCustom(byte ir, addr pc) {
     switch (ir) {
+    case 'G': pc = doGamePad(pc);           break;
     case 'N': push(micros());               break;
     case 'P': pc = doPin(pc);               break;
     case 'T': push(millis());               break;
@@ -85,11 +111,11 @@ FILE *input_pop() { return NULL; }
     X(1002, ":REGS 0 xIR 1-[rI xIC* xIAR+@ #s1(CR\"r\" rI 26&$ 26&$ 'A+,'A+,'A+,\": \"r1.)];") \
     X(2000, "CR\"This system has \"xIR.\" registers, \"xIF.\" functions, and \"xIU.\" bytes user memory.\"CR")
 
-#if __BOARD__ == ESP8266
+//#if __BOARD__ == ESP8266
 #define X(num, val) const char str ## num[] = val;
-#else
-#define X(num, val) const PROGMEM char str ## num[] = val;
-#endif
+//#else
+//#define X(num, val) const PROGMEM char str ## num[] = val;
+//#endif
 SOURCE_STARTUP
 
 #undef X
@@ -154,10 +180,11 @@ void handleInput(char c) {
 
 void setup() {
 #ifdef __SERIAL__
-    while (!mySerial) {}
     mySerial.begin(19200);
+    while (!mySerial) {}
     delay(500);
-    while (mySerial.available()) { char c = mySerial.read(); }
+    // while (mySerial.available()) { char c = mySerial.read(); }
+    ok();
 #endif
     vmInit();
     wifiStart();
@@ -180,14 +207,15 @@ void loop() {
     if (iLed == 0) {
         loadBaseSystem();
         ok();
-        iLed = LED_BUILTIN;
+        iLed = 13;
+        // iLed = LED_BUILTIN;
         pinMode(iLed, OUTPUT);
     }
     if (nextBlink < curTm) {
         ledState = (ledState == LOW) ? HIGH : LOW;
         digitalWrite(iLed, ledState);
         nextBlink = curTm + 1000;
-        if (ledState == HIGH) { nextBlink += 1000; }
+        // if (ledState == HIGH) { nextBlink += 1000; }
     }
 
     while (charAvailable()) { 
@@ -198,5 +226,5 @@ void loop() {
         isOTA = 1;
         handleInput(wifiGetChar()); 
     }
-    do_autoRun();
+    // do_autoRun();
 }

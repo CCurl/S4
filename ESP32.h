@@ -1,5 +1,6 @@
 // NOTE: this is a ".h" file and not a ".inc" file because the Ardiono IDE only supports #including "*.h" files 
-#include <ESP32WiFi.h>
+#include <WiFi.h>
+// #include <esp_task_wdt.h>
 
 WiFiServer wifiServer(23);
 WiFiClient wifiClient;
@@ -27,7 +28,7 @@ int wifiCharAvailable() {
     if (wifiServer.hasClient()) {
         wifiClient = wifiServer.available();
         printString("\r\n-new-wifi-client-");
-        printWifi("\r\Hello.\r\n");
+        printWifi("\r\nHello.\r\n");
         haveClient = 1;
     }
     if (haveClient && wifiClient.available()) { return 1; }
@@ -49,6 +50,6 @@ int wdtCount = 1;
 void feedWatchDog() {
     if (--wdtCount < 1) {
         wdtCount = 99999;
-        ESP.wdtFeed();
+        // esp_task_wdt_reset();
     }
 }
