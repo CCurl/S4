@@ -12,14 +12,17 @@ Import the library into Arduino using "Import Library".
 
 In the doCustom(ir, pc) function (S4.ino), add a new case for ir. In this case, I am adding case 'G'.
 
+```
 addr doCustom(byte ir, addr pc) {
     ...
     case 'G': pc = doGamePad(ir, pc);        break;
     ...
 }
+```
 
 Then it is a simple matter of implementing doGamePad(ir, pc):
 
+```
 \#ifdef __GAMEPAD__
 \#include <HID-Project.h>
 \#include <HID-Settings.h>
@@ -44,6 +47,21 @@ addr doGamePad(byte ir, addr pc) {
 \#else
 addr doGamePad(addr pc) { printString("-noGamepad-"); return pc; }
 \#endif
+```
+
+The last thing to do is \#define \_\_GAMEPAD\_\_. This is best done in "config.h".
+
+```
+...
+#elif __BOARD__ == XIAO
+  #define __GAMEPAD__
+  #define STK_SZ          8
+  #define LSTACK_SZ       4
+  #define USER_SZ        (22*1024)
+  #define NUM_REGS       (26*26)
+ ...
+```
+
 
 Now in S4, you can do things like: 
 
