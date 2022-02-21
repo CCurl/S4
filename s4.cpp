@@ -234,23 +234,23 @@ addr run(addr start) {
         ir = *(pc++);
         switch (ir) {
         case 0: return pc;
-        case ' ': while (BetweenI(*pc, 1, 32)) { pc++; }             break;  // 32
-        case '!': setCell(AOS, N); DROP2;                            break;  // 33 (STORE)
-        case '"': while (*(pc) != ir) { printChar(*(pc++)); }; ++pc; break;  // 34
-        case '#': push(TOS);                                         break;  // 35 (DUP)
-        case '$': t1 = N; N = TOS; TOS = t1;                         break;  // 36 (SWAP)
-        case '%': push(N);                                           break;  // 37 (OVER)
-        case '&': if (isNot0(TOS)) { t1=TOS; TOS=N%t1; N/=t1; }      break;  // 38 (/MOD)
-        case '\'': push(*(pc++));                                    break;  // 39
-        case '(': if (pop() == 0) { skipTo(')'); }                   break;  // 40 (IF)
-        case ')': /* endIf() */                                      break;  // 41
-        case '*': t1 = pop(); TOS *= t1;                             break;  // 42
-        case '+': t1 = pop(); TOS += t1;                             break;  // 43
-        case ',': t1 = pop(); printChar((char)t1);                   break;  // 44
-        case '-': t1 = pop(); TOS -= t1;                             break;  // 45
-        case '.': t1 = pop();  printStringF("%ld", t1);              break;  // 46
-        case '/': t1 = pop(); if (isNot0(t1)) { TOS /= t1; }         break;  // 47
-        case '0': case '1': case '2': case '3': case '4':                    // 48-57
+        case ' ': while (BetweenI(*pc, 1, 32)) { pc++; }               break;  // 32
+        case '!': setCell(AOS, N); DROP2;                              break;  // 33 (STORE)
+        case '"': while (*(pc) != ir) { printChar(*(pc++)); }; ++pc;   break;  // 34
+        case '#': push(TOS);                                           break;  // 35 (DUP)
+        case '$': t1 = N; N = TOS; TOS = t1;                           break;  // 36 (SWAP)
+        case '%': push(N);                                             break;  // 37 (OVER)
+        case '&': if (isNot0(TOS)) { t1=TOS; TOS=N%t1; N/=t1; }        break;  // 38 (/MOD)
+        case '\'': push(*(pc++));                                      break;  // 39
+        case '(': if (pop() == 0) { skipTo(')'); }                     break;  // 40 (IF)
+        case ')': /* endIf() */                                        break;  // 41
+        case '*': t1 = pop(); TOS *= t1;                               break;  // 42
+        case '+': t1 = pop(); TOS += t1;                               break;  // 43
+        case ',': t1 = pop(); printChar((char)t1);                     break;  // 44
+        case '-': t1 = pop(); TOS -= t1;                               break;  // 45
+        case '.': t1 = pop();  printStringF("%ld", t1);                break;  // 46
+        case '/': t1 = pop(); if (isNot0(t1)) { TOS /= t1; }           break;  // 47
+        case '0': case '1': case '2': case '3': case '4':                      // 48-57
         case '5': case '6': case '7': case '8': case '9':
             push(ir - '0'); ir = *(pc);
             while (BetweenI(ir, '0', '9')) {
@@ -258,13 +258,13 @@ addr run(addr start) {
                 ir = *(++pc);
             } break;
         case ':': addFunc(funcNum(pc)); skipTo(';'); HERE = pc;        break;  // 58
-        case ';': pc = rpop(); locBase -= 10;                        break;  // 59
-        case '<': t1 = pop(); TOS = TOS < t1 ? 1 : 0;                break;  // 60
-        case '=': t1 = pop(); TOS = TOS == t1 ? 1 : 0;               break;  // 61
-        case '>': t1 = pop(); TOS = TOS > t1 ? 1 : 0;                break;  // 62
-        case '?': /* FREE */                                         break;  // 63
-        case '@': TOS = getCell(AOS);                                break;  // 64
-        case 'A': case 'B': case 'C': case 'D': case 'E':                    // 65-90
+        case ';': pc = rpop(); locBase -= 10;                          break;  // 59
+        case '<': t1 = pop(); TOS = TOS < t1 ? 1 : 0;                  break;  // 60
+        case '=': t1 = pop(); TOS = TOS == t1 ? 1 : 0;                 break;  // 61
+        case '>': t1 = pop(); TOS = TOS > t1 ? 1 : 0;                  break;  // 62
+        case '?': /* FREE */                                           break;  // 63
+        case '@': TOS = getCell(AOS);                                  break;  // 64
+        case 'A': case 'B': case 'C': case 'D': case 'E':                      // 65-90
         case 'F': case 'G': case 'H': case 'I': case 'J':
         case 'K': case 'L': case 'M': case 'N': case 'O':
         case 'P': case 'Q': case 'R': case 'S': case 'T':
@@ -275,49 +275,43 @@ addr run(addr start) {
                     if (*pc != ';') { locBase += 10; rpush(pc); }
                     pc = (addr)t1;
                 } break;
-        case '[': doFor();                                           break;  // 91
-        case '\\': DROP1;                                            break;  // 92 (DROP)
-        case ']': doNext();                                          break;  // 93
-        case '^': t1 = pop(); if (isNot0(t1)) { TOS %= t1; }         break;  // 94 (MODULO)
-        case '_': TOS = -TOS;                                        break;  // 95 (NEGATE)
-        case '`': push(TOS);                                                 // 96
+        case '[': doFor();                                             break;  // 91
+        case '\\': DROP1;                                              break;  // 92 (DROP)
+        case ']': doNext();                                            break;  // 93
+        case '^': t1 = pop(); if (isNot0(t1)) { TOS %= t1; }           break;  // 94 (MODULO)
+        case '_': TOS = -TOS;                                          break;  // 95 (NEGATE)
+        case '`': push(TOS);                                                   // 96
             while (*pc && (*pc != ir)) { *(AOS++) = *(pc++); }
-            *(AOS++) = 0; ++pc;                                      break;
-        case 'b': ir = *(pc++);                                              // BIT ops
-            if (ir == '&') { N &= TOS; DROP1; }                              // AND
-            if (ir == '|') { N |= TOS; DROP1; }                              // OR
-            if (ir == '^') { N ^= TOS; DROP1; }                              // XOR
-            if (ir == '~') { TOS = ~TOS; }                           break;  // NOT
-        case 'c': ir = *(pc++);                                              // c! / c@
+            *(AOS++) = 0; ++pc;                                        break;
+        case 'a': case 'e': case 'f': case 'g': case 'j':  /* FREE */  break;  // 97-122
+        case 'k': case 'l': case 'm': case 'n': case 'o':  /* FREE */  break;
+        case 'p': case 'q': case 't': case 'u': case 'v':  /* FREE */  break;
+        case 'b': ir = *(pc++);                                                // BIT ops
+            if (ir == '&') { N &= TOS; DROP1; }                                // AND
+            if (ir == '|') { N |= TOS; DROP1; }                                // OR
+            if (ir == '^') { N ^= TOS; DROP1; }                                // XOR
+            if (ir == '~') { TOS = ~TOS; }                             break;  // NOT
+        case 'c': ir = *(pc++);                                                // c! / c@
             if (ir == '!') { *AOS = (byte)N; DROP2; }
-            if (ir == '@') { TOS = *AOS; }                           break;
+            if (ir == '@') { TOS = *AOS; }                             break;
         case 'h': push(0); t1 = 1; while (0 <= t1) {
                 t1 = BetweenI(*pc, '0', '9') ? (*pc - '0') : -1;
                 t1 = BetweenI(*pc, 'A', 'F') ? (*pc - 'A') + 10 : t1;
                 if (0 <= t1) { TOS = (TOS * 0x10) + t1; ++pc; }
             } break;
-        case 'd': case 'i': case 'r': case 's': doRegOp(ir);         break;
-        case 'p': ir = *(pc++);
-#ifndef PC
-            if (ir == 'H') { digitalWrite(TOS, 1); }
-            if (ir == 'L') { digitalWrite(TOS, 0); }
-            break;
-#endif
-        case 'a': case 'e': case 'f': case 'g': case 'j':            break;  // 97-122
-        case 'k': case 'l': case 'm': case 'n': case 'o':            break;
-        case 'q': case 't': case 'u': case 'v': break;
+        case 'd': case 'i': case 'r': case 's': doRegOp(ir);           break;
         case 'w': ir = *(pc++);                                              // w! / w@
-            if (ir == '!') { *AOS = (byte)N; *(AOS+1) = (byte)(N/256); DROP2;}
+            if (ir == '!') { *AOS = N & 255; *(AOS+1) = (N/256)&255; DROP2;}
             if (ir == '@') { TOS = (*(AOS+1)*256) | *(AOS); }
             break;
-        case 'x': doExt();                                           break;
-        case 'y':  case 'z':                                         break;
-        case '{': if (TOS) { doWhile(); }                                    // 123
-                else { DROP1;  skipTo('}'); }                        break;
-        case '|': loopBreak();                                       break;  // 124
-        case '}': if (!TOS) { ldrop(); DROP1; }                              // 125
-                else { LTOS->end = pc; pc = LTOS->start; }           break;
-        case '~': TOS = (TOS) ? 0 : 1;                               break;  // 126
+        case 'x': doExt();                                             break;
+        case 'y':  case 'z':                                           break;
+        case '{': if (TOS) { doWhile(); }                                      // 123
+                else { DROP1;  skipTo('}'); }                          break;
+        case '|': loopBreak();                                         break;  // 124
+        case '}': if (!TOS) { ldrop(); DROP1; }                                // 125
+                else { LTOS->end = pc; pc = LTOS->start; }             break;
+        case '~': TOS = (TOS) ? 0 : 1;                                 break;  // 126
         }
         #ifdef __WATCHDOG__
         feedWatchDog();
