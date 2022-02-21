@@ -11,6 +11,15 @@ TOS     The 'top of stack'. This is very heavily used.
 N       The 'next on stack'.
 ```
 
-# Program flow:
+## Program flow:
 
-Function run(start) is the heart of S4. It is very simple: (1) set pc to start, (2) get the next instruction, (3) execute the instruction, (4) repeat. If there is an error or we hit a "return" (;), quit.
+Function run(addr start) is the heart of S4. It is very simple: 
+
+```
+(1) set pc to start, 
+(2) get the next instruction, 
+(3) execute the instruction, 
+(4) repeat. 
+
+If there is an error or if ir is ';' and the return stack is empty, then return.
+```
