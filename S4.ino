@@ -52,8 +52,8 @@ addr doPin(addr pc) {
 #ifdef __GAMEPAD__
 #include <HID-Project.h>
 #include <HID-Settings.h>
-addr doGamePad(addr pc) {
-    byte ir = *(pc++);
+addr doGamePad(byte ir, addr pc) {
+    ir = *(pc++);
     switch (ir) {
     case 'X': Gamepad.xAxis(pop());          break;
     case 'Y': Gamepad.yAxis(pop());          break;
@@ -76,7 +76,7 @@ addr doGamePad(addr pc) { printString("-noGamepad-"); return pc; }
 
 addr doCustom(byte ir, addr pc) {
     switch (ir) {
-    case 'G': pc = doGamePad(pc);           break;
+    case 'G': pc = doGamePad(ir, pc);       break;
     case 'N': push(micros());               break;
     case 'P': pc = doPin(pc);               break;
     case 'T': push(millis());               break;

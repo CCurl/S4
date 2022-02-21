@@ -160,10 +160,6 @@
     <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="examples.txt" />
-    <Text Include="reference.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="config.h" />
     <ClInclude Include="s4.h" />
   </ItemGroup>
