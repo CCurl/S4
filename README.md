@@ -10,7 +10,7 @@ A register is identified by up to 3 lower-case characters, so there is a maximum
 
 A function is identified by any number of UPPER-case characters. The maximum number of functions is set in the config.h file.
 
-The number of registers, function vectors, and user memory can be scaled as desired to fit into a system of any size. For example, on an ESP-8266 board, a typical configuration might be 576 (26*26) registers, 5000 functions, and 24K of user ram. In such a system, register names would be in the range of [aa.zz]. For a RPI Pico, I use 576 registers, 1000 functions, and 128K USER RAM. On a Arduino Leonardo, you might configure the system to have 26 registers and functions, and 1K USER. On a Windows or Linux system, I use 17576 registers (26*26*26), 5000 functions, and 1MB USER.
+The number of registers, function vectors, and user memory can be scaled as desired to fit into a system of any size. For example, on an ESP-8266 board, a typical configuration might be 576 (26\*26) registers, 5000 functions, and 24K of user ram. In such a system, register names would be in the range of [aa.zz]. For a RPI Pico, I use 576 registers, 1000 functions, and 128K USER RAM. On a Arduino Leonardo, you might configure the system to have 26 registers and functions, and 1K USER. On a Windows or Linux system, I use 17576 registers (26\*26\*26), 5000 functions, and 1MB USER.
 
 - Example 1: "Hello World!"            - the typical "hello world" program.
 - Example 2: 1sA 2sB 3sC rA rB rC ++ . - would print 6.
@@ -53,7 +53,11 @@ Note that those boards usually also have watchdogs that should also be enabled v
 
 # LittleFS support
 
-Some boards support LittleFS. For those boards, the __LITTLEFS__ directive can be #defined to save and load the defined code to the board, so that any user-defined words can be presisted and reloaded across boots.
+Some boards support LittleFS. For those boards, the __LITTLEFS__ directive can be #defined to save and load the defined code to the board, so that any user-defined words can be presisted and reloaded across boots. The built-in editor also uses this functionality.
+
+# HID Gamepad/Keyboard support
+
+Some boards support HID emulation. For those boards, the __GAMEPAD__ directive can be #defined to enable that functionality. Note that it uses the "HID-Project" from NicoHood for this.
 
 # Building S4
 
