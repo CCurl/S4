@@ -189,6 +189,7 @@ void doExt() {
         if (ir == 'W') { blockWrite(); }
         if (ir == 'L') { blockLoad(); }
         return;
+    case 'E': doEditor();                                  return;
     case 'F': ir = *(pc++);
         if (ir == 'O') { fileOpen(); }
         if (ir == 'C') { fileClose(); }

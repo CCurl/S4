@@ -140,6 +140,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="editor.cpp" />
+    <ClCompile Include="gamepad.cpp" />
     <ClCompile Include="WiFi.cpp" />
     <ClCompile Include="File.cpp" />
     <ClCompile Include="pc-main.cpp" />

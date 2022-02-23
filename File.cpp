@@ -91,7 +91,7 @@ void blockOpen() {
     TOS = (CELL)fopen(fn, m ? "wb" : "rb");
 }
 
-// (n a sz--f)
+// (n a sz--flag)
 void blockRead() {
     CELL sz = pop(), a = pop();
     push(0); blockOpen();
@@ -103,7 +103,7 @@ void blockRead() {
     }
 }
 
-// (n a sz--f)
+// (n a sz--flag)
 void blockWrite() {
     CELL sz = pop(), a = pop();
     push(1); blockOpen();

@@ -91,3 +91,9 @@ extern void fileRead();
 extern void fileWrite();
 extern void fileLoad();
 extern void fileSave();
+
+// Editor support
+void doEditor();
+
+// Gamepad support (Arduino)
+addr doGamepad(byte, addr);

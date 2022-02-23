@@ -36,6 +36,7 @@
 
 #if __BOARD__ == PC
   #define __FILES__
+  #define __EDITOR__
   #define STK_SZ          16
   #define LSTACK_SZ       8
   #define USER_SZ        (256*1024)
