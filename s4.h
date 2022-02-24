@@ -96,4 +96,4 @@ extern void fileSave();
 void doEditor();
 
 // Gamepad support (Arduino)
-addr doGamepad(byte, addr);
+addr doGamePad(byte, addr);

@@ -182,7 +182,7 @@ int processEditorChar(char c) {
     case 'x': isDirty = 1; deleteChar();                 break;
     case 'i': isDirty = 1; insertChar(' ');              break;
     case 'L': edRdBlk();                                 break;
-    case 'S': edSvBlk();                                 break;
+    case 'W': edSvBlk();                                 break;
     case '+': if (isDirty) { edSvBlk(); }
             ++blkNum;
             edRdBlk();

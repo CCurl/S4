@@ -149,13 +149,13 @@ int freeFile() {
 
 void fileInit() {
     // for (int i = 0; i <= MAX_FILES; i++) { files[i] = File(); }
-    LittleFS.begin(true);
-    // LittleFS.begin();
-    // FSInfo fs_info;
-    // LittleFS.info(fs_info);
-    // printStringF("\r\nLittleFS: Total: %ld", fs_info.totalBytes);
-    // printStringF("\r\nLittleFS: Used: %ld", fs_info.usedBytes);
-    printString("\r\nLittleFS: initialized");
+    // LittleFS.begin(true);
+    // printString("\r\nLittleFS: initialized");
+    LittleFS.begin();
+    FSInfo fs_info;
+    LittleFS.info(fs_info);
+    printStringF("\r\nLittleFS: Total: %ld", fs_info.totalBytes);
+    printStringF("\r\nLittleFS: Used: %ld", fs_info.usedBytes);
 }
 
 void fileOpen() {

@@ -182,8 +182,8 @@ void loop() {
     if (iLed == 0) {
         loadBaseSystem();
         ok();
-        iLed = 13;
-        // iLed = LED_BUILTIN;
+        // iLed = 13;
+        iLed = LED_BUILTIN;
         pinMode(iLed, OUTPUT);
     }
     if (nextBlink < curTm) {
@@ -201,5 +201,5 @@ void loop() {
         isOTA = 1;
         handleInput(wifiGetChar()); 
     }
-    // do_autoRun();
+    do_autoRun();
 }

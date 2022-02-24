@@ -8,7 +8,7 @@
 #define ESP32_DEV   5
 #define LEO         6
 
-#define __BOARD__ XIAO
+#define __BOARD__ PICO
 
 #ifdef _WIN32
   #define __WINDOWS__
@@ -52,6 +52,7 @@
 #elif __BOARD__ == PICO
   #define __FILES__
   #define __LITTLEFS__
+  #define __EDITOR__
   #define STK_SZ          16
   #define LSTACK_SZ       8
   #define USER_SZ        (128*1024)
