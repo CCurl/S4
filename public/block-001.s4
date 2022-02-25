@@ -5,8 +5,8 @@ xSR
 :REGS 0 xIR 1-[rI xIC* xIAR+ @#s1(CR "r" rI 26&$26&$'A+,'A+,'A+,": "r1.)];
 :USED xIH xIAU-;
 
-0(rV is VERE)
-:VAR rV;                  0(VARIABLE)
+0(rV is VHERE)
+:VAR rV;
 :-Shift Left/Right (a n--b)-;
 :SHL 1[2*];
 :SHR 1[2/];

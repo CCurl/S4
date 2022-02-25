@@ -59,7 +59,8 @@ int edGetChar() {
 
 void clearBlock() {
     for (int i = 0; i < BLOCK_SZ; i++) {
-        theBlock[i] = 10;
+        theBlock[i] = 32;
+        if ((i % 50) == 0) { theBlock[i] = 10; }
     }
 }
 
@@ -167,6 +168,7 @@ int processEditorChar(char c) {
     printChar(c);
     switch (c) {
     case 'Q': return 0;                                  break;
+    case 9: cur += 8;                                    break;
     case 'a': --cur;                                     break;
     case 'd': ++cur;                                     break;
     case 'w': cur -= LLEN;                               break;

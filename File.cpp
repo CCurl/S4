@@ -14,7 +14,14 @@ void blockOpen() { noFile(); }
 void blockRead() { noFile(); }
 void blockWrite() { noFile(); }
 void blockLoad() { noFile(); }
+CELL input_fp = 0;
+void fpush(CELL x) { noFile(); };
+CELL fpop() { noFile(); return 0; };
 #else
+byte fdsp = 0;
+CELL input_fp, fstack[STK_SZ + 1];
+void fpush(CELL v) { if (fdsp < STK_SZ) { fstack[++fdsp] = v; } }
+CELL fpop() { return (fdsp) ? fstack[fdsp--] : 0; }
 #if __BOARD__ == PC
 void fileInit() {}
 
@@ -117,14 +124,11 @@ void blockWrite() {
     }
 }
 
-extern FILE* input_fp;
-extern FILE* fpop();
-extern void fpush(FILE*);
 void blockLoad() {
     char fn[24];
-    if (input_fp) { fpush(input_fp); }
+    if (input_fp) { fpush((CELL)input_fp); }
     sprintf(fn, "block-%03d.s4", (int)pop());
-    input_fp = fopen(fn, "rb");
+    input_fp = (CELL)fopen(fn, "rb");
     if (!input_fp) { input_fp = fpop(); }
 }
 
@@ -206,16 +210,25 @@ void fileWrite() {
     }
 }
 
+// (n--)
+char* blockFN() {
+    static char fn[24];
+    CELL n = pop();
+    sprintf(fn, "/block-%03d.s4", (int)n);
+    return fn;
+}
+
 void fileLoad() {
-    File f = LittleFS.open("/Code.S4", "r");
+    push(0);
+    File f = LittleFS.open(blockFN(), "r");
     if (f) {
         vmInit();
-        int num = f.read(HERE, USER_SZ);
+        int num = f.read(USER, USER_SZ);
         f.close();
-        HERE += num;
-        *(HERE+1) = 0;
+        HERE += num-1;
+        while (!BetweenI(*HERE, 33, 126) && (USER < HERE) ) { *(HERE--) = 0; }
         run(USER);
-        printStringF("-loaded, (%d)-", num);
+        printStringF("-loaded, (%d)-", HERE-USER);
     }
     else {
         printString("-loadFail-");
@@ -223,7 +236,8 @@ void fileLoad() {
 }
 
 void fileSave() {
-    File f = LittleFS.open("/Code.S4", "w");
+    push(0);
+    File f = LittleFS.open(blockFN(), "w");
     if (f) {
         int count = HERE - USER;
         f.write(USER, count);
@@ -233,14 +247,6 @@ void fileSave() {
     else {
         printString("-saveFail-");
     }
-}
-
-// (n--)
-char *blockFN() {
-    static char fn[24];
-    CELL n = pop();
-    sprintf(fn, "/block-%03d.s4", (int)n);
-    return fn;
 }
 
 // (n m--f)

@@ -91,6 +91,8 @@ extern void fileRead();
 extern void fileWrite();
 extern void fileLoad();
 extern void fileSave();
+extern void fpush(CELL);
+extern CELL input_fp, fpop();
 
 // Editor support
 void doEditor();
