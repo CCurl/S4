@@ -8,3 +8,31 @@
 :BD 255b& 128s1 1 8[#r1 b& ~~. r1 2/ s1]\;
 :BW 256&$ BD BD;
 :BL 256#*&$ BW BW;
+
+
+
+0("Block 1111 - local sandbox")
+xIH sMRK
+; -----------------------------------------------------------------------------------
+
+:VHI rV sVH;
+:CM rVH ! rVH xIC+ sVH;
+:CCM rVH c! iVH;
+:WCM 256& CCM CCM;
+
+:OFF 1- xIC*rB+;
+:INC OFF # s1 @ 1+ r1 !;
+:DMP 1 rN[rI OFF @ ." "];
+:GO INI 1[rN xR 1+ INC] RANGE;
+:INI rN~(1000 sN) xIH 1000+ sB 1 rN[0 rI OFF !];
+:MIN %%>($)\;
+:MAX %%<($)\;
+:GL rL MIN sL;
+:GH rH MAX sH;
+:PLH "MIN: "rL. ", MAX: "rH.", SPAN: "rHrL-.;
+:RANGE 999999 sL 0 sH 1 rN[rI OFF @# GL GH] PLH;
+
+; -----------------------------------------------------------------------------------
+0(Reload Sandbox)
+:FG rMRK xIAH!;
+:RL FG 1111 xBL;
