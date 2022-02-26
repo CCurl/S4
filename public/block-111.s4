@@ -1,0 +1,32 @@
+0("Block 111 - a public sandbox")
+0(playing with random number distributions)
+
+1 xBL
+; ---------------------------------------------------------------------------------- -
+
+    :VHI rV sVH;
+:CM rVH !rVH xIC + sVH;
+:CCM rVH c!iVH;
+:WCM 256 & CCM CCM;
+
+:COLLECT iNUM rTOT + sTOT;
+:AVERAGE rTOT rNUM / "Average: ".;
+:NNN 100&$. 10&$. .;
+
+:OFF 1- xIC* rB+ ;
+:INC OFF #s1 @ 1+ r1 !;
+:DMP 1 rN[rI OFF @ ." "];
+:GO INI 1[rN xR 1+ INC];
+:INI rN~(1000 sN) xIH 2000 + sB 1 rN[0 rI OFF !];
+:MIN %%>($)\;
+:MAX %%<($)\;
+:DL rL MIN sL;
+:DH rH MAX sH;
+:SPAN "MIN: "rL. ", MAX: "rH.", SPAN: "rHrL - .;
+:RANGE 999999 sL 0 sH 1 rN[rI OFF @# DL DH];
+:TEST 0 sTOT 0 sNUM 1[rI NNN " " 1000#*rX* GO RANGE SPAN CR rHrL- COLLECT] AVERAGE;
+1 sX
+; ---------------------------------------------------------------------------------- -
+0(Reload Sandbox)
+:FG rMRK xIAH!;
+:RL 111 xBL;
