@@ -237,7 +237,16 @@ addr run(addr start) {
         case 0: return pc;
         case ' ': while (BetweenI(*pc, 1, 32)) { pc++; }               break;  // 32
         case '!': setCell(AOS, N); DROP2;                              break;  // 33 (STORE)
-        case '"': while (*(pc) != ir) { printChar(*(pc++)); }; ++pc;   break;  // 34
+        case '"': while (*pc && (*pc != '"')) {                                // 34 PRINT
+            ir = *(pc++); if (ir == '%') {
+                ir = *(pc++);
+                if (ir == 'c') { printChar((char)pop()); }
+                else if (ir == 'd') { printStringF("%ld", pop()); }
+                else if (ir == 'n') { printString("\r\n"); }
+                else { printChar(ir); }
+            }
+            else { printChar(ir); }
+        } ++pc;   break;  // 34
         case '#': push(TOS);                                           break;  // 35 (DUP)
         case '$': t1 = N; N = TOS; TOS = t1;                           break;  // 36 (SWAP)
         case '%': push(N);                                             break;  // 37 (OVER)

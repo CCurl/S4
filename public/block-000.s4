@@ -1,6 +1,6 @@
-:N 13,10,;
-"S4 - v0.1.0 - Chris Curl" N
-"This system has "xIR." registers, "xIF." functions, and "xIU." bytes user memory." N
+"S4 - v0.1.0 - Chris Curl%n"
+xIU xIF xIR
+"This system has %d registers, %d functions, and %d bytes user memory.%n"
 "Hello" N
 xSR
 1 xBL
