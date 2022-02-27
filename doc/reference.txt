@@ -49,6 +49,7 @@ dABC  (--)        decrement register ABC
         NOTES: 1) Word names are any number of UPPERCASE characters
                2) The number of words is controlled by the NUM_FUNCS #define in "config.h"
 :     (--)        Define word. Copy chars to (HERE++) until closing ';'.
+        NOTE: If the word has already been defined S4 prints "-redef-"
 XXX   (--)        Execute word XXX
 ;     (--)        Return: PC = rpop()
         NOTES: 1) Returning while inside of a loop is not supported; break out of the loop.

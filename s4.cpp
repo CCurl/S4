@@ -94,10 +94,7 @@ addr findFunc(UCELL hash, addr vector) {
 
 void addFunc(UCELL hash) {
     // DEBUG: report if the hash is already defined
-    if (findFunc(hash, pc)) { 
-        printStringF("-redef (%lu)-", hash); 
-        return;
-    }
+    if (findFunc(hash, pc)) { printString("-redef-");  return; }
     if (NUM_FUNCS <= lastFunc) { isError = 1; printString("-oof-"); }
     if (isError) { return; }
     func[lastFunc].hash = hash;
