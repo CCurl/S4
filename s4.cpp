@@ -81,17 +81,23 @@ void skipTo(byte to) {
     isError = 1;
 }
 
-addr findFunc(UCELL hash) {
+addr findFunc(UCELL hash, addr vector) {
     if (isError) { return 0; }
-    for (int i = lastFunc - 1; 0 <= i; i--) {
-        if (func[i].hash == hash) { return func[i].val; }
+    for (int i = lastFunc-1; 0 <= i; i--) {
+        if (func[i].hash == hash) { 
+            if (vector) { func[i].val = vector; }
+            return func[i].val; 
+        }
     }
     return 0;
 }
 
 void addFunc(UCELL hash) {
     // DEBUG: report if the hash is already defined
-    if (findFunc(hash)) { printStringF("-redef (%lu)-", hash); }
+    if (findFunc(hash, pc)) { 
+        printStringF("-redef (%lu)-", hash); 
+        return;
+    }
     if (NUM_FUNCS <= lastFunc) { isError = 1; printString("-oof-"); }
     if (isError) { return; }
     func[lastFunc].hash = hash;
@@ -280,7 +286,7 @@ addr run(addr start) {
         case 'P': case 'Q': case 'R': case 'S': case 'T':
         case 'U': case 'V': case 'W': case 'X': case 'Y': 
         case 'Z': --pc;
-                t1 = (CELL)findFunc(funcNum(pc));
+                t1 = (CELL)findFunc(funcNum(pc), 0);
                 if (t1) {
                     if (*pc != ';') { locBase += 10; rpush(pc); }
                     pc = (addr)t1;
