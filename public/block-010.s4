@@ -1,27 +1,27 @@
 0(Screen Stuff)
 0(CSI (--): Control Sequence)
-:CSI 27,"[";
+:CSI 27"%c[";
 
 0(GXY (x y--): GotoXY)
-:GXY CSI.";"."H";  
+:GXY 27"%c[%d;%dH";  
 
 0(CLS (--): Clear Screen)
-:CLS CSI"2J"1#GXY;
+:CLS 27"%c[2J"1#GXY;
 
 0(STC (fg bg--): Set Color)
-:STC CSI.";"."m";
+:STC 27"%c[%d;%dm";
 
 0(CLC (--): Clear Color)
 :CLC 0# STC;
 
 0(CLL (--): Color list)
-:CLL 30 37[CR rI s1 40 47[r1 rI STC " (" r1. "," rI. ") "] CLC];
+:CLL 30 37[CR rI s1 40 47[r1 rI STC rI r1 " (%d,%d) "] CLC];
 
 0(COF (--): Curson off)
-:COF CSI"?25l";
+:COF 27"%c[?25l";
 
 0(CON (--): Curson on)
-:CON CSI"?25h";
+:CON 27"%c[?25h";
 
 0(DMO (--): A little demo, random stars, until you press a key (xK?0=))
 :DMO rX~(120sX) rY~(30sY)CLS 1{\rX xR rY xR GXY 8 xR 30+ 40 STC "*"xK?0=}xK@\ CLC;

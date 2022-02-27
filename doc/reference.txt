@@ -59,7 +59,11 @@ XXX   (--)        Execute word XXX
 *** INPUT/OUTPUT ***
 .      (N--)      Output N as decimal number
 ,      (N--)      Output N as character (Forth EMIT)
-"      (--)       Output characters until the next '"'
+"      (?--?)     Output characters until the next '"'
+        NOTES: 1) %d outputs TOS as an integer (eg - 123"x%dx" outputs x123x)
+               2) %c outputs TOS as a character (eg - 65"x%cx" outputs xAx)
+               3) %n outputs CR/LF
+               4) %<x> outputs <x> (eg - "x%" %% %"x" outputs x" % "x)
 0..9   (--n)      Scan DECIMAL number until non digit
                      to specify multiple values, separate them by space (4711 3333)
                      to enter a negative number, use "negate" (eg - 490_)
