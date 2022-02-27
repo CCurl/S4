@@ -84,7 +84,11 @@ FILE *input_pop() { return NULL; }
     X(1000, ":CODE CR xIAU xIH 1-[rI c@ #,';=(rI 1+ c@':=(CR))];") \
     X(1001, ":CR 13,10,;:U xIHxIAU-;") \
     X(1002, ":REGS 0 xIR 1-[rI xIC* xIAR+@ #s1(CR\"r\" rI 26&$ 26&$ 'A+,'A+,'A+,\": \"r1.)];") \
-    X(2000, "CR\"This system has \"xIR.\" registers, \"xIF.\" functions, and \"xIU.\" bytes user memory.\"CR")
+    X(1003, ":SI \"This system has \"xIR.\" registers, \"xIF.\" functions, and \"xIU.\" bytes user memory.\";") \
+    X(1004, ":XDOT s2 0s1 {r2&$i1} 1 r1[#9>(7+)'0+,] \" \";") \
+    X(1005, ":BDOT  2 XDOT;:HDOT 16 XDOT;:DOT .\" \";") \
+    X(1006, ":NN 10&$. .\" \";:NNN 100&$. NN;") \
+    X(9999, "SI")
 
 //#if __BOARD__ == ESP8266
 #define X(num, val) const char str ## num[] = val;
@@ -104,7 +108,7 @@ void loadBaseSystem() {
     for (int i = 0; bootStrap[i] != NULL; i++) {
         loadCode(bootStrap[i]);
     }
-#ifdef __LITTLEFS__
+#ifdef __FILES__
     loadCode("xFL");
 #endif
 }
@@ -182,7 +186,6 @@ void loop() {
     if (iLed == 0) {
         loadBaseSystem();
         ok();
-        // iLed = 13;
         iLed = LED_BUILTIN;
         pinMode(iLed, OUTPUT);
     }
@@ -190,7 +193,6 @@ void loop() {
         ledState = (ledState == LOW) ? HIGH : LOW;
         digitalWrite(iLed, ledState);
         nextBlink = curTm + 1000;
-        // if (ledState == HIGH) { nextBlink += 1000; }
     }
 
     while (charAvailable()) { 

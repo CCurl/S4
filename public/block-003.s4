@@ -1,11 +1,5 @@
-; HEX output
-:HX #9>(7+)'0+,;
-:HD 16&$HX HX;
-:HW 256&$ HD HD;
-:HL 256#*&$ HW HW;
-
-; Binary output
-:BD 255b& 128s1 1 8[#r1 b& ~~. r1 2/ s1]\;
-:BW 256&$ BD BD;
-:BL 256#*&$ BW BW;
-
+0(DECIMAL/HEX/BINARY output)
+0(DOT (num base--))
+:XDOT s2 0s1 {r2&$i1} 1 r1[#9>(7+)'0+,] " ";
+:BDOT  2 XDOT;:HDOT 16 XDOT;:DOT ." ";
+:NN 10&$. ." ";:NNN 100&$. NN;

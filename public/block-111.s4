@@ -4,14 +4,8 @@
 1 xBL
 ; ---------------------------------------------------------------------------------- -
 
-    :VHI rV sVH;
-:CM rVH !rVH xIC + sVH;
-:CCM rVH c!iVH;
-:WCM 256 & CCM CCM;
-
 :COLLECT iNUM rTOT + sTOT;
 :AVERAGE rTOT rNUM / "Average: ".;
-:NNN 100&$. 10&$. .;
 
 :OFF 1- xIC* rB+ ;
 :INC OFF #s1 @ 1+ r1 !;

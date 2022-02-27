@@ -8,7 +8,7 @@
 #define ESP32_DEV   5
 #define LEO         6
 
-#define __BOARD__ PICO
+#define __BOARD__ XIAO
 
 #ifdef _WIN32
   #define __WINDOWS__
@@ -38,14 +38,15 @@
   #define __FILES__
   #define __EDITOR__
   #define STK_SZ          16
-  #define LSTACK_SZ       8
+  #define FSTK_SZ         16
+  #define LSTACK_SZ        8
   #define USER_SZ        (256*1024)
   #define NUM_REGS       (26*26*26)
-  #define NUM_FUNCS      (500)
+  #define NUM_FUNCS      (1000)
 #elif __BOARD__ == XIAO
   // #define __GAMEPAD__
-  #define STK_SZ          8
-  #define LSTACK_SZ       4
+  #define STK_SZ          16
+  #define LSTACK_SZ        4
   #define USER_SZ        (22*1024)
   #define NUM_REGS       (26*26)
   #define NUM_FUNCS      (100)
@@ -53,8 +54,9 @@
   #define __FILES__
   #define __LITTLEFS__
   #define __EDITOR__
+  #define FSTK_SZ          4
   #define STK_SZ          16
-  #define LSTACK_SZ       8
+  #define LSTACK_SZ        8
   #define USER_SZ        (128*1024)
   #define NUM_REGS       (26*26)
   #define NUM_FUNCS      (1000)
@@ -68,6 +70,7 @@
   #define MYSSID          "ESP-8266-1"
   #define MYSSPW          "simplePW"
   #define STK_SZ          8
+  #define FSTK_SZ         4
   #define LSTACK_SZ       4
   #define USER_SZ        (24*1024)
   #define NUM_REGS       (26*26)
@@ -81,12 +84,14 @@
   #define NTPW            "marie2eric5936side"
   #define MYSSID          "ESP32-1"
   #define MYSSPW          "simplePW"
-  #define STK_SZ          8
-  #define LSTACK_SZ       4
+  #define STK_SZ          16
+  #define FSTK_SZ          4
+  #define LSTACK_SZ        4
   #define USER_SZ        (64*1024)
   #define NUM_REGS       (26*26)
   #define NUM_FUNCS      (1000)
 #elif __BOARD__ == LEO
+  #define FSTK_SZ         1
   #define STK_SZ          6
   #define LSTACK_SZ       2
   #define USER_SZ        (1*1024)
