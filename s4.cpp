@@ -258,9 +258,11 @@ addr run(addr start) {
         case '(': if (pop() == 0) { skipTo(')'); }                     break;  // 40 (IF)
         case ')': /* endIf() */                                        break;  // 41
         case '*': t1 = pop(); TOS *= t1;                               break;  // 42
-        case '+': t1 = pop(); TOS += t1;                               break;  // 43
+        case '+': if (*pc == '+') { ++pc; ++TOS; }                             // 43
+                else { t1 = pop(); TOS += t1; }                        break;
         case ',': t1 = pop(); printChar((char)t1);                     break;  // 44
-        case '-': t1 = pop(); TOS -= t1;                               break;  // 45
+        case '-': if (*pc == '-') { ++pc; --TOS; }                             // 45
+                else { t1 = pop(); TOS -= t1; }                        break;
         case '.': t1 = pop();  printStringF("%ld", t1);                break;  // 46
         case '/': t1 = pop(); if (isNot0(t1)) { TOS /= t1; }           break;  // 47
         case '0': case '1': case '2': case '3': case '4':                      // 48-57
