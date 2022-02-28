@@ -149,16 +149,36 @@
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsCpp</CompileAs>
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsCpp</CompileAs>
     </ClCompile>
+    <Text Include="doc\examples.txt" />
+    <Text Include="doc\reference.txt" />
     <Text Include="history.txt" />
+    <Text Include="public\history.txt" />
     <Text Include="S4.ino">
       <FileType>Document</FileType>
     </Text>
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore" />
+    <None Include="doc\architecture.md" />
+    <None Include="doc\extendingS4.md" />
     <None Include="ESP32.h" />
     <None Include="ESP8266.h" />
     <None Include="LICENSE" />
+    <None Include="public\block-000.s4" />
+    <None Include="public\block-001.s4" />
+    <None Include="public\block-003.s4" />
+    <None Include="public\block-010.s4" />
+    <None Include="public\block-111.s4" />
+    <None Include="public\block-1111.s4" />
+    <None Include="public\block-200.s4" />
+    <None Include="public\block-201.s4" />
+    <None Include="public\block-203.s4" />
+    <None Include="public\block-210.s4" />
+    <None Include="public\block-220.s4" />
+    <None Include="public\block-300.s4" />
+    <None Include="public\block-400.s4" />
+    <None Include="public\block-6502.s4" />
+    <None Include="public\block-999.s4" />
     <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
