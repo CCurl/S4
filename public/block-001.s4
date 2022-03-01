@@ -1,12 +1,10 @@
 0(System Initialization)
 xSR
 :CODE xIAU xIH1-[rI c@ #,';=(rI 1+ c@':=(CR))];
-:CR 13,10,;
+:CR "%n";
 :REGS 0 xIR 1-[rI xIC* xIAR+ @#s1(CR "r" rI 26&$26&$'A+,'A+,'A+,": "r1.)];
 :USED xIH xIAU-;
 
-0(rV is VHERE)
-:VAR rV;
-:-Shift Left/Right (a n--b)-;
+0(-Shift Left/Right (a n--b)-)
 :SHL 1[2*];
 :SHR 1[2/];

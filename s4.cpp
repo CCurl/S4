@@ -55,9 +55,11 @@ CELL getCell(byte* from) {
 }
 
 void dumpStack() {
+    printChar('(');
     for (UCELL i = 1; i <= DSP; i++) {
         printStringF("%s%ld", (i > 1 ? " " : ""), (CELL)sys.dstack[i]);
     }
+    printChar(')');
 }
 
 void printStringF(const char* fmt, ...) {
@@ -94,7 +96,7 @@ addr findFunc(UCELL hash, addr vector) {
 
 void addFunc(UCELL hash) {
     // DEBUG: report if the hash is already defined
-    if (findFunc(hash, pc)) { printString("-redef-");  return; }
+    if (findFunc(hash, pc)) { printStringF("-redef (%ld)-", hash);  return; }
     if (NUM_FUNCS <= lastFunc) { isError = 1; printString("-oof-"); }
     if (isError) { return; }
     func[lastFunc].hash = hash;
@@ -224,7 +226,10 @@ void doExt() {
         if (ir == 'R') { push(NUM_REGS); }
         if (ir == 'U') { push(USER_SZ); }
         return;
-    case 'S': if (*(pc++) == 'R') { vmInit();   }          return;
+    case 'S': ir = *(pc++);
+        if (ir == 'R') { vmInit();   }
+        if (ir == '.') { dumpStack(); }
+            return;
     default:
         pc = doCustom(ir, pc);
     }

@@ -60,9 +60,9 @@ addr doCustom(byte ir, addr pc) {
 }
 
 void ok() {
-    printString("\r\nS4:(");
+    printString("\r\nS4:");
     dumpStack();
-    printString(")>");
+    printString(">");
 }
 
 void rtrim(char* cp) {

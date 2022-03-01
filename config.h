@@ -8,7 +8,7 @@
 #define ESP32_DEV   5
 #define LEO         6
 
-#define __BOARD__ XIAO
+#define __BOARD__ PICO
 
 #ifdef _WIN32
   #define __WINDOWS__

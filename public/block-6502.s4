@@ -1,3 +1,31 @@
 0(Block 200 - A 6502 emulator)
 
 N"The 6502 emulator has not yet been implemented."N
+
+1 xBL
+
+:CELL xIC;
+:CELLS CELL*;
+:ALLOT rV+sV;
+:CM rV ! CELL ALLOT;
+:CCM rV c! iV;
+:VAR rV 0 CM;
+:EXEC xJ;
+
+VAR sJT 64 CELLS ALLOT
+:JTA 0(--) rE 2+ rJE! rJE CELL+ sJE xIH sE;
+:JTE 0(n--a) CELLS rJT+ @;
+:JTI rJT sJE xIH sE;
+
+JTI
+:A"entry 0"; JTA
+:A"entry 1"; JTA
+:A"entry 2"; JTA
+:A"entry 3"; JTA
+:A"entry 4"; JTA
+
+"%n%ntests%n"
+0 4["-" rI JTE EXEC "-"]"-done-"
+CR CR
+
+:RL 6502 xBL;
