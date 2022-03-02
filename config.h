@@ -7,6 +7,7 @@
 #define ESP8266     4
 #define ESP32_DEV   5
 #define LEO         6
+#define TEENSY4     7
 
 #define __BOARD__ PICO
 
@@ -37,7 +38,7 @@
 #if __BOARD__ == PC
   #define __FILES__
   #define __EDITOR__
-  #define STK_SZ          16
+  #define STK_SZ          64
   #define FSTK_SZ         16
   #define LSTACK_SZ        8
   #define USER_SZ        (256*1024)
@@ -57,8 +58,18 @@
   #define FSTK_SZ          4
   #define STK_SZ          16
   #define LSTACK_SZ        8
-  #define USER_SZ        (128*1024)
-  #define NUM_REGS       (26*26)
+  #define USER_SZ        (96*1024)
+  #define NUM_REGS       (26*26*24)
+  #define NUM_FUNCS      (1000)
+#elif __BOARD__ == TEENSY4
+  #define __FILES__
+  #define __LITTLEFS__
+  #define __EDITOR__
+  #define FSTK_SZ          4
+  #define STK_SZ          48
+  #define LSTACK_SZ        8
+  #define USER_SZ        (256*1024)
+  #define NUM_REGS       (26*26*26)
   #define NUM_FUNCS      (1000)
 #elif __BOARD__ == ESP8266
   #define __WIFI__        1

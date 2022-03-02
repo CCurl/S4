@@ -32,7 +32,7 @@ void vmInit() {
 void setCell(byte* to, CELL val) {
 #ifdef _NEEDS_ALIGN_
     *(to++) = (byte)val; 
-    for (int i = 1; i < CELL_SZ; i++) {
+    for (uint i = 1; i < CELL_SZ; i++) {
         val = (val >> 8);
         *(to++) = (byte)val;
     }
@@ -45,7 +45,7 @@ CELL getCell(byte* from) {
     CELL val = 0;
 #ifdef _NEEDS_ALIGN_
     from += (CELL_SZ - 1);
-    for (int i = 0; i < CELL_SZ; i++) {
+    for (uint i = 0; i < CELL_SZ; i++) {
         val = (val << 8) + *(from--);
     }
 #else

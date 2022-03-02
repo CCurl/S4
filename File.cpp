@@ -31,6 +31,26 @@ CELL fpop() { return (fdsp) ? fstack[fdsp--] : 0; }
 File files[MAX_FILES + 1];
 int numFiles = 0;
 File f;
+#if __BOARD__ == TEENSY4
+LittleFS_Program myFS;
+void fileInit() {
+    myFS.begin(1 * 1024 * 1024);
+    printString("\r\nLittleFS: initialized");
+    printStringF("\r\nBytes Used: %llu, Bytes Total:%llu", myFS.usedSize(), myFS.totalSize());
+}
+#else
+#define FILE_READ "r"
+#define FILE_WRITE "w"
+#define myFS LittleFS
+void fileInit() {
+    myFS.begin();
+    printString("\r\nLittleFS: initialized");
+    FSInfo fs_info;
+    myFS.info(fs_info);
+    printStringF("\r\nLittleFS: Total: %ld", fs_info.totalBytes);
+    printStringF("\r\nLittleFS: Used: %ld", fs_info.usedBytes);
+}
+#endif
 
 int freeFile() {
     for (int i = 1; i <= MAX_FILES; i++) {
@@ -41,23 +61,12 @@ int freeFile() {
     return 0;
 }
 
-void fileInit() {
-    // for (int i = 0; i <= MAX_FILES; i++) { files[i] = File(); }
-    // LittleFS.begin(true);
-    // printString("\r\nLittleFS: initialized");
-    LittleFS.begin();
-    FSInfo fs_info;
-    LittleFS.info(fs_info);
-    printStringF("\r\nLittleFS: Total: %ld", fs_info.totalBytes);
-    printStringF("\r\nLittleFS: Used: %ld", fs_info.usedBytes);
-}
-
 void fileOpen() {
     char* md = (char*)pop();
     char* fn = (char*)pop();
     int i = freeFile();
     if (i) {
-        f = LittleFS.open(fn, md);
+        f = myFS.open(fn, (*md == 'w') ? FILE_WRITE : FILE_READ);
         if (f) { files[i] = f; }
         else {
             i = 0;
@@ -77,7 +86,7 @@ void fileClose() {
 
 void fileDelete() {
     char* fn = (char*)TOS;
-    TOS = LittleFS.remove(fn) ? 1 : 0;
+    TOS = myFS.remove(fn) ? 1 : 0;
 }
 
 void fileRead() {
@@ -110,7 +119,7 @@ char* blockFN() {
 
 void fileLoad() {
     push(0);
-    File f = LittleFS.open(blockFN(), "r");
+    File f = myFS.open(blockFN(), FILE_READ);
     if (f) {
         vmInit();
         int num = f.read(USER, USER_SZ);
@@ -127,7 +136,9 @@ void fileLoad() {
 
 void fileSave() {
     push(0);
-    File f = LittleFS.open(blockFN(), "w");
+    char *fn = blockFN();
+    myFS.remove(fn);
+    File f = myFS.open(fn, FILE_WRITE);
     if (f) {
         int count = HERE - USER;
         f.write(USER, count);
@@ -144,7 +155,7 @@ void blockOpen() {
     CELL m = pop();
     int fn = freeFile();
     if (fn == 0) { return; }
-    File f = LittleFS.open(blockFN(), m ? "w" : "r");
+    File f = myFS.open(blockFN(), m ? FILE_WRITE : FILE_READ);
     if (f) {
         files[fn] = f;
     }
@@ -153,7 +164,7 @@ void blockOpen() {
 // (n a sz--f)
 void blockRead() {
     CELL sz = pop(), a = pop();
-    File f = LittleFS.open(blockFN(), "r");
+    File f = myFS.open(blockFN(), FILE_READ);
     push(0);
     if (f) {
         TOS = f.read((addr)a, sz);
@@ -170,7 +181,9 @@ void blockLoad() {
 // (n a sz--f)
 void blockWrite() {
     CELL sz = pop(), a = pop();
-    File f = LittleFS.open(blockFN(), "w");
+    char *fn = blockFN();
+    myFS.remove(fn);
+    File f = myFS.open(fn, FILE_WRITE);
     push(0);
     if (f) {
         if (sz == 0) { sz = strlen((char*)a); }

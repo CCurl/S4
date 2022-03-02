@@ -59,8 +59,8 @@ int edGetChar() {
 
 void clearBlock() {
     for (int i = 0; i < BLOCK_SZ; i++) {
-        theBlock[i] = 32;
-        if ((i % 50) == 0) { theBlock[i] = 10; }
+        theBlock[i] = 0;
+        // if ((i % 50) == 0) { theBlock[i] = 10; }
     }
 }
 
@@ -77,7 +77,8 @@ void edRdBlk() {
 void edSvBlk() {
     push(blkNum);
     push((CELL)theBlock);
-    push(BLOCK_SZ);
+    //push(BLOCK_SZ);
+    push(0);
     blockWrite();
     msg = (pop()) ? "-saved-" : "-errWrite-";
     cur = isDirty = 0;
@@ -131,14 +132,14 @@ void showEditor() {
 
 void deleteChar() {
     for (int i = cur; i < MAX_CUR; i++) { theBlock[i] = theBlock[i + 1]; }
-    theBlock[MAX_CUR - 1] = 32;
-    theBlock[MAX_CUR] = 10;
+    theBlock[MAX_CUR - 1] = 0;
+    theBlock[MAX_CUR] = 0;
 }
 
 void insertChar(char c) {
     for (int i = MAX_CUR; cur < i; i--) { theBlock[i] = theBlock[i - 1]; }
     theBlock[cur] = c;
-    theBlock[MAX_CUR] = 10;
+    theBlock[MAX_CUR] = 0;
 }
 
 void doType(int isInsert) {
