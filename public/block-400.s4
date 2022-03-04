@@ -3,31 +3,44 @@
 0(Save the current state)
  1xBL
 10xBL
-0(------------------------------------------------------------------------------)
 
-:-Random numbers-;
-:-Random 8/16-bit #-;
-:RNB 256xR;
-:RNW 400xR2xR(~1+);
-:-connection[0|1][0-32]-;
-:RCN RNB 159&;
-:RNN RCN RCN;
-:-Random world x/y (--n)-;
-:RWX wsx@xR1+;         
-:RWY wsy@xR1+;
+0(------------------------------------------------------------------------------)
+0(------------------------------------------------------------------------------)
+0(------------------------------------------------------------------------------)
+0(A crude approximation of TANH)
+0(TNH (a--b): b=TanH(a);
+:TNH 83*100/ 99 MIN 99_ MAX;
 
 0(----------------------------------------)
-:-world stuff-;
-150 wsx!
- 40 wsy!
-wsx@ wsy@ * wsz!       0(world size)
-VAR wld! wsz@ ALT
-:-normalize x/y-;
-:WXN 0 MAX wsx@ MIN;   0(World X normalize (--x))
-:WYN 0 MAX wsy@ MIN;   0(World Y normalize (--y))
-:-world set/get at x/y-;
-:WST $wsx@*+wld@+x!;   0(World Set (c x y--))
-:WGT $wsx@*+wld@+x@;   0(World Get (x y--c))
+0(constants)
+ 10 sNCR               0(Number of critters)
+  8 sNCN               0(Number of connections)
+  4 sNHC               0(Number of hidden connections)
+100 sWSX               0(World sz X)
+ 30 sWSY               0(World sz Y)
+
+rWSX rWSY* sWSZ        0(World size)
+rNCN 4* 4+ sCSZ        0(Critter sze)
+
+0(----------------------------------------)
+0(Random numbers)
+0(Random 8/16-bit #)
+:RNDBYTE h100 xR;
+:RNDWORD h10000 xR;
+
+0(Random world x/y (--n))
+:RWX rWSX xR 1+;         
+:RWY rWSY xR 1+;
+
+0(----------------------------------------)
+0(world stuff)
+VAR sWLD rWSZ ALLOT
+:WXN 0 MAX rWSX MIN;   0(World X normalize (--x))
+:WYN 0 MAX rWSY MIN;   0(World Y normalize (--y))
+0(world set/get at x/y)
+:WOFF $ rWSX* + rWLD+;  0(Offset to cell (x y--a))
+:WSET WOFF c!;          0(World Set (c x y--))
+:WGET WOFF c@;          0(World Get (x y--c))
 
 0(----------------------------------------)
 0(----- connections -----)
@@ -36,75 +49,77 @@ VAR wld! wsz@ ALT
 0([input]      [output]      [weight])
 0([type] [id]  [type] [id]   [weight]
 0([0]    [1-7] [8]    [9-15] [16-31])
-0(type 1:hidden, 0: input/output)
+0(type 0:input/output, 1:hidden)
 
-0(A crude approximation of TANH)
-:-TNH (a--b): b=TanH(a);
-:TNH 83*100/99MIN99x-MAX;
-
-:-connection/nodes-;
+0(connection/nodes)
 0(num connections)
-8 ncn!
-:-Type/ID (n--t id)-;
-:TID 128x/;
-:-connection weight (a--w)-;
-:CWT 2+WDR#32767>(65536-);
-0(:CWT 3+WDR;)
-:-dump connection DCN (a--)-;
-:DCT TID$"(".",".")";
-:DCN #x@N" in:"DCT #1+x@", out:"DCT CWT", wt:"#." ("TNH.")";
+0(Type/ID (n--t id))
+:TID 128& % 16 $(\rNHC) ^;
+0(connection weight (a--w))
+:CONNWT 2+ WDR 81/;
+0(dump connection DCN (a--))
+:DCT TID$"(%d,%d)";
+:DCN # c@ N" in:"DCT #1+ c@", out:"DCT CONNWT", wt:"#." ("TNH.")";
 
 0(----------------------------------------)
-:-critters-;
+0(critters)
 0(Critter structure: 4 bytes + connections)
 0([x][y][col][0][connections])
 
 0(num critters)
-100 ncr!
+100 sNCR
 0(critter size)
-ncn@ xIC* 4+ csz!
+rNCN xIC* 4+ sCSZ
 
-0(Current critter)
-VAR cr!  0 CM
-0(Critters)
-VAR crs! 0 CM
-ncr@ csz@ * ALT
+0(rCR: Current critter)
+0(rCRS: Critters start)
+VAR sCRS
+rNCR rCSZ * ALLOT
 
-:-Get/Set SCR(n--), CC(--a)-;
-:SCR 1-csz@*crs@+cr!;
-:CC cr@;
+0(SCR (n--): Set critter)
+:SCR 1- rCSZ* rCRS+ sCR;
 
-:-Critter X/Y-;
-:CXY CCx@ CC1+x@;      0(Critter Get XY(--x y))
-:CSX WXN CCx!;         0(Critter Set X(n--))
-:CSY WYN CC1+x!;       0(Critter Set Y(n--))
+0(Critter X/Y)
+:CXY rCR c@ rCR 1+ c@; 0(Critter Get XY(--x y))
+:CSX WXN rCR c!;       0(Critter Set X(n--))
+:CSY WYN rCR 1+ c!;    0(Critter Set Y(n--))
 :RXY RWX CSX RWY CSY;  0(Critter Set Random XY(--))
 
-:-Critter Painting-;
-:CRP CXY GXY CC3+x@40STC"*";
-:PAC COF 1 ncr@[i@ SCR CRP]CLC CON;
+0(Critter Painting)
+:CRSETCOL rCR 3+ c!;       0(n--)
+:CRGETCOL rCR 3+ c@;       0(--n)
+:RNDCOL 8xR 31+ CRSETCOL;  0(--)
+:CRPAINT CXY GOTOXY CRGETCOL 40 SETCOL "*";
+:PAINTALL CUROFF 1 rNCR[rI SCR CRPAINT]CLRCOL CURON;
 
-:-Create Random Critter(s)-;
-:CRC RXY 8xR31+ CC3+x! CC4+t! 1 ncn@4*[RNN t@x! t@1+x! RNW t@2+WDW t@4+t!];
-:RAC 1 ncr@[i@ SCR CRC];
+0(Create a Random Critter(s))
+:RNDCR rCR s1 1 rCSZ[256 xR r1 c! i1] RXY RNDCOL;
+:RNDALL 1 rNCR[rI SCR RNDCR];
 
-:-Dump Critter(s)-;
-:DCR CXY$"x:".",y:"."," CC 4+t! 1 ncn@[t@ DCN t@4+t!]N;
-:DAC 1 ncr@[i@ # SCR "Critter #".": " DCR N];
+0(Dump critter(s))
+:DUMPCR CRGETCOL CXY$"xy: (%d,%d), col: %d, %n" rCR 4+ s1 1 rNCN[r1 DCN r1 4+ s1 CR];
+:DUMPALL 1 rNCR[rI "Critter #%d: " rI SCR DUMPCR CR];
 
-:-FB (a--b): Flip one random bit-;
-:FB 1 8xR SHL%%&(~&;)|;
+0(FB (a--b): Flip one random bit)
+:FB 1 8xR SHL %% b&(b~b&;)b|;
 
-:-CPB (a--b): Copy 1 byte w/possible mutation-;
-:CPB 125xR7=(FB;);
-0(:CPB 125xR7=("-"#.","FB#."-";);)
+0(CPB (a--b): Copy 1 byte w/possible mutation)
+:CPB 125 xR 7=(FB;);
 
-:-CPC (T--): Copy Current Critter to Critter #T-;
-:CPC CC #4+fc! $SCR CC 4+tc! cr! 1 ncn@4*[fc@x@ CPB tc@x! fcx# tcx#];
+0(CRADDR (N--A): A: address of critter #N)
+:CRADDR rCR s1 SCR rCR r1 sCR;
 
-RAC
-0(PAC)
-:DM 1{\RAC PACxK?0=}xK@\;
+0(COPYCA (F T--): Copy critter at F to critter at T)
+:COPYCR s2 s1 1 rCSZ[r1 c@ CPB r2 c! i1 i2];
 
-:--RELOAD BLOCK--;
+0(COPYCRITTER (T--): Copy Current critter to critter #T)
+:COPYCRITTER rCR s9 CRADDR s1 r9 r1 COPYCR r1 sCR RXY RNDCOL r9 sCR;
+
+RNDALL DUMPALL
+:DM 1{\ RNDALL PAINTALL xK? 0=}xK@ \;
+
+0(------------------------------------------------------------------------------)
+0(------------------------------------------------------------------------------)
+0(------------------------------------------------------------------------------)
+0(-RELOAD BLOCK-)
 :RL 400 xBL;

@@ -5,6 +5,11 @@ xSR
 :REGS 0 xIR 1-[rI xIC* xIAR+ @#s1(CR "r" rI 26&$26&$'A+,'A+,'A+,": "r1.)];
 :USED xIH xIAU-;
 
-0(-Shift Left/Right (a n--b)-)
-:SHL 1[2*];
-:SHR 1[2/];
+:SHL {$2*$1-};                    0(a b--c)
+:SHR {$2/$1-};                    0(a b--c)
+:MIN %%>($)\;                     0(a b--c)
+:MAX %%<($)\;                     0(a b--c)
+:VAR rV;                          0(--n)
+:ALLOT rV+ sV;                    0(n--)
+:WDR @ hFFFF b& #h7FFF>(h10000-); 0(a--n)
+:WDW % h100/ % c! c!;             0(n a--)

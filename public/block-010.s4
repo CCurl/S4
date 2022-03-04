@@ -2,26 +2,26 @@
 0(CSI (--): Control Sequence)
 :CSI 27"%c[";
 
-0(GXY (x y--): GotoXY)
-:GXY 27"%c[%d;%dH";  
+0(GOTOXY (x y--): GotoXY)
+:GOTOXY 27"%c[%d;%dH";  
 
 0(CLS (--): Clear Screen)
-:CLS 27"%c[2J"1#GXY;
+:CLS 27"%c[2J"1#GOTOXY;
 
-0(STC (fg bg--): Set Color)
-:STC 27"%c[%d;%dm";
+0(SETCOL (fg bg--): Set Color)
+:SETCOL 27"%c[%d;%dm";
 
-0(CLC (--): Clear Color)
-:CLC 0# STC;
+0(CLRCOL (--): Clear Color)
+:CLRCOL 0# SETCOL;
 
 0(CLL (--): Color list)
-:CLL 30 37[CR rI s1 40 47[r1 rI STC rI r1 " (%d,%d) "] CLC];
+:CLL 30 37[CR rI s1 40 47[r1 rI SETCOL rI r1 " (%d,%d) "] CLRCOL];
 
-0(COF (--): Curson off)
-:COF 27"%c[?25l";
+0(CUROFF (--): Curson off)
+:CUROFF 27"%c[?25l";
 
-0(CON (--): Curson on)
-:CON 27"%c[?25h";
+0(CURON (--): Curson on)
+:CURON 27"%c[?25h";
 
 0(DMO (--): A little demo, random stars, until you press a key (xK?0=))
-:DMO rX~(120sX) rY~(30sY)CLS 1{\rX xR rY xR GXY 8 xR 30+ 40 STC "*"xK?0=}xK@\ CLC;
+:DMO rX~(120sX) rY~(30sY)CLS 1{\rX xR rY xR GOTOXY 8 xR 30+ 40 SETCOL "*"xK?0=}xK@\ CLRCOL;
