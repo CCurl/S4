@@ -1,7 +1,4 @@
 0(Screen Stuff)
-0(CSI (--): Control Sequence)
-:CSI 27"%c[";
-
 0(GOTOXY (x y--): GotoXY)
 :GOTOXY 27"%c[%d;%dH";  
 

@@ -6,7 +6,7 @@ S4 is a minimal, extendable, and interactive environment where the source code I
 
 I think of S4 as a stack-based, RPN, Forth-like, virtual CPU/VM that can have as many registers, functions, and amount of user ram as the system supports.
 
-A register is identified by up to 3 lower-case characters, so there is a maximum or (26x26x26) = 17576 registers available. I tend to think of registers as built-in variables.
+A register is identified by up to 3 UPPER-case characters, so there is a maximum or (26x26x26) = 17576 registers available. I tend to think of registers as built-in variables. Reading, setting, incrementing or decrementing a register is a single operation.
 
 A function is identified by any number of UPPER-case characters. The maximum number of functions is set in the config.h file.
 
@@ -25,7 +25,7 @@ Examples for S4 are here: https://github.com/CCurl/S4/blob/main/doc/examples.txt
 
 There were multiple reasons:
 
-1. Many interpreted environments use tokens and a large SWITCH statement in a loop to execute the user's program. In these systems, the machine code (i.e. - byte-code ... the cases in the SWITCH statement) are often arbitrarily assigned and are not human-readable, so they have no meaning to the programmer when looking at the code that is actually being executed. Additionally there is a compiler and/or interpreter, often something similar to Forth, that is used to create the programs in that environment. For these enviromnents, there is a steep learning curve ... the programmer needs to learn the user environment and the hundreds or thousands of user functions in the libraries (or "words" in Forth). I wanted to avoid as much as that as possible, and have only one thing to learn: the machine code.
+1. Many interpreted environments use tokens and a large SWITCH statement in a loop to execute the user's program. In these systems, the "machine code" (i.e. - byte-code ... the cases in the SWITCH statement) are often arbitrarily assigned and are not human-readable, so they have no meaning to the programmer when looking at the code that is actually being executed. Additionally there is a compiler and/or interpreter, often something similar to Forth, that is used to create the programs in that environment. For these enviromnents, there is a steep learning curve ... the programmer needs to learn the user environment and the hundreds or thousands of user functions in the libraries (or "words" in Forth). I wanted to avoid as much as that as possible, and have only one thing to learn: the machine code.
 
 2. I wanted to be free of the need for a multiple gigabyte tool chain and the edit/compile/run paradigm for developing everyday programs.
 
@@ -42,7 +42,7 @@ S4 is the result of my work towards those goals.
 # The implementation of S4
 
 - The entire system is implemented in a few files. The engine is in S4.cpp.
-- - There are a few additional files to support optional functionality (WiFi and File access).
+- - There are a few additional files to support optional functionality (e.g - WiFi and File access).
 - The same code runs on Windows, Linux, and multiple development boards (via the Arduino IDE).
 - See the file "config.h" for system configuration settings.
 

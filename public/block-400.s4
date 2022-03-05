@@ -1,8 +1,11 @@
 0(Genetic evolution)
 
-0(Save the current state)
- 1xBL
-10xBL
+  1 xBL
+ 10 xBL
+401 xBL 0(the "brain")
+402 xBL 0(connections)
+403 xBL 0(critters)
+404 xBL 0(main)
 
 0(------------------------------------------------------------------------------)
 0(------------------------------------------------------------------------------)
@@ -16,6 +19,7 @@
  10 sNCR               0(Number of critters)
   8 sNCN               0(Number of connections)
   4 sNHC               0(Number of hidden connections)
+
 100 sWSX               0(World sz X)
  30 sWSY               0(World sz Y)
 

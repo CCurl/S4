@@ -1,0 +1,29 @@
+0(Block 401 - a simple "brain")
+0(see block 400 for details)
+
+0(rNBN: Number of Brain Nodes)
+0(note: each node is just a 32-bit sum)
+
+ 4 sNHN  0(Number of Hidden Nodes)
+16 sNON  0(Number of Output Nodes)
+
+VAR sBSH rNHN 4* ALLOT   0(Brain Start: Hidden Nodes)
+VAR sBSO rNON 4* ALLOT   0(Brain Start: Output Nodes)
+
+:BHINIT rBSH 1 rNBH[# 0 $ ! 4+]\;
+:BOINIT rBSO 1 rNBO[# 0 $ ! 4+]\;
+:BINIT BHINIT BOINIT;
+:BDONE rBST 1 rNBN[# @ TNH 0<() 4+]\;
+
+0(WAKEUP(a--): a: the connections)
+:WAKEUP s1 1 rNCN[s1 BINOUT r1 4+ s1];
+
+:BINOUT #s1 c@ DOIN r1 CONNWT r1 1+ c@ DOOUT;
+
+0(GETINPUT (x--y): node-input)
+0(x: node, y: input val)
+:GETINPUT \ 100 xR;
+
+0(DOOUT (inval wt out--): neuron output)
+0(inval: input value, wt: weight, out: output node)
+:DOOUT TID $1=(DOHIDDEN;) DOOUTPUT;
