@@ -43,29 +43,29 @@ rABC  (--n)       n: value of register ABC
 sABC  (n--)       n: value to store in register ABC
 iABC  (--)        increment register ABC
 dABC  (--)        decrement register ABC
-nABC  (--)        increment register ABC by the size od a cell (next cell)
+nABC  (--)        increment register ABC by the size of a cell (next cell)
 
 
-*** WORDS ***
-        NOTES: 1) Word names are any number of UPPERCASE characters
-               2) The number of words is controlled by the NUM_FUNCS #define in "config.h"
-:     (--)        Define word. Copy chars to (HERE++) until closing ';'.
-        NOTE: If the word has already been defined S4 prints "-redef-"
-XXX   (--)        Execute word XXX
+*** WORDS/FUNCTIONS ***
+        NOTES: 1) Word/Function names are ProperCase identifiers. 
+               2) They must begin with [A..Z], and can include underscore (_).
+               3) The number of words is controlled by the NUM_FUNCS #define in "config.h"
+               4) If a word has already been defined, S4 prints "-redef-".
+:     (--)        Define word/function. Copy chars to (HERE++) until closing ';'.
+A_b   (--)        Execute/call word/function A_b
 ;     (--)        Return: PC = rpop()
-        NOTES: 1) Returning while inside of a loop is not supported; break out of the loop.
+        NOTES: 1) Returning while inside of a loop is not supported; break out of the loop first.
                2) Use '|' to break out of a FOR or WHILE loop.
-               3) outside of ':<...>;', ';' can be used to comment out the rest of the line
 
 
 *** INPUT/OUTPUT ***
-.      (N--)      Output N as decimal number
-,      (N--)      Output N as character (Forth EMIT)
-"      (?--?)     Output characters until the next '"'
+.      (N--)      Output N as decimal number.
+,      (N--)      Output N as character (Forth EMIT).
+"      (?--?)     Output characters until the next '"'.
         NOTES: 1) %d outputs TOS as an integer (eg - 123"x%dx" outputs x123x)
                2) %c outputs TOS as a character (eg - 65"x%cx" outputs xAx)
                3) %n outputs CR/LF
-               4) %<x> outputs <x> (eg - "x%" %% %"x" outputs x" % "x)
+               4) %<x> output <x> (eg - "x%" %% %"x" outputs x" % "x)
 0..9   (--n)      Scan DECIMAL number. For multiple numbers, separate them by space (47 33).
                      To enter a negative number, use "negate" (eg - 490_).
 hNNN   (--h)      h: NNN as a HEX number (0-9, A-F, UPPERCASE only).

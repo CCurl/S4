@@ -8,7 +8,7 @@ short locBase, lastFunc;
 static char buf[64];
 addr pc, HERE;
 CELL seed, t1;
-FUNC_T func[NUM_FUNCS]; 
+FUNC_T func[NUM_FUNCS+1]; 
 CELL locs[STK_SZ * 10];
 
 void push(CELL v) { if (DSP < STK_SZ) { sys.dstack[++DSP] = v; } }
@@ -24,7 +24,7 @@ void vmInit() {
     seed = DSP = RSP = LSP = lastFunc = 0;
     for (int i = 0; i < NUM_REGS; i++) { REG[i] = 0; }
     for (int i = 0; i < USER_SZ; i++) { USER[i] = 0; }
-    for (int i = 0; i < NUM_FUNCS; i++) { func[i].hash = 0; }
+    for (int i = 0; i < NUM_FUNCS; i++) { func[i].hash = 0; func[i].val = 0; }
     HERE = USER;
     REG[21] = (CELL) (USER + (USER_SZ / 2)); // REG v
 }
@@ -80,11 +80,12 @@ void skipTo(byte to) {
         if (ir == '[') { skipTo(']'); continue; }
         if (ir == '"') { skipTo('"'); continue; }
     }
-    isError = 1;
+    PERR("-skip-");
 }
 
 addr findFunc(UCELL hash, addr vector) {
     if (isError) { return 0; }
+    if (NUM_FUNCS == MAX_HASH) { return func[hash].val; }
     for (int i = lastFunc-1; 0 <= i; i--) {
         if (func[i].hash == hash) { 
             if (vector) { func[i].val = vector; }
@@ -99,7 +100,8 @@ void addFunc(UCELL hash) {
     if (findFunc(hash, pc)) { 
         printStringF("-redef (%ld)-", hash);  return; 
     }
-    if (NUM_FUNCS <= lastFunc) { isError = 1; printString("-oof-"); }
+    if (NUM_FUNCS == MAX_HASH) { func[hash] = { hash, pc }; return; }
+    if (NUM_FUNCS <= lastFunc) PERR("-oof-");
     if (isError) { return; }
     func[lastFunc].hash = hash;
     func[lastFunc++].val = pc;
@@ -107,10 +109,10 @@ void addFunc(UCELL hash) {
 
 UCELL funcNum(addr &a) {
     UCELL hash = 5381;
-    while (*a && (BetweenI(*a, 'A', 'Z') || (*a == '.'))) {
+    while (BetweenI(*a, 'A', 'Z') || BetweenI(*a, 'a', 'z') || (*a == '_')) {
         hash = ((hash << 5) + hash) + *(a++);
     }
-    return hash;
+    return hash & MAX_HASH;
 }
 
 int regNum() {
@@ -120,7 +122,7 @@ int regNum() {
         if (t1 < 0) { break; }
         TOS = (TOS * 26) + t1;
     }
-    if (NUM_REGS <= TOS) { pop(); isError = 1; printString("-reg#-"); }
+    if (NUM_REGS <= TOS) { pop(); PERR("-reg#-"); }
     return isError ? 0 : 1;
 }
 
@@ -178,7 +180,7 @@ void doNext() {
 }
 
 int isNot0(int exp) {
-    if (exp == 0) { isError = 1; printString("-0div-"); }
+    if (exp == 0) PERR("-0div-");
     return isError == 0;
 }
 
@@ -278,7 +280,8 @@ addr run(addr start) {
                 TOS = (TOS * 10) + (ir - '0');
                 ir = *(++pc);
             } break;
-        case ':': addFunc(funcNum(pc)); skipTo(';'); HERE = pc;        break;  // 58
+        case ':': if (!BetweenI(*pc, 'A', 'Z')) { PERR("-FN-"); break; }
+            addFunc(funcNum(pc)); skipTo(';'); HERE = pc;              break;  // 58
         case ';': pc = rpop(); locBase -= 10;                          break;  // 59
         case '<': t1 = pop(); TOS = TOS < t1 ? 1 : 0;                  break;  // 60
         case '=': t1 = pop(); TOS = TOS == t1 ? 1 : 0;                 break;  // 61

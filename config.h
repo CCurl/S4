@@ -43,7 +43,8 @@
   #define LSTACK_SZ        8
   #define USER_SZ        (256*1024)
   #define NUM_REGS       (26*26*26)
-  #define NUM_FUNCS      (1000)
+  #define MAX_HASH       (0x3FFF)
+  #define NUM_FUNCS      (MAX_HASH)
 #elif __BOARD__ == XIAO
   // #define __GAMEPAD__
   #define STK_SZ          16
