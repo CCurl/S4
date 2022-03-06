@@ -43,6 +43,7 @@ rABC  (--n)       n: value of register ABC
 sABC  (n--)       n: value to store in register ABC
 iABC  (--)        increment register ABC
 dABC  (--)        decrement register ABC
+nABC  (--)        increment register ABC by the size od a cell (next cell)
 
 
 *** WORDS ***

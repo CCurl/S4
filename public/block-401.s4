@@ -7,16 +7,31 @@
  4 sNHN  0(Number of Hidden Nodes)
 16 sNON  0(Number of Output Nodes)
 
-VAR sBSH rNHN 4* ALLOT   0(Brain Start: Hidden Nodes)
-VAR sBSO rNON 4* ALLOT   0(Brain Start: Output Nodes)
+VAR sBSH rNHN CELLS ALLOT   0(Brain Start: Hidden Nodes)
+VAR sBSO rNON CELLS ALLOT   0(Brain Start: Output Nodes)
 
-:BHINIT rBSH 1 rNBH[# 0 $ ! 4+]\;
-:BOINIT rBSO 1 rNBO[# 0 $ ! 4+]\;
-:BINIT BHINIT BOINIT;
-:BDONE rBST 1 rNBN[# @ TNH 0<() 4+]\;
+0(rBCS: Brain Connections Start)
+0(BCS: Critter brain start)
+:BCS rCR CELL+ sBCS;
+
+0(BCI: (i--type id): brain connection #I input)
+:BCI 1- CELLS rBCS+ c@ TID;
+
+0(BCO: (i--type id): brain connection #I output)
+:BCO 1- CELLS rBCS+ 1+ c@ TID;
+
+0(BINIT (--): Initialize for run)
+:BINIT rBSH 1 rNHN rNON+[# 0 $ ! CELL+]\;
+
+0(BDONE (--): Done - do output)
+:BDONE rBSO 1 rNBN[# @ TNH 100 xR >(rI CROUT) CELL+]\;
+
+:DOINPUT rCR s1 CELL+ 1 rNCN[r1 c@ n1];
+:DOHIDDEN ;
+:DOOUTPUT ;
 
 0(WAKEUP(a--): a: the connections)
-:WAKEUP s1 1 rNCN[s1 BINOUT r1 4+ s1];
+:WAKEUP BINIT s1 1 rNCN[s1 DOINPUT n1] BDONE;
 
 :BINOUT #s1 c@ DOIN r1 CONNWT r1 1+ c@ DOOUT;
 
@@ -27,3 +42,10 @@ VAR sBSO rNON 4* ALLOT   0(Brain Start: Output Nodes)
 0(DOOUT (inval wt out--): neuron output)
 0(inval: input value, wt: weight, out: output node)
 :DOOUT TID $1=(DOHIDDEN;) DOOUTPUT;
+
+0(Dump Input connections)
+:DIC 1 rNCN[rI BCI $ #("H")~("I")." "];
+0(1 rNCR[rI SCR BCS DIC CR])
+0(Dump Output connections)
+:DOC 1 rNCN[rI BCO $ #("H")~("O")." "];
+0(1 rNCR[rI SCR BCS DOC CR])

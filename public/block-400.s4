@@ -11,8 +11,8 @@
 0(------------------------------------------------------------------------------)
 0(------------------------------------------------------------------------------)
 0(A crude approximation of TANH)
-0(TNH (a--b): b=TanH(a);
-:TNH 83*100/ 99 MIN 99_ MAX;
+0(TANH (a--b): b=TanH(a);
+:TANH 83*100/ 99 MIN 99_ MAX;
 
 0(----------------------------------------)
 0(constants)
@@ -58,12 +58,12 @@ VAR sWLD rWSZ ALLOT
 0(connection/nodes)
 0(num connections)
 0(Type/ID (n--t id))
-:TID 128& % 16 $(\rNHC) ^;
+:CONN.TID 128& % 16 $(\rNHC) ^;
 0(connection weight (a--w))
-:CONNWT 2+ WDR 81/;
+:CONN.WT 2+ WDR 81/;
 0(dump connection DCN (a--))
-:DCT TID$"(%d,%d)";
-:DCN # c@ N" in:"DCT #1+ c@", out:"DCT CONNWT", wt:"#." ("TNH.")";
+:CONN.DUMP CONN.TID $"(%d,%d)";
+:DCN # c@ N" in:"CONN.DUMP #1+ c@", out:"CONN.DUMP CONN.WT", wt:"#." ("TANH.")";
 
 0(----------------------------------------)
 0(critters)
@@ -80,47 +80,44 @@ rNCN xIC* 4+ sCSZ
 VAR sCRS
 rNCR rCSZ * ALLOT
 
-0(SCR (n--): Set critter)
-:SCR 1- rCSZ* rCRS+ sCR;
+0(CR.ADDR (N--A): A: address of critter #N)
+:CR.ADDR 1- rCSZ* rCRS+;
 
-0(Critter X/Y)
-:CXY rCR c@ rCR 1+ c@; 0(Critter Get XY(--x y))
-:CSX WXN rCR c!;       0(Critter Set X(n--))
-:CSY WYN rCR 1+ c!;    0(Critter Set Y(n--))
-:RXY RWX CSX RWY CSY;  0(Critter Set Random XY(--))
+0(CR.SET (n--): Set critter)
+:CR.SET CR.ADDR sCR;
 
-0(Critter Painting)
-:CRSETCOL rCR 3+ c!;       0(n--)
-:CRGETCOL rCR 3+ c@;       0(--n)
-:RNDCOL 8xR 31+ CRSETCOL;  0(--)
-:CRPAINT CXY GOTOXY CRGETCOL 40 SETCOL "*";
-:PAINTALL CUROFF 1 rNCR[rI SCR CRPAINT]CLRCOL CURON;
+:CR.XY rCR c@ rCR 1+ c@;       0(Critter Get XY(--x y))
+:CR.SX WXN rCR c!;             0(Critter Set X(n--))
+:CR.SY WYN rCR 1+ c!;          0(Critter Set Y(n--))
+:CR.RXY RWX CR.SX RWY CR.SY;   0(Critter Set Random XY(--))
+:CR.SETCOL rCR 3+ c!;          0(n--)
+:CR.GETCOL rCR 3+ c@;          0(--n)
+:CR.RNDCOL 8xR 31+ CR.SETCOL;  0(--)
+:CR.PAINT CR.XY GOTOXY CR.GETCOL 40 SETCOL "*";
+:PAINTALL CUROFF 1 rNCR[rI CR.SET CR.PAINT]CLRCOL CURON;
 
 0(Create a Random Critter(s))
-:RNDCR rCR s1 1 rCSZ[256 xR r1 c! i1] RXY RNDCOL;
-:RNDALL 1 rNCR[rI SCR RNDCR];
+:CR.RAND rCR s1 1 rCSZ[256 xR r1 c! i1] CR.RXY CR.RNDCOL;
+:CR.RAND.ALL 1 rNCR[rI CR.SET CR.RAND];
 
 0(Dump critter(s))
-:DUMPCR CRGETCOL CXY$"xy: (%d,%d), col: %d, %n" rCR 4+ s1 1 rNCN[r1 DCN r1 4+ s1 CR];
-:DUMPALL 1 rNCR[rI "Critter #%d: " rI SCR DUMPCR CR];
+:CR.DUMP CR.GETCOL CR.XY$"xy: (%d,%d), col: %d, %n" rCR 4+ s1 1 rNCN[r1 DCN r1 4+ s1 CR];
+:CR.DUMP.ALL 1 rNCR[rI "Critter #%d: " rI CR.SET CR.DUMP CR];
 
-0(FB (a--b): Flip one random bit)
-:FB 1 8xR SHL %% b&(b~b&;)b|;
+0(FLIP.BIT (a--b): Flip one random bit)
+:FLIP.BIT 1 8xR SHL %% b&(b~b&;)b|;
 
-0(CPB (a--b): Copy 1 byte w/possible mutation)
-:CPB 125 xR 7=(FB;);
+0(COPY.BYTE (a--b): Copy 1 byte w/possible mutation)
+:COPY.BYTE 125 xR 7=(FB;);
 
-0(CRADDR (N--A): A: address of critter #N)
-:CRADDR rCR s1 SCR rCR r1 sCR;
+0(CR.COPY (F T--): Copy critter at F to critter at T)
+:CR.COPY s2 s1 1 rCSZ[r1 c@ COPY.BYTE r2 c! i1 i2];
 
-0(COPYCA (F T--): Copy critter at F to critter at T)
-:COPYCR s2 s1 1 rCSZ[r1 c@ CPB r2 c! i1 i2];
+0(CR.COPY.TO (T--): Copy Current critter to critter #T)
+:CR.COPY.TO rCR s9 CR.SET r9 rCR CR.COPY CR.RXY CR.RNDCOL r9 sCR;
 
-0(COPYCRITTER (T--): Copy Current critter to critter #T)
-:COPYCRITTER rCR s9 CRADDR s1 r9 r1 COPYCR r1 sCR RXY RNDCOL r9 sCR;
-
-RNDALL DUMPALL
-:DM 1{\ RNDALL PAINTALL xK? 0=}xK@ \;
+0(CR.RAND.ALL CR.DUMP.ALL)
+:CR.DMO 1{\ CR.RAND.ALL CR.PAINT.ALL xK? 0=}xK@ \;
 
 0(------------------------------------------------------------------------------)
 0(------------------------------------------------------------------------------)

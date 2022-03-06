@@ -96,7 +96,9 @@ addr findFunc(UCELL hash, addr vector) {
 
 void addFunc(UCELL hash) {
     // DEBUG: report if the hash is already defined
-    if (findFunc(hash, pc)) { printStringF("-redef (%ld)-", hash);  return; }
+    if (findFunc(hash, pc)) { 
+        printStringF("-redef (%ld)-", hash);  return; 
+    }
     if (NUM_FUNCS <= lastFunc) { isError = 1; printString("-oof-"); }
     if (isError) { return; }
     func[lastFunc].hash = hash;
@@ -105,7 +107,7 @@ void addFunc(UCELL hash) {
 
 UCELL funcNum(addr &a) {
     UCELL hash = 5381;
-    while (*a && BetweenI(*a, 'A', 'Z')) {
+    while (*a && (BetweenI(*a, 'A', 'Z') || (*a == '.'))) {
         hash = ((hash << 5) + hash) + *(a++);
     }
     return hash;
@@ -132,6 +134,7 @@ void doRegOp(int op) {
     case 'i': (*pCell)++;         return;
     case 'r': push(*pCell);       return;
     case 's': *pCell = pop();     return;
+    case 'n': *pCell += CELL_SZ;  return;
     }
 }
 
@@ -302,7 +305,7 @@ addr run(addr start) {
             while (*pc && (*pc != ir)) { *(AOS++) = *(pc++); }
             *(AOS++) = 0; ++pc;                                        break;
         case 'a': case 'e': case 'f': case 'g': case 'j':  /* FREE */  break;  // 97-122
-        case 'k': case 'l': case 'm': case 'n': case 'o':  /* FREE */  break;
+        case 'k': case 'l': case 'm': case 'o':            /* FREE */  break;
         case 'p': case 'q': case 't': case 'u': case 'v':  /* FREE */  break;
         case 'b': ir = *(pc++);                                                // BIT ops
             if (ir == '&') { N &= TOS; DROP1; }                                // AND
@@ -317,7 +320,7 @@ addr run(addr start) {
                 t1 = BetweenI(*pc, 'A', 'F') ? (*pc - 'A') + 10 : t1;
                 if (0 <= t1) { TOS = (TOS * 0x10) + t1; ++pc; }
             } break;
-        case 'd': case 'i': case 'r': case 's': doRegOp(ir);           break;
+        case 'd': case 'i': case 'r': case 's': case 'n': doRegOp(ir); break;
         case 'w': ir = *(pc++);                                              // w! / w@
             if (ir == '!') { *AOS = N & 255; *(AOS+1) = (N/256)&255; DROP2;}
             if (ir == '@') { TOS = (*(AOS+1)*256) | *(AOS); }

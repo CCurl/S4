@@ -2,7 +2,7 @@
 xSR
 :CODE xIAU xIH1-[rI c@ #,';=(rI 1+ c@':=(CR))];
 :CR "%n";
-:REGS 0 xIR 1-[rI xIC* xIAR+ @#s1(CR "r" rI 26&$26&$'A+,'A+,'A+,": "r1.)];
+:REGS 0 xIR 1-[rI xIC* xIAR+ @#s1(CR "r" rI 26&$26&$1 3['A+,]": "r1.)];
 :USED xIH xIAU-;
 
 :SHL {$2*$1-};                    0(a b--c)
@@ -13,3 +13,5 @@ xSR
 :ALLOT rV+ sV;                    0(n--)
 :WDR @ hFFFF b& #h7FFF>(h10000-); 0(a--n)
 :WDW % h100/ % c! c!;             0(n a--)
+:CELL xIC;
+:CELLS xIC*;

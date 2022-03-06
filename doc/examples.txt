@@ -30,7 +30,7 @@ S4 examples:
     N A B s2 s1 1[r1 c@ r2 c! i1 i2]
 
 ; One way to copy N CELLS from A to B (N A B--)
-    N A B sD sS 1[rS @ rD ! rS`iC+sS rD`iC+sD]
+    N A B sD sS 1[rS @ rD ! nS nD]
 
 ; A simple benchmark for a 100 million FOR loop:
     1000#* 100* xT$ 1[] xT$-." ms"
