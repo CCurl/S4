@@ -35,15 +35,15 @@ c!    (n a--)     Store BYTE n to address a
 
 
 *** REGISTERS and LOCALS ***
-  NOTES: 1) Register names are 1 to 3 UPPERCASE characters: [A..ZZZ]
-         2) LOCALS: S4 provides 10 locals per call [0..9].
+  NOTES: 1) Register names are 1 to 3 UPPERCASE characters: [rA..rZZZ]
+         2) LOCALS: S4 provides 10 locals per call [r0..r9].
          3) The number of registers is controlled by the NUM_REGS #define in "config.h".
-         4) Register 'I' is the FOR Loop index **special**
-rABC  (--n)       n: value of register ABC
-sABC  (n--)       n: value to store in register ABC
-iABC  (--)        increment register ABC
-dABC  (--)        decrement register ABC
-nABC  (--)        increment register ABC by the size of a cell (next cell)
+         4) Register 'rI' is the FOR Loop index **special**
+rXXX  (--n)       read register/local XXX
+sXXX  (n--)       set register/local XXX to n
+iXXX  (--)        increment register/local XXX
+dXXX  (--)        decrement register/local XXX
+nXXX  (--)        increment register/local XXX by the size of a cell (next cell)
 
 
 *** WORDS/FUNCTIONS ***
