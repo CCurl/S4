@@ -67,7 +67,8 @@
   #define __FILES__
   #define __LITTLEFS__
   #define __EDITOR__
-  // #define __GAMEPAD__
+  #define __GAMEPAD__
+  #define GP_BUTTONS      32
   #define FSTK_SZ          4
   #define STK_SZ          48
   #define LSTACK_SZ        8

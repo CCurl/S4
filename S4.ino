@@ -4,15 +4,15 @@
 #define DR(x) digitalRead(x)
 
 #ifdef __GAMEPAD__
-int oButtonVals[32], nButtonVals[32];
+int buttonVal[GP_BUTTONS];
 #if __BOARD__ == TEENSY4
   #include "gamePad-Teensy.h"
 #else
   #include "gamePad.h"
 #endif
 void gamePadInit() {
-    for (int i = 0; i < 32; i++) {
-        oldVals[i] = newVals[i] = 0;
+    for (int i = 0; i < GP_BUTTONS; i++) {
+        buttonVal[i] = 0;
     }
     gpInit();
 }

@@ -4,12 +4,8 @@ N"The 6502 emulator has not yet been implemented."N
 
 1 xBL
 
-:CELL xIC;
-:CELLS CELL*;
-:ALLOT rV+sV;
 :CM rV ! CELL ALLOT;
 :CCM rV c! iV;
-:VAR rV 0 CM;
 :EXEC xJ;
 
 VAR sJT 64 CELLS ALLOT
