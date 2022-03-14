@@ -18,7 +18,7 @@
 ; Y: loop for Y axis
 ; MBROT: main, loop for Y axis
 
-0xBL
+1xBL
 :HEADER CR "The Mandelbrot Set";
 :Q iT rA#*rS/sC rB#*rS/sD rCrD+rK>(rJsM;) rArB*100/rY+sB rCrD-rX+sA iJ;
 :L 0sA 0sB 0sJ rSsM 1{\ Q rJ rM<};

@@ -1,10 +1,7 @@
 /*
- * gamepad.cpp - support for HID devices gamepad / joystick
+ * gamepad.h - support for HID devices gamepad / joystick
  */
 
-#include "s4.h"
-
-#ifdef __GAMEPAD__
 #include <HID-Project.h>
 #include <HID-Settings.h>
 addr doGamePad(byte ir, addr pc) {
@@ -23,8 +20,7 @@ addr doGamePad(byte ir, addr pc) {
         printString("-notGamepad-");
     }
     return pc;
-  
 }
-#else
-addr doGamePad(byte ir, addr pc) { printString("-noGamepad-"); return pc; }
-#endif
+
+void gpInit() { Gamepad.begin(); }
+

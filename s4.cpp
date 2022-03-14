@@ -150,13 +150,6 @@ void loopBreak() {
     else { skipTo(isFor ? ']' : '}'); }
 }
 
-void doWhile(){
-    lpush()->start = pc;
-    LTOS->end = 0;
-    LTOS->from = 1;
-    LTOS->to = 0;
-}
-
 void doFor() {
     CELL f = (N < TOS) ? N : TOS;
     CELL t = (N < TOS) ? TOS : N;
@@ -206,8 +199,6 @@ void doExt() {
         if (ir == 'D') { fileDelete(); }
         if (ir == 'R') { fileRead(); }
         if (ir == 'W') { fileWrite(); }
-        if (ir == 'L') { fileLoad(); }
-        if (ir == 'S') { fileSave(); }
         return;
     case 'J': if (TOS) { pc = AOS; } DROP1;                return;
     case 'K': ir = *(pc++);
@@ -330,8 +321,12 @@ addr run(addr start) {
             break;
         case 'x': doExt();                                             break;
         case 'y':  case 'z':                                           break;
-        case '{': if (TOS) { doWhile(); }                                      // 123
-                else { DROP1;  skipTo('}'); }                          break;
+        case '{': if (TOS) { 
+                lpush()->start = pc;
+                LTOS->end = 0;
+                LTOS->from = 1;
+                LTOS->to = 0;
+            } else { DROP1;  skipTo('}'); }                            break;
         case '|': loopBreak();                                         break;  // 124
         case '}': if (!TOS) { ldrop(); DROP1; }                                // 125
                 else { LTOS->end = pc; pc = LTOS->start; }             break;

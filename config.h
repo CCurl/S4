@@ -9,7 +9,9 @@
 #define LEO         6
 #define TEENSY4     7
 
-#define __BOARD__ PICO
+#define MAX_HASH       (0x3FFF)
+
+#define __BOARD__ TEENSY4
 
 #ifdef _WIN32
   #define __WINDOWS__
@@ -43,7 +45,6 @@
   #define LSTACK_SZ        8
   #define USER_SZ        (256*1024)
   #define NUM_REGS       (26*26*26)
-  #define MAX_HASH       (0x3FFF)
   #define NUM_FUNCS      (MAX_HASH)
 #elif __BOARD__ == XIAO
   // #define __GAMEPAD__
@@ -66,6 +67,7 @@
   #define __FILES__
   #define __LITTLEFS__
   #define __EDITOR__
+  // #define __GAMEPAD__
   #define FSTK_SZ          4
   #define STK_SZ          48
   #define LSTACK_SZ        8

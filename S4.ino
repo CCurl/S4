@@ -1,5 +1,25 @@
 #include "s4.h"
 
+#define AR(x) analogRead(x)
+#define DR(x) digitalRead(x)
+
+#ifdef __GAMEPAD__
+int oButtonVals[32], nButtonVals[32];
+#if __BOARD__ == TEENSY4
+  #include "gamePad-Teensy.h"
+#else
+  #include "gamePad.h"
+#endif
+void gamePadInit() {
+    for (int i = 0; i < 32; i++) {
+        oldVals[i] = newVals[i] = 0;
+    }
+    gpInit();
+}
+#else
+addr doGamePad(byte ir, addr pc) { printString("-noGamepad-"); return pc; }
+#endif
+
 #if __SERIAL__
     int charAvailable() { return mySerial.available(); }
     int getChar() { 
@@ -168,6 +188,7 @@ void setup() {
     vmInit();
     wifiStart();
     fileInit();
+    gamePadInit();
 }
 
 void do_autoRun() {

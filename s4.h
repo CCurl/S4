@@ -1,5 +1,8 @@
 // S4 - A Minimal Interpreter
 
+#ifndef __S4_H__
+#define __S4_H__
+
 #include "config.h"
 #include <stdio.h>
 #include <stdarg.h>
@@ -90,13 +93,10 @@ extern void fileClose();
 extern void fileDelete();
 extern void fileRead();
 extern void fileWrite();
-extern void fileLoad();
-extern void fileSave();
 extern void fpush(CELL);
 extern CELL input_fp, fpop();
 
 // Editor support
 void doEditor();
 
-// Gamepad support (Arduino)
-addr doGamePad(byte, addr);
+#endif // __S4_H__

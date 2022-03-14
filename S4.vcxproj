@@ -141,7 +141,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="editor.cpp" />
-    <ClCompile Include="gamepad.cpp" />
     <ClCompile Include="WiFi.cpp" />
     <ClCompile Include="File.cpp" />
     <ClCompile Include="pc-main.cpp" />
@@ -183,6 +182,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="config.h" />
+    <ClInclude Include="gamePad-Teensy.h" />
+    <ClInclude Include="gamePad.h" />
     <ClInclude Include="s4.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
