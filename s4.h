@@ -64,7 +64,7 @@ extern void vmInit();
 extern CELL pop();
 extern void push(CELL);
 extern addr run(addr);
-extern addr doCustom(byte, addr);
+extern addr doCustom(CELL, addr);
 extern addr findFunc(UCELL, addr);
 extern UCELL funcNum(addr&);
 extern void printChar(const char);

@@ -46,7 +46,7 @@ void printString(const char* str) { printf("%s", str); }
 
 CELL getSeed() { return millis(); }
 
-addr doCustom(byte ir, addr pc) {
+addr doCustom(CELL ir, addr pc) {
     switch (ir) {
     case 'N': push(micros());          break;
     case 'T': push(millis());          break;
