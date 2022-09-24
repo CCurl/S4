@@ -246,6 +246,7 @@ addr run(addr start) {
                 ir = *(pc++);
                 if (ir == 'c') { printChar((char)pop()); }
                 else if (ir == 'd') { printStringF("%ld", pop()); }
+                else if (ir == 'x') { printStringF("%lx", pop()); }
                 else if (ir == 'n') { printString("\r\n"); }
                 else { printChar(ir); }
             }

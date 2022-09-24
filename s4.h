@@ -5,7 +5,11 @@
 
 #include "config.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdarg.h>
+#include <string.h>
+#include <time.h>
+#include <math.h>
 
 #ifndef S4CELL
 #define S4CELL long

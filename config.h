@@ -25,7 +25,7 @@
 #endif
 
 #ifdef __LINUX__
-  #include <time.h>
+  #include <unistd.h>
   #undef __BOARD__
   #define __BOARD__ PC
 #endif

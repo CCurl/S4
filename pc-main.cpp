@@ -2,15 +2,16 @@
 
 #include "s4.h"
 
+CELL millis() {
+    return (CELL)clock()/1000;
+}
+CELL micros() {
+    return (CELL)clock();
+}
+
 #if __BOARD__ == PC
 
 #ifdef __WINDOWS__
-CELL millis() {
-    return (CELL)GetTickCount();
-}
-CELL micros() {
-    return (CELL)millis()*1000;
-}
 void delay(UCELL ms) { 
     Sleep((DWORD)ms);
 }
@@ -19,21 +20,11 @@ int charAvailable() { return _kbhit(); }
 int getChar() { return _getch(); }
 
 #else
-CELL millis() {
-    struct timespec ts;
-    clock_gettime(CLOCK_MONOTONIC, &ts);
-    return (CELL)((ts.tv_sec * 1000) + (ts.tv_nsec / 1000000));
-}
-CELL micros() {
-    struct timespec ts;
-    clock_gettime(CLOCK_MONOTONIC, &ts);
-    return (CELL)(ts.tv_nsec);
-}
+int charAvailable() { return 0; }
+int getChar() { return 0; }
+
 void delay(UCELL ms) { 
-    struct timespec ts;
-    ts.tv_sec = ms / 1000;
-    ts.tv_nsec = (ms % 1000) * 1000000;
-    nanosleep(&ts, NULL); 
+    usleep(ms*1000); 
 }
 #endif
 
