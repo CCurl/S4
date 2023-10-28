@@ -149,7 +149,6 @@
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsCpp</CompileAs>
     </ClCompile>
     <Text Include="doc\examples.txt" />
-    <Text Include="doc\reference.txt" />
     <Text Include="history.txt" />
     <Text Include="public\history.txt" />
     <Text Include="S4.ino">
@@ -160,6 +159,7 @@
     <None Include=".gitignore" />
     <None Include="doc\architecture.md" />
     <None Include="doc\extendingS4.md" />
+    <None Include="doc\reference.md" />
     <None Include="ESP32.h" />
     <None Include="ESP8266.h" />
     <None Include="LICENSE" />
