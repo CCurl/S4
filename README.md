@@ -17,7 +17,7 @@ The number of registers, function vectors, and user memory can be scaled as desi
 - Example 4: 32 126\[13,10,rI#."-",\]  - would print the ASCII table
 - Example 3: 1000sS 13xPO 1{1 13 xPWD rS xW 0 13 xPWD rS xW} - the typical Arduino "blink" program.
 
-The reference for S4 is here:   https://github.com/CCurl/S4/blob/main/doc/reference.txt
+The reference for S4 is here:   https://github.com/CCurl/S4/blob/main/doc/reference.md
 
 Examples for S4 are here: https://github.com/CCurl/S4/blob/main/doc/examples.txt
 
