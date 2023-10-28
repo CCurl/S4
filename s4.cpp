@@ -8,7 +8,7 @@ short locBase, lastFunc;
 static char buf[64];
 addr pc, HERE;
 CELL seed, t1;
-FUNC_T func[NUM_FUNCS+1]; 
+addr func[MAX_HASH+1]; 
 CELL locs[STK_SZ * 10];
 
 void push(CELL v) { if (DSP < STK_SZ) { sys.dstack[++DSP] = v; } }
@@ -24,7 +24,7 @@ void vmInit() {
     seed = DSP = RSP = LSP = lastFunc = 0;
     for (int i = 0; i < NUM_REGS; i++) { REG[i] = 0; }
     for (int i = 0; i < USER_SZ; i++) { USER[i] = 0; }
-    for (int i = 0; i < NUM_FUNCS; i++) { func[i].hash = 0; func[i].val = 0; }
+    for (int i = 0; i < NUM_FUNCS; i++) { func[i] = 0; }
     HERE = USER;
     REG[21] = (CELL) (USER + (USER_SZ / 2)); // REG v
 }
@@ -83,31 +83,7 @@ void skipTo(byte to) {
     PERR("-skip-");
 }
 
-addr findFunc(UCELL hash, addr vector) {
-    if (isError) { return 0; }
-    if (NUM_FUNCS == MAX_HASH) { return func[hash].val; }
-    for (int i = lastFunc-1; 0 <= i; i--) {
-        if (func[i].hash == hash) { 
-            if (vector) { func[i].val = vector; }
-            return func[i].val; 
-        }
-    }
-    return 0;
-}
-
-void addFunc(UCELL hash) {
-    // DEBUG: report if the hash is already defined
-    if (findFunc(hash, pc)) { 
-        printStringF("-redef (%ld)-", hash);  return; 
-    }
-    if (NUM_FUNCS == MAX_HASH) { func[hash] = { hash, pc }; return; }
-    if (NUM_FUNCS <= lastFunc) PERR("-oof-");
-    if (isError) { return; }
-    func[lastFunc].hash = hash;
-    func[lastFunc++].val = pc;
-}
-
-UCELL funcNum(addr &a) {
+UCELL doHash(addr &a) {
     UCELL hash = 5381;
     while (BetweenI(*a, 'A', 'Z') || BetweenI(*a, 'a', 'z') || (*a == '_')) {
         hash = ((hash << 5) + hash) + *(a++);
@@ -272,8 +248,9 @@ addr run(addr start) {
                 TOS = (TOS * 10) + (ir - '0');
                 ir = *(++pc);
             } break;
-        case ':': if (!BetweenI(*pc, 'A', 'Z')) { PERR("-FN-"); break; }
-            addFunc(funcNum(pc)); skipTo(';'); HERE = pc;              break;  // 58
+        case ':': if (!BetweenI(*pc, 'A', 'Z')) { PERR("-FN-"); break; }       // 58
+                t1=doHash(pc); if (func[t1]) { printStringF("-redef (%ld)-", t1); }
+                func[t1] = pc; skipTo(';'); HERE = pc;                 break;
         case ';': pc = rpop(); locBase -= 10;                          break;  // 59
         case '<': t1 = pop(); TOS = TOS < t1 ? 1 : 0;                  break;  // 60
         case '=': t1 = pop(); TOS = TOS == t1 ? 1 : 0;                 break;  // 61
@@ -285,11 +262,10 @@ addr run(addr start) {
         case 'K': case 'L': case 'M': case 'N': case 'O':
         case 'P': case 'Q': case 'R': case 'S': case 'T':
         case 'U': case 'V': case 'W': case 'X': case 'Y': 
-        case 'Z': --pc;
-                t1 = (CELL)findFunc(funcNum(pc), 0);
-                if (t1) {
+        case 'Z': --pc; t1 = (CELL)doHash(pc);
+                if (func[t1]) {
                     if (*pc != ';') { locBase += 10; rpush(pc); }
-                    pc = (addr)t1;
+                    pc = (addr)func[t1];
                 } break;
         case '[': doFor();                                             break;  // 91
         case '\\': DROP1;                                              break;  // 92 (DROP)

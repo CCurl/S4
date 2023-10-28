@@ -46,11 +46,6 @@ typedef struct {
 } LOOP_ENTRY_T;
 
 typedef struct {
-    UCELL hash;
-    addr val;
-} FUNC_T;
-
-typedef struct {
     ushort dsp, rsp, lsp, u1;
     CELL   dstack[STK_SZ + 1];
     addr   rstack[STK_SZ + 1];
@@ -70,7 +65,7 @@ extern void push(CELL);
 extern addr run(addr);
 extern addr doCustom(byte, addr);
 extern addr findFunc(UCELL, addr);
-extern UCELL funcNum(addr&);
+extern UCELL doHash(addr&);
 extern void printChar(const char);
 extern void printString(const char*);
 extern void printStringF(const char*, ...);

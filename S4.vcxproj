@@ -176,6 +176,7 @@
     <None Include="public\block-220.s4" />
     <None Include="public\block-300.s4" />
     <None Include="public\block-400.s4" />
+    <None Include="public\block-401.s4" />
     <None Include="public\block-6502.s4" />
     <None Include="public\block-999.s4" />
     <None Include="README.md" />

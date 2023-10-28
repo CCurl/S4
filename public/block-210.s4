@@ -16,15 +16,15 @@
 ; O: output
 ; X: loop for X axis
 ; Y: loop for Y axis
-; MBROT: main, loop for Y axis
+; Mbrot: main, loop for Y axis
 
 1xBL
-:HEADER CR "The Mandelbrot Set";
-:Q iT rA#*rS/sC rB#*rS/sD rCrD+rK>(rJsM;) rArB*100/rY+sB rCrD-rX+sA iJ;
-:L 0sA 0sB 0sJ rSsM 1{\ Q rJ rM<};
+:Header CR "The Mandelbrot Set";
+:Qa iT rA#*rS/sC rB#*rS/sD rCrD+rK>(rJsM;) rArB*100/rY+sB rCrD-rX+sA iJ;
+:L 0sA 0sB 0sJ rSsM 1{\ Qa rJ rM<};
 :O L rJ 40+#126>(\32),;
 :X 490_ sX 1 95[   O rX 8+sX];
 :Y 340_ sY 1 35[CR X rY20+sY];
-:MBROT HEADER 0sT xT Y xT$- CR rT." iterations, " . " ms";
+:Mbrot Header 0sT xT Y xT$- CR rT." iterations, " . " ms";
 200 sS 1000000 sK M
-MBROT
+Mbrot

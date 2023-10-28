@@ -9,9 +9,9 @@
 #define LEO         6
 #define TEENSY4     7
 
-#define MAX_HASH       (0x3FFF)
-
 #define __BOARD__ TEENSY4
+
+// NOTE: NUM_FUNCS should be a power of 2
 
 #ifdef _WIN32
   #define __WINDOWS__
@@ -45,14 +45,14 @@
   #define LSTACK_SZ        8
   #define USER_SZ        (256*1024)
   #define NUM_REGS       (26*26*26)
-  #define NUM_FUNCS      (MAX_HASH)
+  #define NUM_FUNCS      (64*1024)
 #elif __BOARD__ == XIAO
   // #define __GAMEPAD__
   #define STK_SZ          16
   #define LSTACK_SZ        4
   #define USER_SZ        (22*1024)
   #define NUM_REGS       (26*26)
-  #define NUM_FUNCS      (100)
+  #define NUM_FUNCS      (128)
 #elif __BOARD__ == PICO
   #define __FILES__
   #define __LITTLEFS__
@@ -62,7 +62,7 @@
   #define LSTACK_SZ        8
   #define USER_SZ        (96*1024)
   #define NUM_REGS       (26*26*24)
-  #define NUM_FUNCS      (1000)
+  #define NUM_FUNCS      (1024)
 #elif __BOARD__ == TEENSY4
   #define __FILES__
   #define __LITTLEFS__
@@ -74,7 +74,7 @@
   #define LSTACK_SZ        8
   #define USER_SZ        (256*1024)
   #define NUM_REGS       (26*26*26)
-  #define NUM_FUNCS      (1000)
+  #define NUM_FUNCS      (1024)
 #elif __BOARD__ == ESP8266
   #define __WIFI__        1
   #define __WATCHDOG__
@@ -89,7 +89,7 @@
   #define LSTACK_SZ       4
   #define USER_SZ        (24*1024)
   #define NUM_REGS       (26*26)
-  #define NUM_FUNCS      (500)
+  #define NUM_FUNCS      (512)
 #elif __BOARD__ == ESP32_DEV
   #define __WIFI__        1
   // #define __WATCHDOG__
@@ -111,7 +111,9 @@
   #define LSTACK_SZ       2
   #define USER_SZ        (1*1024)
   #define NUM_REGS       (13)
-  #define NUM_FUNCS      (25)
+  #define NUM_FUNCS      (32)
 #endif
+
+#define MAX_HASH       (NUM_FUNCS-1)
 
 #endif
