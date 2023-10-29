@@ -2,30 +2,25 @@
 
 #include "s4.h"
 
-CELL millis() {
-    return (CELL)clock()/1000;
-}
-CELL micros() {
-    return (CELL)clock();
-}
 
 #if __BOARD__ == PC
 
 #ifdef __WINDOWS__
-void delay(UCELL ms) { 
-    Sleep((DWORD)ms);
-}
 
+void delay(UCELL ms) { Sleep((DWORD)ms); }
+CELL millis() { return (CELL)clock(); }
+CELL micros() { return (CELL)clock()*1000; }
 int charAvailable() { return _kbhit(); }
 int getChar() { return _getch(); }
 
 #else
+
 int charAvailable() { return 0; }
 int getChar() { return 0; }
+void delay(UCELL ms) { usleep(ms*1000); }
+CELL millis() { return (CELL)clock()/1000; }
+CELL micros() { return (CELL)clock(); }
 
-void delay(UCELL ms) { 
-    usleep(ms*1000); 
-}
 #endif
 
 static char buf[256];
@@ -33,8 +28,6 @@ static CELL t1, t2;
 
 void printChar(const char c) { printf("%c", c); }
 void printString(const char* str) { printf("%s", str); }
-
-
 CELL getSeed() { return millis(); }
 
 addr doCustom(byte ir, addr pc) {

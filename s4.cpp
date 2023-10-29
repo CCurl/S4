@@ -74,11 +74,13 @@ void skipTo(byte to) {
     while (*pc) {
         ir = *(pc++);
         if ((to == '"') && (ir != to)) { continue; }
+        if ((to == '`') && (ir != to)) { continue; }
         if (ir == to) { return; }
         if (ir == '\'') { ++pc; continue; }
         if (ir == '(') { skipTo(')'); continue; }
         if (ir == '[') { skipTo(']'); continue; }
         if (ir == '"') { skipTo('"'); continue; }
+        if (ir == '`') { skipTo('`'); continue; }
     }
     PERR("-skip-");
 }
@@ -211,107 +213,110 @@ addr run(addr start) {
     pc = start;
     locBase = isError = 0;
     RSP = LSP = 0;
-    while (!isError && pc) {
-        ir = *(pc++);
-        switch (ir) {
+    next:
+    if (isError || (!pc)) { return pc; }
+#ifdef __WATCHDOG__
+    feedWatchDog();
+#endif
+    ir = *(pc++);
+    switch (ir) {
         case 0: return pc;
-        case ' ': while (BetweenI(*pc, 1, 32)) { pc++; }               break;  // 32
-        case '!': setCell(AOS, N); DROP2;                              break;  // 33 (STORE)
-        case '"': while (*pc && (*pc != '"')) {                                // 34 PRINT
+        NCASE ' ': while (BetweenI(*pc, 1, 32)) { pc++; }                 // 32
+        NCASE '!': setCell(AOS, N); DROP2;                                // 33 (STORE)
+        NCASE '"': while (*pc && (*pc != '"')) {                          // 34 PRINT
             ir = *(pc++); if (ir == '%') {
                 ir = *(pc++);
                 if (ir == 'c') { printChar((char)pop()); }
                 else if (ir == 'd') { printStringF("%ld", pop()); }
-                else if (ir == 'x') { printStringF("%lx", pop()); }
+                else if (ir == 'e') { printChar(27); }
                 else if (ir == 'n') { printString("\r\n"); }
+                else if (ir == 'q') { printChar('"'); }
+                else if (ir == 'x') { printStringF("%lx", pop()); }
                 else { printChar(ir); }
             }
             else { printChar(ir); }
-        } ++pc;   break;  // 34
-        case '#': push(TOS);                                           break;  // 35 (DUP)
-        case '$': t1 = N; N = TOS; TOS = t1;                           break;  // 36 (SWAP)
-        case '%': push(N);                                             break;  // 37 (OVER)
-        case '&': if (isNot0(TOS)) { t1=TOS; TOS=N%t1; N/=t1; }        break;  // 38 (/MOD)
-        case '\'': push(*(pc++));                                      break;  // 39
-        case '(': if (pop() == 0) { skipTo(')'); }                     break;  // 40 (IF)
-        case ')': /* endIf() */                                        break;  // 41
-        case '*': t1 = pop(); TOS *= t1;                               break;  // 42
-        case '+': t1 = pop(); TOS += t1;                               break;  // 43
-        case ',': t1 = pop(); printChar((char)t1);                     break;  // 44
-        case '-': t1 = pop(); TOS -= t1;                               break;  // 45
-        case '.': t1 = pop();  printStringF("%ld", t1);                break;  // 46
-        case '/': t1 = pop(); if (isNot0(t1)) { TOS /= t1; }           break;  // 47
-        case '0': case '1': case '2': case '3': case '4':                      // 48-57
-        case '5': case '6': case '7': case '8': case '9':
+        } ++pc;
+        NCASE '#': push(TOS);                                             // 35 (DUP)
+        NCASE '$': t1 = N; N = TOS; TOS = t1;                             // 36 (SWAP)
+        NCASE '%': push(N);                                               // 37 (OVER)
+        NCASE '&': if (isNot0(TOS)) { t1=TOS; TOS=N%t1; N/=t1; }          // 38 (/MOD)
+        NCASE '\'': push(*(pc++));                                        // 39
+        NCASE '(': if (pop() == 0) { skipTo(')'); }                       // 40 (IF)
+        NCASE ')': /* endIf() */                                          // 41
+        NCASE '*': t1 = pop(); TOS *= t1;                                 // 42
+        NCASE '+': t1 = pop(); TOS += t1;                                 // 43
+        NCASE ',': t1 = pop(); printChar((char)t1);                       // 44
+        NCASE '-': t1 = pop(); TOS -= t1;                                 // 45
+        NCASE '.': t1 = pop();  printStringF("%ld", t1);                  // 46
+        NCASE '/': t1 = pop(); if (isNot0(t1)) { TOS /= t1; }             // 47
+        NCASE '0': case '1': case '2': case '3': case '4':                // 48-57
+        case  '5': case '6': case '7': case '8': case '9':
             push(ir - '0'); ir = *(pc);
             while (BetweenI(ir, '0', '9')) {
                 TOS = (TOS * 10) + (ir - '0');
                 ir = *(++pc);
-            } break;
-        case ':': if (!BetweenI(*pc, 'A', 'Z')) { PERR("-FN-"); break; }       // 58
+            }
+        NCASE ':': if (!BetweenI(*pc, 'A', 'Z')) { PERR("-FN-"); }             // 58
                 t1=doHash(pc); if (func[t1]) { printStringF("-redef (%ld)-", t1); }
-                func[t1] = pc; skipTo(';'); HERE = pc;                 break;
-        case ';': pc = rpop(); locBase -= 10;                          break;  // 59
-        case '<': t1 = pop(); TOS = TOS < t1 ? 1 : 0;                  break;  // 60
-        case '=': t1 = pop(); TOS = TOS == t1 ? 1 : 0;                 break;  // 61
-        case '>': t1 = pop(); TOS = TOS > t1 ? 1 : 0;                  break;  // 62
-        case '?': /* FREE */                                           break;  // 63
-        case '@': TOS = getCell(AOS);                                  break;  // 64
-        case 'A': case 'B': case 'C': case 'D': case 'E':                      // 65-90
-        case 'F': case 'G': case 'H': case 'I': case 'J':
-        case 'K': case 'L': case 'M': case 'N': case 'O':
-        case 'P': case 'Q': case 'R': case 'S': case 'T':
-        case 'U': case 'V': case 'W': case 'X': case 'Y': 
-        case 'Z': --pc; t1 = (CELL)doHash(pc);
+                func[t1] = pc; skipTo(';'); HERE = pc;
+        NCASE ';': pc = rpop(); locBase -= 10;                            // 59
+        NCASE '<': t1 = pop(); TOS = TOS < t1 ? 1 : 0;                    // 60
+        NCASE '=': t1 = pop(); TOS = TOS == t1 ? 1 : 0;                   // 61
+        NCASE '>': t1 = pop(); TOS = TOS > t1 ? 1 : 0;                    // 62
+        NCASE '?': /* FREE */                                             // 63
+        NCASE '@': TOS = getCell(AOS);                                    // 64
+        NCASE 'A': case 'B': case 'C': case 'D': case 'E':                // 65-90
+        case  'F': case 'G': case 'H': case 'I': case 'J':
+        case  'K': case 'L': case 'M': case 'N': case 'O':
+        case  'P': case 'Q': case 'R': case 'S': case 'T':
+        case  'U': case 'V': case 'W': case 'X': case 'Y': 
+        case  'Z': --pc; t1 = (CELL)doHash(pc);
                 if (func[t1]) {
                     if (*pc != ';') { locBase += 10; rpush(pc); }
                     pc = (addr)func[t1];
-                } break;
-        case '[': doFor();                                             break;  // 91
-        case '\\': DROP1;                                              break;  // 92 (DROP)
-        case ']': doNext();                                            break;  // 93
-        case '^': t1 = pop(); if (isNot0(t1)) { TOS %= t1; }           break;  // 94 (MODULO)
-        case '_': TOS = -TOS;                                          break;  // 95 (NEGATE)
-        case '`': push(TOS);                                                   // 96
+                }
+        NCASE '[': doFor();                                               // 91
+        NCASE '\\': DROP1;                                                // 92 (DROP)
+        NCASE ']': doNext();                                              // 93
+        NCASE '^': t1 = pop(); if (isNot0(t1)) { TOS %= t1; }             // 94 (MODULO)
+        NCASE '_': TOS = -TOS;                                            // 95 (NEGATE)
+        NCASE '`': push(TOS);                                             // 96
             while (*pc && (*pc != ir)) { *(AOS++) = *(pc++); }
-            *(AOS++) = 0; ++pc;                                        break;
-        case 'a': case 'e': case 'f': case 'g': case 'j':  /* FREE */  break;  // 97-122
-        case 'k': case 'l': case 'm': case 'o':            /* FREE */  break;
-        case 'p': case 'q': case 't': case 'u': case 'v':  /* FREE */  break;
-        case 'b': ir = *(pc++);                                                // BIT ops
-            if (ir == '&') { N &= TOS; DROP1; }                                // AND
-            if (ir == '|') { N |= TOS; DROP1; }                                // OR
-            if (ir == '^') { N ^= TOS; DROP1; }                                // XOR
-            if (ir == '~') { TOS = ~TOS; }                             break;  // NOT
-        case 'c': ir = *(pc++);                                                // c! / c@
+            *(AOS++) = 0; ++pc;
+        NCASE 'a': NCASE 'e': NCASE 'f': NCASE 'g': NCASE 'j':  /* FREE */
+        NCASE 'k': NCASE 'l': NCASE 'm': NCASE 'o':             /* FREE */
+        NCASE 'p': NCASE 'q': NCASE 't': NCASE 'u': NCASE 'v':  /* FREE */
+        NCASE 'y': NCASE 'z': /* FREE */
+        NCASE 'b': ir = *(pc++);                                           // BIT ops
+            if (ir == '&') { N &= TOS; DROP1; }                            // AND
+            else if (ir == '|') { N |= TOS; DROP1; }                       // OR
+            else if (ir == '^') { N ^= TOS; DROP1; }                       // XOR
+            else if (ir == '~') { TOS = ~TOS; }                            // NOT
+        NCASE 'c': ir = *(pc++);                                           // c! / c@
             if (ir == '!') { *AOS = (byte)N; DROP2; }
-            if (ir == '@') { TOS = *AOS; }                             break;
-        case 'h': push(0); t1 = 1; while (0 <= t1) {
+            if (ir == '@') { TOS = *AOS; }
+        NCASE 'h': push(0); t1 = 1; while (0 <= t1) {
                 t1 = BetweenI(*pc, '0', '9') ? (*pc - '0') : -1;
                 t1 = BetweenI(*pc, 'A', 'F') ? (*pc - 'A') + 10 : t1;
                 if (0 <= t1) { TOS = (TOS * 0x10) + t1; ++pc; }
-            } break;
-        case 'd': case 'i': case 'r': case 's': case 'n': doRegOp(ir); break;
-        case 'w': ir = *(pc++);                                              // w! / w@
+            }
+        NCASE 'd': case 'i': case 'r': case 's': case 'n': doRegOp(ir);
+        NCASE 'w': ir = *(pc++);                                                // w! / w@
             if (ir == '!') { *AOS = N & 255; *(AOS+1) = (N/256)&255; DROP2;}
             if (ir == '@') { TOS = (*(AOS+1)*256) | *(AOS); }
-            break;
-        case 'x': doExt();                                             break;
-        case 'y':  case 'z':                                           break;
-        case '{': if (TOS) { 
+        NCASE 'x': doExt();
+        NCASE '{': if (TOS) {                                                   // 123
                 lpush()->start = pc;
                 LTOS->end = 0;
                 LTOS->from = 1;
                 LTOS->to = 0;
-            } else { DROP1;  skipTo('}'); }                            break;
-        case '|': loopBreak();                                         break;  // 124
-        case '}': if (!TOS) { ldrop(); DROP1; }                                // 125
-                else { LTOS->end = pc; pc = LTOS->start; }             break;
-        case '~': TOS = (TOS) ? 0 : 1;                                 break;  // 126
-        }
-        #ifdef __WATCHDOG__
-        feedWatchDog();
-        #endif
+            } else { DROP1;  skipTo('}'); }
+        NCASE '|': loopBreak();                                                 // 124
+        NCASE '}': if (!TOS) { ldrop(); DROP1; }                                // 125
+            else { LTOS->end = pc; pc = LTOS->start; }
+        NCASE '~': TOS = (TOS) ? 0 : 1;                                         // 126
+            goto next;
+        default: printStringF("-ir:[%d]?-", ir);
     }
     return pc;
 }

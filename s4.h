@@ -37,6 +37,7 @@ typedef byte*            addr;
 #define LTOS              (&sys.lstack[LSP])
 #define BetweenI(n, x, y) ((x <= n) && (n <= y))
 #define PERR(msg)         { isError=1; printString(msg); }
+#define NCASE             goto next; case
 
 typedef struct {
     addr start;
