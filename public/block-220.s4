@@ -1,6 +1,6 @@
 ; Block.220
 
-0xBL
+1xBL
 N"Count of primes"
 
 ; rC:             Register for count of primes
@@ -9,8 +9,12 @@ N"Count of primes"
 ; BENCH: (n--)    Benchmark routine
 ; CPLOOP: (n--)   Loop for multiple benchmarks
 
-:CP 4 sC 11[rI 3 P(iC)iI]rC;
-:BENCH CR"# primes in "#." - "xT$ CP . xT$- " (" . " ms)";
-:CPLOOP 256$1[#+#BENCH]\;
-:P%%&~(\=;)%<(\;)2+P;
-10 CPLOOP
+:Timer  xT;
+:Elapsed  xT$- " (" . " ms)";
+:Prime %%&~(\=;)%<(\;)2+Prime;
+:CountPrimes 4 sC 11[rI 3 Prime (iC) iI]rC;
+:Bench CR"# primes in "#." - " Timer $ CountPrimes . Elapsed;
+:Double #+;
+:Mil 1000#**;
+:CountPrimesLoop 256 $ 1[Double # Bench]\;
+10 CountPrimesLoop

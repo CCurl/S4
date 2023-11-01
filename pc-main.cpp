@@ -35,7 +35,7 @@ addr doCustom(byte ir, addr pc) {
     case 'N': push(micros());          break;
     case 'T': push(millis());          break;
     case 'W': delay(pop());            break;
-    case 'Q': isBye = 1;               break;
+    case 'Q': isBye = 1; pc = NULL;    break;
     default:
         isError = 1;
         printString("-notExt-");

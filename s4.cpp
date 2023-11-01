@@ -17,9 +17,6 @@ CELL pop() { return (DSP) ? sys.dstack[DSP--] : 0; }
 inline void rpush(addr v) { if (RSP < STK_SZ) { sys.rstack[++RSP] = v; } }
 inline addr rpop() { return (RSP) ? sys.rstack[RSP--] : 0; }
 
-inline LOOP_ENTRY_T* lpush() { if (LSP < STK_SZ) { ++LSP; } return LTOS; }
-inline LOOP_ENTRY_T *ldrop() { if (0 < LSP) { --LSP; } return LTOS; }
-
 void vmInit() {
     seed = DSP = RSP = LSP = lastFunc = 0;
     for (int i = 0; i < NUM_REGS; i++) { REG[i] = 0; }
@@ -56,7 +53,7 @@ CELL getCell(byte* from) {
 
 void dumpStack() {
     printChar('(');
-    for (UCELL i = 1; i <= DSP; i++) {
+    for (int i = 1; i <= DSP; i++) {
         printStringF("%s%ld", (i > 1 ? " " : ""), (CELL)sys.dstack[i]);
     }
     printChar(')');
@@ -87,8 +84,8 @@ void skipTo(byte to) {
 
 UCELL doHash(addr &a) {
     UCELL hash = 5381;
-    while (BetweenI(*a, 'A', 'Z') || BetweenI(*a, 'a', 'z') || (*a == '_')) {
-        hash = ((hash << 5) + hash) + *(a++);
+    while (BetweenI(*a, 'A', 'Z') || BetweenI(*a, 'a', 'z')) {
+        hash = (hash * 33) ^ *(a++);
     }
     return hash & MAX_HASH;
 }
@@ -118,38 +115,6 @@ void doRegOp(int op) {
     }
 }
 
-void loopBreak() {
-    if (LSP == 0) { return; }
-    LOOP_ENTRY_T* x = LTOS;
-    int isFor = (x->from <= x->to) ? 1 : 0;
-    if (isFor) { INDEX = ldrop()->from; }
-    else { ldrop(); }
-    if (x->end) { pc = x->end; }
-    else { skipTo(isFor ? ']' : '}'); }
-}
-
-void doFor() {
-    CELL f = (N < TOS) ? N : TOS;
-    CELL t = (N < TOS) ? TOS : N;
-    DROP2;
-    LOOP_ENTRY_T *x = lpush();
-    x->start = pc;
-    x->end = 0;
-    INDEX = x->from = f;
-    x->to = t;
-}
-
-void doNext() {
-    LOOP_ENTRY_T* x = LTOS;
-    x->from = ++INDEX;
-    if (x->from <= x->to) {
-        x->end = pc;
-        pc = x->start;
-    } else {
-        INDEX = ldrop()->from;
-    }
-}
-
 int isNot0(int exp) {
     if (exp == 0) PERR("-0div-");
     return isError == 0;
@@ -158,54 +123,53 @@ int isNot0(int exp) {
 void doExt() {
     ir = *(pc++);
     switch (ir) {
-    case 'A': TOS = (TOS < 0) ? -TOS : TOS;                return;
-    case 'R': if (seed == 0) { seed = getSeed(); }         // RAND
-        seed ^= (seed << 13);
-        seed ^= (seed >> 17);
-        seed ^= (seed << 5);
-        TOS = (TOS) ? (abs(seed) % TOS) : seed;            return;
-    case 'B': ir = *(pc++);
-        if (ir == 'O') { blockOpen(); }
-        if (ir == 'R') { blockRead(); }
-        if (ir == 'W') { blockWrite(); }
-        if (ir == 'L') { blockLoad(); }
-        return;
-    case 'E': doEditor();                                  return;
-    case 'F': ir = *(pc++);
-        if (ir == 'O') { fileOpen(); }
-        if (ir == 'C') { fileClose(); }
-        if (ir == 'D') { fileDelete(); }
-        if (ir == 'R') { fileRead(); }
-        if (ir == 'W') { fileWrite(); }
-        return;
-    case 'J': if (TOS) { pc = AOS; } DROP1;                return;
-    case 'K': ir = *(pc++);
-        if (ir == '?') { push(charAvailable()); }
-        if (ir == '@') { push(getChar()); }
-        return;
-    case 'Z': printString((char *)pop());                  return;
-    case 'I': ir = *(pc++);
-        if (ir == 'A') {
-          ir = *(pc++);
-          if (ir == 'F') { push((CELL)&func[0]); }
-          if (ir == 'H') { push((CELL)&HERE); }
-          if (ir == 'R') { push((CELL)&REG[0]); }
-          if (ir == 'S') { push((CELL)&sys); }
-          if (ir == 'U') { push((CELL)&USER[0]); }
-          return;
-        }
-        if (ir == 'C') { push(CELL_SZ); }
-        if (ir == 'F') { push(NUM_FUNCS); }
-        if (ir == 'H') { push((CELL)HERE); }
-        if (ir == 'R') { push(NUM_REGS); }
-        if (ir == 'U') { push(USER_SZ); }
-        return;
-    case 'S': ir = *(pc++);
-        if (ir == 'R') { vmInit();   }
-        if (ir == '.') { dumpStack(); }
-            return;
-    default:
-        pc = doCustom(ir, pc);
+        RCASE 'A': TOS = (TOS < 0) ? -TOS : TOS;
+        RCASE 'R': if (seed == 0) { seed = getSeed(); }         // RAND
+            seed ^= (seed << 13);
+            seed ^= (seed >> 17);
+            seed ^= (seed << 5);
+            TOS = (TOS) ? (abs(seed) % TOS) : seed;
+        RCASE 'B': ir = *(pc++);
+            if (ir == 'O') { blockOpen(); }
+            if (ir == 'R') { blockRead(); }
+            if (ir == 'W') { blockWrite(); }
+            if (ir == 'L') { blockLoad(); }
+        RCASE 'E': doEditor();
+        RCASE 'F': ir = *(pc++);
+            if (ir == 'O') { fileOpen(); }
+            if (ir == 'C') { fileClose(); }
+            if (ir == 'D') { fileDelete(); }
+            if (ir == 'R') { fileRead(); }
+            if (ir == 'W') { fileWrite(); }
+        RCASE 'J': if (TOS) { pc = AOS; } DROP1;
+        RCASE 'K': ir = *(pc++);
+            if (ir == '?') { push(charAvailable()); }
+            if (ir == '@') { push(getChar()); }
+        RCASE 'Z': printString((char *)pop());
+        RCASE 'I': ir = *(pc++);
+            if (ir == 'A') {
+              ir = *(pc++);
+              if (ir == 'F') { push((CELL)&func[0]); }
+              if (ir == 'H') { push((CELL)&HERE); }
+              if (ir == 'R') { push((CELL)&REG[0]); }
+              if (ir == 'S') { push((CELL)&sys); }
+              if (ir == 'U') { push((CELL)&USER[0]); }
+              return;
+            }
+            if (ir == 'C') { push(CELL_SZ); }
+            if (ir == 'F') { push(NUM_FUNCS); }
+            if (ir == 'H') { push((CELL)HERE); }
+            if (ir == 'R') { push(NUM_REGS); }
+            if (ir == 'U') { push(USER_SZ); }
+        RCASE 'S': ir = *(pc++);
+            if (ir == 'R') { vmInit();   }
+            if (ir == '.') { dumpStack(); }
+        RCASE 'U': ir = *(pc++); // unwind-Loop-For (or While)
+            if (ir == 'F') { INDEX=L0; LSP-=3;   }
+            if (ir == 'W') { LSP-=3; }
+            if (LSP<0) { LSP=0; }
+        return; default:
+            pc = doCustom(ir, pc);
     }
 }
 
@@ -249,17 +213,16 @@ addr run(addr start) {
         NCASE '-': t1 = pop(); TOS -= t1;                                 // 45
         NCASE '.': t1 = pop();  printStringF("%ld", t1);                  // 46
         NCASE '/': t1 = pop(); if (isNot0(t1)) { TOS /= t1; }             // 47
-        NCASE '0': case '1': case '2': case '3': case '4':                // 48-57
-        case  '5': case '6': case '7': case '8': case '9':
-            push(ir - '0'); ir = *(pc);
-            while (BetweenI(ir, '0', '9')) {
-                TOS = (TOS * 10) + (ir - '0');
-                ir = *(++pc);
+        NCASE '0': case '1': case '2': case '3': case '4':case '5':       // 48-57
+        case  '6': case '7': case '8': case '9': push(ir - '0');
+            while (BetweenI(*pc, '0', '9')) {
+                TOS = (TOS * 10) + (*(pc++) - '0');
             }
-        NCASE ':': if (!BetweenI(*pc, 'A', 'Z')) { PERR("-FN-"); }             // 58
+        NCASE ':': if (!BetweenI(*pc, 'A', 'Z')) { PERR("-FN-"); }        // 58
                 t1=doHash(pc); if (func[t1]) { printStringF("-redef (%ld)-", t1); }
+                while (*pc == ' ') { ++pc; }
                 func[t1] = pc; skipTo(';'); HERE = pc;
-        NCASE ';': pc = rpop(); locBase -= 10;                            // 59
+        NCASE ';': pc = rpop(); locBase=(locBase<10)?0:locBase;           // 59
         NCASE '<': t1 = pop(); TOS = TOS < t1 ? 1 : 0;                    // 60
         NCASE '=': t1 = pop(); TOS = TOS == t1 ? 1 : 0;                   // 61
         NCASE '>': t1 = pop(); TOS = TOS > t1 ? 1 : 0;                    // 62
@@ -275,9 +238,11 @@ addr run(addr start) {
                     if (*pc != ';') { locBase += 10; rpush(pc); }
                     pc = (addr)func[t1];
                 }
-        NCASE '[': doFor();                                               // 91
+        NCASE '[': LSP+=3; L2=(S4CELL)pc; L0=INDEX; INDEX=pop(); L1=pop(); // FOR
+                if (L1<INDEX) { t1=INDEX; INDEX=L1; L1=t1; }
         NCASE '\\': DROP1;                                                // 92 (DROP)
-        NCASE ']': doNext();                                              // 93
+        NCASE ']': if (++INDEX<=L1) { pc=(addr)L2; }
+            else { INDEX=L0; LSP=(LSP<3)?0:LSP-3; };
         NCASE '^': t1 = pop(); if (isNot0(t1)) { TOS %= t1; }             // 94 (MODULO)
         NCASE '_': TOS = -TOS;                                            // 95 (NEGATE)
         NCASE '`': push(TOS);                                             // 96
@@ -285,13 +250,19 @@ addr run(addr start) {
             *(AOS++) = 0; ++pc;
         NCASE 'a': NCASE 'e': NCASE 'f': NCASE 'g': NCASE 'j':  /* FREE */
         NCASE 'k': NCASE 'l': NCASE 'm': NCASE 'o':             /* FREE */
-        NCASE 'p': NCASE 'q': NCASE 't': NCASE 'u': NCASE 'v':  /* FREE */
+        NCASE 'q': NCASE 't': NCASE 'v':             /* FREE */
         NCASE 'y': NCASE 'z': /* FREE */
         NCASE 'b': ir = *(pc++);                                           // BIT ops
             if (ir == '&') { N &= TOS; DROP1; }                            // AND
             else if (ir == '|') { N |= TOS; DROP1; }                       // OR
             else if (ir == '^') { N ^= TOS; DROP1; }                       // XOR
             else if (ir == '~') { TOS = ~TOS; }                            // NOT
+        NCASE 'p': ir = *(pc++);
+            if (ir == 'x') { printStringF("%X", pop()); }
+            else if (ir == 'e') { printChar(27); }
+            else if (ir == 'q') { printChar(34); }
+            else if (ir == 'b') { printChar(32); }
+            else if (ir == 'n') { printStringF("\n"); }
         NCASE 'c': ir = *(pc++);                                           // c! / c@
             if (ir == '!') { *AOS = (byte)N; DROP2; }
             if (ir == '@') { TOS = *AOS; }
@@ -301,19 +272,20 @@ addr run(addr start) {
                 if (0 <= t1) { TOS = (TOS * 0x10) + t1; ++pc; }
             }
         NCASE 'd': case 'i': case 'r': case 's': case 'n': doRegOp(ir);
+        NCASE 'u': ir = *(pc++);
+            if (ir == 'F') { INDEX=L0; LSP-=3; skipTo(']'); }   // exit FOR
+            if (ir == 'W') { LSP-=3; skipTo('}'); }             // exit WHILE
+            if (ir == 'L') { LSP-=3; }                          // unwind
+            if (ir == 'C') { pc=(addr)L2; }                     // continue
+            if (LSP<0) { LSP=0; }
         NCASE 'w': ir = *(pc++);                                                // w! / w@
             if (ir == '!') { *AOS = N & 255; *(AOS+1) = (N/256)&255; DROP2;}
             if (ir == '@') { TOS = (*(AOS+1)*256) | *(AOS); }
         NCASE 'x': doExt();
-        NCASE '{': if (TOS) {                                                   // 123
-                lpush()->start = pc;
-                LTOS->end = 0;
-                LTOS->from = 1;
-                LTOS->to = 0;
-            } else { DROP1;  skipTo('}'); }
-        NCASE '|': loopBreak();                                                 // 124
-        NCASE '}': if (!TOS) { ldrop(); DROP1; }                                // 125
-            else { LTOS->end = pc; pc = LTOS->start; }
+        NCASE '{': if (TOS) { LSP+=3; L2=(S4CELL)pc; }
+            else { DROP1;  skipTo('}'); }
+        NCASE '|': LSP=(LSP<3)?0:LSP-3;                                         // 124
+        NCASE '}': if (TOS) { pc = (addr)L2; } else { DROP1; LSP=(LSP<3)?0:LSP-3; }
         NCASE '~': TOS = (TOS) ? 0 : 1;                                         // 126
             goto next;
         default: printStringF("-ir:[%d]?-", ir);

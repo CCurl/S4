@@ -35,22 +35,19 @@ typedef byte*            addr;
 #define DROP1             pop()
 #define DROP2             pop(); pop()
 #define LTOS              (&sys.lstack[LSP])
+#define L0                sys.lstack[LSP]
+#define L1                sys.lstack[LSP-1]
+#define L2                sys.lstack[LSP-2]
 #define BetweenI(n, x, y) ((x <= n) && (n <= y))
 #define PERR(msg)         { isError=1; printString(msg); }
 #define NCASE             goto next; case
+#define RCASE             return; case
 
 typedef struct {
-    addr start;
-    CELL from;
-    CELL to;
-    addr end;
-} LOOP_ENTRY_T;
-
-typedef struct {
-    ushort dsp, rsp, lsp, u1;
+    int    dsp, rsp, lsp;
     CELL   dstack[STK_SZ + 1];
     addr   rstack[STK_SZ + 1];
-    LOOP_ENTRY_T lstack[LSTACK_SZ + 1];
+    CELL   lstack[LSTACK_SZ + 1];
     CELL   reg[NUM_REGS];
     byte   user[USER_SZ];
 } SYS_T;

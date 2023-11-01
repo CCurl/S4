@@ -59,14 +59,15 @@ NOTES:
 ### WORDS/FUNCTIONS
 NOTES:
 - Word/Function names are ProperCase identifiers. 
-- They must begin with [A..Z], and can include underscore (_).
+- They must begin with [A..Z], and can include lowercase characters [a..z].
 - The number of words is controlled by the NUM_FUNCS #define in "config.h"
+- NUM_FUNCS needs to be a power of 2.
 - If a word has already been defined, S4 prints "-redef-".
 
 | Opcode| Stack   | Description |
 |:--    |:--      |:--|
 | :     | (--)    | Define word/function. Copy chars to (HERE++) until closing ';'.
-| A_b   | (--)    | Execute/call word/function A_b
+| ABC   | (--)    | Execute/call word/function ABC
 | ;     | (--)    | Return: PC = rpop()
 |       |         | - Returning while inside of a loop is not supported; break out of the loop first.
 |       |         | - Use '\|' to break out of a FOR or WHILE loop.
@@ -99,15 +100,18 @@ NOTES:
 | =     | (a b--f)    | f: (a = b) ? 1 : 0;
 | >     | (a b--f)    | f: (a > b) ? 1 : 0;
 | ~     | (n -- f)    | f: (a = 0) ? 1 : 0; (Logical NOT)
+| (     | (f--)       | IF: if (f != 0), continue into '()', else skip to matching ')'
 | [     | (F T--)     | FOR: start a For/Next loop. if (T < F), swap T and F
 | rI    | (--n)       | n: the index of the current FOR loop
-| ]     | (--)        | NEXT: increment index (I) and restart loop if (rI <= T)
+| ]     | (--)        | NEXT: increment index (rI) and restart loop if (rI <= T)
 |       |             | NOTE: A FOR loop always runs at least one iteration.
 |       |             | - It can be put it inside a '()' to keep it from running.
-| {     | (f--f)      | BEGIN: if (f == 0) skip to matching '}'
+| {     | (f--f)      | WHILE: if (f == 0) skip to matching '}'
 | }     | (f--f?)     | WHILE: if (f != 0) jump to matching '{', else drop f and continue
-| \|    | (--)        | BREAK: Break out of current WHILE of FOR loop
-| (     | (f--)       | IF: if (f != 0), continue into '()', else skip to matching ')'
+| uL    | (--)        | Unwind the loop stack. Use with ';'.eg = (uL;)
+| uF    | (--)        | Exit FOR. Continue after the next ']'.
+| uW    | (--)        | Exit WHILE. Continue after the next '}'.
+| uC    | (--)        | Continue. Jump to the beginning of the current loop.
 
 
 ### OTHER

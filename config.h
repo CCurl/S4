@@ -45,7 +45,7 @@
   #define LSTACK_SZ        8
   #define USER_SZ        (256*1024)
   #define NUM_REGS       (26*26*26)
-  #define NUM_FUNCS      (64*1024)
+  #define NUM_FUNCS      (0x10000)
 #elif __BOARD__ == XIAO
   // #define __GAMEPAD__
   #define STK_SZ          16
