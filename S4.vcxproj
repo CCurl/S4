@@ -183,6 +183,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="config.h" />
+    <ClInclude Include="file-dev.h" />
+    <ClInclude Include="file-pc.h" />
     <ClInclude Include="gamePad-Teensy.h" />
     <ClInclude Include="gamePad.h" />
     <ClInclude Include="s4.h" />
